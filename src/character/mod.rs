@@ -1,4 +1,8 @@
-use std::ops::{Deref, DerefMut};
+mod control;
+mod index;
+mod speed_multiplier;
+mod target;
+mod health;
 
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 
@@ -7,6 +11,12 @@ use crate::{
     physics::Velocity,
     ui::Selected,
 };
+
+pub use control::*;
+pub use index::*;
+pub use speed_multiplier::*;
+pub use target::*;
+pub use health::*;
 
 pub struct PlayerPlugin;
 
@@ -26,71 +36,6 @@ impl Plugin for PlayerPlugin {
 
 pub struct Player;
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
-pub struct CharacterIndex(usize);
-
-pub struct CharacterSpeedMultiplier(f32);
-
-impl From<f32> for CharacterSpeedMultiplier {
-    fn from(val: f32) -> Self {
-        Self(val)
-    }
-}
-
-impl Deref for CharacterSpeedMultiplier {
-    type Target = f32;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for CharacterSpeedMultiplier {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl CharacterSpeedMultiplier {
-    const BASE_SPEED: f32 = 300.;
-
-    pub fn speed(&self) -> f32 {
-        Self::BASE_SPEED * self.0
-    }
-}
-
-pub struct CharacterHealth {
-    current: u32,
-    total: u32,
-}
-
-#[derive(Default, Debug, Clone, Copy)]
-pub struct CharacterTarget {
-    target: Option<CharacterIndex>,
-}
-
-impl CharacterTarget {
-    pub fn set_index(&mut self, character: CharacterIndex) -> &mut Self {
-        self.target = Some(character);
-        self
-    }
-
-    pub fn deselect(&mut self) -> &mut Self {
-        self.target = None;
-        self
-    }
-
-    pub fn index(&self) -> Option<CharacterIndex> {
-        self.target
-    }
-}
-
-pub enum CharacterControl {
-    Stun,
-    Dazed,
-    Normal,
-}
-
 #[derive(Bundle)]
 pub struct CharacterBundle {
     character: CharacterIndex,
@@ -105,14 +50,14 @@ pub struct CharacterBundle {
 
 pub fn spawn_player(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
     let character = CharacterBundle {
-        character: CharacterIndex(0),
+        character: CharacterIndex::from(0),
         velocity: Velocity::from(Vec2::ZERO),
         sprite: SpriteBundle {
             material: materials.add(Color::rgb(1.0, 0.5, 0.5).into()),
             sprite: Sprite::new(Vec2::new(30.0, 30.0)),
             ..Default::default()
         },
-        speed_modifier: CharacterSpeedMultiplier(1.),
+        speed_modifier: CharacterSpeedMultiplier::from(1.),
         health: CharacterHealth {
             current: 75,
             total: 100,
@@ -125,14 +70,14 @@ pub fn spawn_player(mut commands: Commands, mut materials: ResMut<Assets<ColorMa
 
 pub fn spawn_char_1(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
     let character = CharacterBundle {
-        character: CharacterIndex(1),
+        character: CharacterIndex::from(1),
         velocity: Velocity::from(Vec2::ZERO),
         sprite: SpriteBundle {
             material: materials.add(Color::rgb(1.0, 0.5, 0.5).into()),
             sprite: Sprite::new(Vec2::new(30.0, 30.0)),
             ..Default::default()
         },
-        speed_modifier: CharacterSpeedMultiplier(1.),
+        speed_modifier: CharacterSpeedMultiplier::from(1.),
         health: CharacterHealth {
             current: 75,
             total: 100,
