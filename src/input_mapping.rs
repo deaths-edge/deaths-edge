@@ -1,5 +1,4 @@
 use bevy::{
-    app::Events,
     input::{mouse::MouseButtonInput, ElementState},
     prelude::*,
 };

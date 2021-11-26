@@ -1,11 +1,10 @@
 use std::ops::{Deref, DerefMut};
 
-use bevy::{app::Events, input::mouse::MouseButtonInput, prelude::*};
+use bevy::prelude::*;
 
 use crate::{
     input_mapping::{FocalHold, MotionKey},
     physics::Velocity,
-    WorldMousePosition,
 };
 
 pub struct PlayerPlugin;
@@ -14,6 +13,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let system_set = SystemSet::new()
             .label("character-motion")
+            .before("collisions")
             .with_system(player_focal_rotate.system())
             .with_system(player_movement.system());
         app.add_system_set(system_set);
@@ -119,19 +119,19 @@ pub fn spawn_char_1(mut commands: Commands, mut materials: ResMut<Assets<ColorMa
     commands.spawn_bundle(character);
 }
 
-// pub fn player_char_select(
-//     mouse_position: Res<WorldMousePosition>,
-//     mouse_click_events: Res<Events<MouseButtonInput>>,
-//     mut char_query: QuerySet<(
-//         Query<(&Player, &mut CharacterTarget)>,
-//         Query<(&Character, &Transform)>,
-//     )>,
-// ) {
-//     let (player, selection) = char_query
-//         .q0_mut()
-//         .single_mut()
-//         .expect("failed to find player");
-// }
+pub fn player_char_select(
+    mouse_position: Res<WorldMousePosition>,
+    mouse_click_events: Res<Events<MouseButtonInput>>,
+    mut char_query: QuerySet<(
+        Query<(&Player, &mut CharacterTarget)>,
+        Query<(&Character, &Transform)>,
+    )>,
+) {
+    let (player, selection) = char_query
+        .q0_mut()
+        .single_mut()
+        .expect("failed to find player");
+}
 
 pub fn player_focal_rotate(
     mut char_query: Query<(&mut Transform, With<Player>)>,

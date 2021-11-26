@@ -12,6 +12,7 @@ pub trait BuffInterface {
 
     fn buff_type(&self) -> BuffType;
 
+    #[allow(unused_variables)]
     fn apply(
         &self,
         control: &mut CharacterControl,
@@ -20,6 +21,7 @@ pub trait BuffInterface {
     ) {
     }
 
+    #[allow(unused_variables)]
     fn tick(
         &self,
         time: &Time,
@@ -29,6 +31,7 @@ pub trait BuffInterface {
     ) {
     }
 
+    #[allow(unused_variables)]
     fn remove(
         &self,
         control: &mut CharacterControl,

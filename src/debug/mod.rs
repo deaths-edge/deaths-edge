@@ -88,7 +88,7 @@ impl DebugTerminal {
                 // FPS Barchart
                 let barchart = BarChart::default()
                     .block(Block::default().title("FPS").borders(Borders::ALL))
-                    .data(&fps_data)
+                    .data(fps_data)
                     .bar_width(9)
                     .bar_style(Style::default().fg(Color::Yellow))
                     .value_style(Style::default().fg(Color::Black).bg(Color::Yellow));
