@@ -174,10 +174,18 @@ pub fn player_focal_rotate(
 ) {
     let (mut transform, _) = char_query.single_mut().expect("player not found");
 
+    const MINIMUM_FOCAL_LENGTH: f32 = 200.;
+
     if let Some(event) = events.iter().last() {
         let translation = Vec2::from(transform.translation);
 
-        let angle = -(event.mouse_position - translation).angle_between(Vec2::new(0., 1.));
+        let diff = event.mouse_position - translation;
+        let distance = diff.length();
+        let adjustment = distance.min(MINIMUM_FOCAL_LENGTH);
+        let new_diff = diff * adjustment / distance;
+        // let new_diff = diff;
+
+        let angle = Vec2::new(0., 1.).angle_between(new_diff);
         transform.rotation = Quat::from_rotation_z(angle);
     }
 }
@@ -196,27 +204,37 @@ pub fn player_movement(
     let (speed_multiplier, transform, mut velocity, _) =
         char_query.single_mut().expect("player not found");
 
+    const FORWARD_SPEED: f32 = 1.0;
+    const STRAFE_SPEED: f32 = 0.8;
+    const BACKPEDDLE_SPEED: f32 = 0.6;
+
     // Construct direction
-    let mut direction = Vec3::default();
+    let mut direction = Vec2::ZERO;
     if motion_input.pressed(MotionKey::Left) {
-        direction.x -= 1.;
+        direction.x -= STRAFE_SPEED;
     }
 
     if motion_input.pressed(MotionKey::Forward) {
-        direction.y += 1.;
+        direction.y += FORWARD_SPEED;
     }
 
     if motion_input.pressed(MotionKey::Right) {
-        direction.x += 1.;
+        direction.x += STRAFE_SPEED;
     }
 
     if motion_input.pressed(MotionKey::Backward) {
-        direction.y -= 1.;
+        direction.y -= BACKPEDDLE_SPEED;
     }
 
-    // Rotate
-    direction = transform.rotation * direction;
+    // Normalize
+    if direction != Vec2::ZERO {
+        let mag = direction.length().max(1.);
+        direction = direction / mag;
+    }
+
+    direction = (transform.rotation * (direction.extend(0.))).truncate();
+
 
     // Assign velocity
-    **velocity = (direction * speed_multiplier.speed()).truncate();
+    **velocity = direction * speed_multiplier.speed();
 }

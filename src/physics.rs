@@ -49,7 +49,7 @@ pub fn collisions(
     environment_query: Query<(&Environment, &Transform, &Sprite)>,
     mut player_query: Query<(
         &CharacterIndex,
-        &mut Transform,
+        &Transform,
         &Sprite,
         &mut Velocity,
         Without<Environment>,
