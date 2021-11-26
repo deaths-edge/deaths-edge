@@ -5,7 +5,7 @@ use bevy::{
     sprite::collide_aabb::{collide, Collision},
 };
 
-use crate::{character::Character, environment::Environment};
+use crate::{character::CharacterIndex, environment::Environment};
 
 pub struct Velocity(Vec2);
 
@@ -48,7 +48,7 @@ impl Plugin for PhysicsPlugin {
 pub fn collisions(
     environment_query: Query<(&Environment, &Transform, &Sprite)>,
     mut player_query: Query<(
-        &Character,
+        &CharacterIndex,
         &mut Transform,
         &Sprite,
         &mut Velocity,

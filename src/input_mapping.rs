@@ -16,6 +16,7 @@ impl Plugin for InputMapPlugin {
             .init_resource::<Input<MotionKey>>()
             .init_resource::<Input<ActionKey>>()
             .add_event::<FocalHold>()
+            .add_event::<SelectClick>()
             .add_system_set(system_set);
         // TODO: Read from file
     }
@@ -48,6 +49,11 @@ pub enum BoundInput {
 
 #[derive(Debug)]
 pub struct FocalHold {
+    pub mouse_position: Vec2,
+}
+
+#[derive(Debug)]
+pub struct SelectClick {
     pub mouse_position: Vec2,
 }
 
@@ -184,6 +190,7 @@ fn input_map(
     mut motion_input: ResMut<Input<MotionKey>>,
     mut action_input: ResMut<Input<ActionKey>>,
     mut focal_holds: EventWriter<FocalHold>,
+    mut click: EventWriter<SelectClick>,
 ) {
     motion_input.update();
     action_input.update();

@@ -1,9 +1,9 @@
 use std::ops::{Deref, DerefMut};
 
-use bevy::prelude::*;
+use bevy::{prelude::*, sprite::collide_aabb::collide};
 
 use crate::{
-    input_mapping::{FocalHold, MotionKey},
+    input_mapping::{FocalHold, MotionKey, SelectClick},
     physics::Velocity,
 };
 
@@ -16,13 +16,16 @@ impl Plugin for PlayerPlugin {
             .before("collisions")
             .with_system(player_focal_rotate.system())
             .with_system(player_movement.system());
-        app.add_system_set(system_set);
+        app.add_startup_system(spawn_player.system())
+            .add_startup_system(spawn_char_1.system())
+            .add_system_set(system_set);
     }
 }
 
 pub struct Player;
 
-pub struct Character(usize);
+#[derive(Default, Clone, Copy)]
+pub struct CharacterIndex(usize);
 
 pub struct CharacterSpeedMultiplier(f32);
 
@@ -59,9 +62,21 @@ pub struct CharacterHealth {
     total: u32,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 pub struct CharacterTarget {
     target: Option<usize>,
+}
+
+impl CharacterTarget {
+    pub fn set_target(&mut self, character: CharacterIndex) -> &mut Self {
+        self.target = Some(character.0);
+        self
+    }
+
+    pub fn deselect(&mut self) -> &mut Self {
+        self.target = None;
+        self
+    }
 }
 
 pub enum CharacterControl {
@@ -72,7 +87,7 @@ pub enum CharacterControl {
 
 #[derive(Bundle)]
 pub struct CharacterBundle {
-    character: Character,
+    character: CharacterIndex,
     velocity: Velocity,
     #[bundle]
     sprite: SpriteBundle,
@@ -83,7 +98,7 @@ pub struct CharacterBundle {
 
 pub fn spawn_player(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
     let character = CharacterBundle {
-        character: Character(0),
+        character: CharacterIndex(0),
         velocity: Velocity::from(Vec2::ZERO),
         sprite: SpriteBundle {
             material: materials.add(Color::rgb(1.0, 0.5, 0.5).into()),
@@ -102,7 +117,7 @@ pub fn spawn_player(mut commands: Commands, mut materials: ResMut<Assets<ColorMa
 
 pub fn spawn_char_1(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
     let character = CharacterBundle {
-        character: Character(1),
+        character: CharacterIndex(1),
         velocity: Velocity::from(Vec2::ZERO),
         sprite: SpriteBundle {
             material: materials.add(Color::rgb(1.0, 0.5, 0.5).into()),
@@ -120,17 +135,37 @@ pub fn spawn_char_1(mut commands: Commands, mut materials: ResMut<Assets<ColorMa
 }
 
 pub fn player_char_select(
-    mouse_position: Res<WorldMousePosition>,
-    mouse_click_events: Res<Events<MouseButtonInput>>,
+    mut select_clicks: EventReader<SelectClick>,
     mut char_query: QuerySet<(
         Query<(&Player, &mut CharacterTarget)>,
-        Query<(&Character, &Transform)>,
+        Query<(&CharacterIndex, &Transform, &Sprite)>,
     )>,
 ) {
-    let (player, selection) = char_query
-        .q0_mut()
-        .single_mut()
-        .expect("failed to find player");
+    const SELECT_SIZE: (f32, f32) = (30., 30.);
+
+    if let Some(select_click) = select_clicks.iter().last() {
+        let selected_index = char_query
+            .q1()
+            .iter()
+            .find(|(_, char_transform, char_sprite)| {
+                collide(
+                    select_click.mouse_position.extend(0.),
+                    SELECT_SIZE.into(),
+                    char_transform.translation,
+                    char_sprite.size,
+                )
+                .is_some()
+            })
+            .map(|(index, _, _)| index);
+
+        if let Some(selected_index) = selected_index.cloned() {
+            let (_, mut character_target) = char_query
+                .q0_mut()
+                .single_mut()
+                .expect("failed to find player");
+            character_target.set_target(selected_index);
+        }
+    }
 }
 
 pub fn player_focal_rotate(
@@ -150,7 +185,7 @@ pub fn player_focal_rotate(
 pub fn player_movement(
     motion_input: Res<Input<MotionKey>>,
 
-    // Character query
+    // CharacterIndex query
     mut char_query: Query<(
         &CharacterSpeedMultiplier,
         &mut Transform,

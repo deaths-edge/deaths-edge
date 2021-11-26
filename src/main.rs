@@ -34,8 +34,6 @@ fn main() {
         .add_plugin(input_mapping::InputMapPlugin)
         .add_plugin(physics::PhysicsPlugin)
         .add_startup_system(setup_camera.system())
-        .add_startup_system(spawn_player.system())
-        .add_startup_system(spawn_char_1.system())
         .add_startup_system(spawn_environment.system())
         .add_system(world_mouse.system())
         .run();
