@@ -190,7 +190,7 @@ fn input_map(
     mut motion_input: ResMut<Input<MotionKey>>,
     mut action_input: ResMut<Input<ActionKey>>,
     mut focal_holds: EventWriter<FocalHold>,
-    mut click: EventWriter<SelectClick>,
+    mut select_clicks: EventWriter<SelectClick>,
 ) {
     motion_input.update();
     action_input.update();
@@ -217,17 +217,27 @@ fn input_map(
         }
     }
 
-    let mouse_input_opt = mouse_click_events
-        .iter()
-        .last()
-        .filter(|input| input.button == MouseButton::Right)
-        .map(|input| input.state);
+    let mouse_input_last = mouse_click_events.iter().last();
 
-    match mouse_input_opt {
-        Some(ElementState::Pressed) => *mouse_right_state = MouseRightElementState::Pressed,
-        Some(ElementState::Released) => *mouse_right_state = MouseRightElementState::Released,
-        None => (),
-    };
+    match mouse_input_last {
+        Some(MouseButtonInput {
+            button: MouseButton::Left,
+            state: ElementState::Released,
+        }) => {
+            select_clicks.send(SelectClick {
+                mouse_position: mouse_position.position,
+            });
+        }
+        Some(MouseButtonInput {
+            button: MouseButton::Right,
+            state: ElementState::Pressed,
+        }) => *mouse_right_state = MouseRightElementState::Pressed,
+        Some(MouseButtonInput {
+            button: MouseButton::Right,
+            state: ElementState::Released,
+        }) => *mouse_right_state = MouseRightElementState::Released,
+        _ => (),
+    }
 
     if *mouse_right_state == MouseRightElementState::Pressed {
         focal_holds.send(FocalHold {

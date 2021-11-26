@@ -1,6 +1,19 @@
 use bevy::{app::Events, prelude::*, window::Windows};
 
-use crate::camera::PlayerCamera;
+use crate::{
+    camera::PlayerCamera,
+    character::{CharacterIndex, CharacterTarget, Player},
+};
+
+pub struct UIPlugin;
+
+impl Plugin for UIPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        app.init_resource::<WorldMousePosition>()
+            .add_system(select_highlight.system())
+            .add_system(world_mouse.system());
+    }
+}
 
 #[derive(Debug, Default)]
 pub struct WorldMousePosition {
@@ -41,5 +54,39 @@ pub fn world_mouse(
             window_to_local_position(&windows, camera_transform, mouse_position.position);
 
         *world_mouse_pos = WorldMousePosition { position };
+    }
+}
+
+#[derive(PartialEq, Clone, Copy)]
+pub enum Selected {
+    Selected,
+    Unselected,
+}
+
+impl Selected {
+    pub fn is_selected(&self) -> bool {
+        *self == Selected::Selected
+    }
+}
+
+impl Default for Selected {
+    fn default() -> Self {
+        Self::Unselected
+    }
+}
+
+pub fn select_highlight(
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut query: Query<
+        (&mut Handle<ColorMaterial>, &Selected),
+        (Changed<Selected>, With<CharacterIndex>),
+    >,
+) {
+    for (mut material, selected) in query.iter_mut() {
+        if selected.is_selected() {
+            *material = materials.add(Color::CYAN.into())
+        } else {
+            *material = materials.add(Color::FUCHSIA.into())
+        }
     }
 }

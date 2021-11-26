@@ -5,6 +5,7 @@ use bevy::{prelude::*, sprite::collide_aabb::collide};
 use crate::{
     input_mapping::{FocalHold, MotionKey, SelectClick},
     physics::Velocity,
+    ui::Selected,
 };
 
 pub struct PlayerPlugin;
@@ -18,13 +19,14 @@ impl Plugin for PlayerPlugin {
             .with_system(player_movement.system());
         app.add_startup_system(spawn_player.system())
             .add_startup_system(spawn_char_1.system())
-            .add_system_set(system_set);
+            .add_system_set(system_set)
+            .add_system(player_char_select.system());
     }
 }
 
 pub struct Player;
 
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CharacterIndex(usize);
 
 pub struct CharacterSpeedMultiplier(f32);
@@ -62,20 +64,24 @@ pub struct CharacterHealth {
     total: u32,
 }
 
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct CharacterTarget {
-    target: Option<usize>,
+    target: Option<CharacterIndex>,
 }
 
 impl CharacterTarget {
-    pub fn set_target(&mut self, character: CharacterIndex) -> &mut Self {
-        self.target = Some(character.0);
+    pub fn set_index(&mut self, character: CharacterIndex) -> &mut Self {
+        self.target = Some(character);
         self
     }
 
     pub fn deselect(&mut self) -> &mut Self {
         self.target = None;
         self
+    }
+
+    pub fn index(&self) -> Option<CharacterIndex> {
+        self.target
     }
 }
 
@@ -93,7 +99,8 @@ pub struct CharacterBundle {
     sprite: SpriteBundle,
     speed_modifier: CharacterSpeedMultiplier,
     health: CharacterHealth,
-    selection: CharacterTarget,
+    target: CharacterTarget,
+    selected: Selected,
 }
 
 pub fn spawn_player(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
@@ -110,7 +117,8 @@ pub fn spawn_player(mut commands: Commands, mut materials: ResMut<Assets<ColorMa
             current: 75,
             total: 100,
         },
-        selection: CharacterTarget::default(),
+        target: CharacterTarget::default(),
+        selected: Selected::default(),
     };
     commands.spawn_bundle(character).insert(Player);
 }
@@ -129,7 +137,8 @@ pub fn spawn_char_1(mut commands: Commands, mut materials: ResMut<Assets<ColorMa
             current: 75,
             total: 100,
         },
-        selection: CharacterTarget::default(),
+        target: CharacterTarget::default(),
+        selected: Selected::default(),
     };
     commands.spawn_bundle(character);
 }
@@ -137,42 +146,67 @@ pub fn spawn_char_1(mut commands: Commands, mut materials: ResMut<Assets<ColorMa
 pub fn player_char_select(
     mut select_clicks: EventReader<SelectClick>,
     mut char_query: QuerySet<(
-        Query<(&Player, &mut CharacterTarget)>,
-        Query<(&CharacterIndex, &Transform, &Sprite)>,
+        Query<(&CharacterIndex, &mut Selected)>,
+        Query<(&CharacterIndex, &Transform, &Sprite, &mut Selected)>,
+        Query<(&Player, &mut CharacterTarget), Changed<CharacterTarget>>,
     )>,
 ) {
     const SELECT_SIZE: (f32, f32) = (30., 30.);
 
-    if let Some(select_click) = select_clicks.iter().last() {
-        let selected_index = char_query
-            .q1()
-            .iter()
-            .find(|(_, char_transform, char_sprite)| {
-                collide(
-                    select_click.mouse_position.extend(0.),
-                    SELECT_SIZE.into(),
-                    char_transform.translation,
-                    char_sprite.size,
-                )
-                .is_some()
-            })
-            .map(|(index, _, _)| index);
+    // Get selected click
+    let select_click = if let Some(some) = select_clicks.iter().last() {
+        some
+    } else {
+        return;
+    };
 
-        if let Some(selected_index) = selected_index.cloned() {
-            let (_, mut character_target) = char_query
-                .q0_mut()
-                .single_mut()
-                .expect("failed to find player");
-            character_target.set_target(selected_index);
-        }
+    // Find selected index
+    let selected_index_opt = char_query
+        .q1_mut()
+        .iter_mut()
+        .find(|(_, char_transform, char_sprite, _)| {
+            collide(
+                select_click.mouse_position.extend(0.),
+                SELECT_SIZE.into(),
+                char_transform.translation,
+                char_sprite.size,
+            )
+            .is_some()
+        })
+        .map(|(index, _, _, selected)| (index, selected));
+
+    let selected_index_copy = selected_index_opt
+        .map(|(index, mut selected)| {
+            // Set selection
+            *selected = Selected::Selected;
+
+            *index
+        })
+        .map(|index| {
+            // Set character selection
+            if let Ok((_, mut character_target)) = char_query.q2_mut().single_mut() {
+                trace!(message = "selected character", ?index);
+
+                character_target.set_index(index);
+            };
+            index
+        });
+
+    // Deselect everything else
+    for (_, mut selected) in char_query
+        .q0_mut()
+        .iter_mut()
+        .filter(|(index, _)| Some(**index) != selected_index_copy)
+    {
+        *selected = Selected::Unselected;
     }
 }
 
 pub fn player_focal_rotate(
-    mut char_query: Query<(&mut Transform, With<Player>)>,
+    mut char_query: Query<&mut Transform, With<Player>>,
     mut events: EventReader<FocalHold>,
 ) {
-    let (mut transform, _) = char_query.single_mut().expect("player not found");
+    let mut transform = char_query.single_mut().expect("player not found");
 
     const MINIMUM_FOCAL_LENGTH: f32 = 200.;
 
@@ -233,7 +267,6 @@ pub fn player_movement(
     }
 
     direction = (transform.rotation * (direction.extend(0.))).truncate();
-
 
     // Assign velocity
     **velocity = direction * speed_multiplier.speed();
