@@ -1,9 +1,9 @@
 mod control;
+mod health;
 mod index;
+mod player;
 mod speed_multiplier;
 mod target;
-mod health;
-mod player;
 
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 
@@ -14,28 +14,28 @@ use crate::{
 };
 
 pub use control::*;
+pub use health::*;
 pub use index::*;
+pub use player::*;
 pub use speed_multiplier::*;
 pub use target::*;
-pub use health::*;
-pub use player::*;
 
-pub struct CharacterPlugin;
+pub struct CharacterPlugins;
 
-impl Plugin for CharacterPlugin {
-    fn build(&self, app: &mut AppBuilder) {
-        let system_set = SystemSet::new()
-            .label("character-motion")
-            .before("collisions")
-            .with_system(player_focal_rotate.system())
-            .with_system(player_movement.system());
-        app.add_startup_system(spawn_player.system())
-            .add_startup_system(spawn_char_1.system())
-            .add_system_set(system_set)
-            .add_system(player_char_select.system());
+impl PluginGroup for CharacterPlugins {
+    fn build(&mut self, group: &mut bevy::app::PluginGroupBuilder) {
+        group.add(PlayerPlugin).add(SpawnPlugin);
     }
 }
 
+pub struct SpawnPlugin;
+
+impl Plugin for SpawnPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        app.add_startup_system(spawn_player.system())
+            .add_startup_system(spawn_char_1.system());
+    }
+}
 
 #[derive(Bundle)]
 pub struct CharacterBundle {
@@ -47,6 +47,7 @@ pub struct CharacterBundle {
     health: CharacterHealth,
     target: CharacterTarget,
     selected: Selected,
+    // last_cast:
 }
 
 pub fn spawn_char_1(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {

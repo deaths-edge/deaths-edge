@@ -3,12 +3,14 @@ mod camera;
 mod character;
 mod debug;
 mod environment;
+mod game_event;
 mod input_mapping;
 mod physics;
+mod spell;
 mod state;
 mod ui;
-mod game_event;
-mod spell;
+
+use std::time::Duration;
 
 use bevy::{log::LogPlugin, prelude::*};
 
@@ -24,13 +26,20 @@ fn main() {
         ..Default::default()
     };
 
-    let debug_plugin = debug::DebugTerminalPlugin::new("deaths_edge=trace");
+    const FPS_COLLECTION_INTERVAL: Duration = Duration::from_secs(1);
+    const RENDER_UPDATE_INTERVAL: Duration = Duration::from_secs(1);
+    const ENV_FILTER: &str = "deaths_edge=trace";
+    let debug_plugin = debug::DebugTerminalPlugin::new(
+        ENV_FILTER,
+        FPS_COLLECTION_INTERVAL,
+        RENDER_UPDATE_INTERVAL,
+    );
 
     App::build()
         .insert_resource(window_description)
         .add_plugins_with(DefaultPlugins, |plugins| plugins.disable::<LogPlugin>())
         .add_plugin(debug_plugin)
-        .add_plugin(CharacterPlugin)
+        .add_plugins(CharacterPlugins)
         .add_plugin(input_mapping::InputMapPlugin)
         .add_plugin(physics::PhysicsPlugin)
         .add_plugin(ui::UIPlugin)

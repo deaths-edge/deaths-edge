@@ -14,7 +14,7 @@ impl Plugin for InputMapPlugin {
             .with_system(input_map.system());
         app.init_resource::<Bindings>()
             .init_resource::<Input<MotionKey>>()
-            .init_resource::<Input<ActionKey>>()
+            .add_event::<ActionKey>()
             .add_event::<FocalHold>()
             .add_event::<SelectClick>()
             .add_system_set(system_set);
@@ -22,7 +22,7 @@ impl Plugin for InputMapPlugin {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum MotionKey {
     Left,
     Forward,
@@ -30,7 +30,7 @@ pub enum MotionKey {
     Backward,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ActionKey {
     Action1,
     Action2,
@@ -174,6 +174,7 @@ impl Default for MouseRightElementState {
     }
 }
 
+/// Takes raw inputs and maps them to in game events with the use of [`Bindings`].
 fn input_map(
     // Bindings
     bindings: Res<Bindings>,
@@ -186,14 +187,13 @@ fn input_map(
     mouse_position: Res<WorldMousePosition>,
     mut mouse_right_state: Local<MouseRightElementState>,
 
-    // Event writers
+    // Outputs
     mut motion_input: ResMut<Input<MotionKey>>,
-    mut action_input: ResMut<Input<ActionKey>>,
-    mut focal_holds: EventWriter<FocalHold>,
+    mut actions: EventWriter<ActionKey>,
     mut select_clicks: EventWriter<SelectClick>,
+    mut focal_holds: EventWriter<FocalHold>,
 ) {
     motion_input.update();
-    action_input.update();
 
     let pressed_iter = keyboard_input
         .get_just_pressed()
@@ -202,7 +202,7 @@ fn input_map(
     for input in pressed_iter {
         match input {
             BoundInput::Motion(motion_key) => motion_input.press(motion_key),
-            BoundInput::Action(action_key) => action_input.press(action_key),
+            _ => (),
         }
     }
 
@@ -213,7 +213,7 @@ fn input_map(
     for input in released_iter {
         match input {
             BoundInput::Motion(motion_key) => motion_input.release(motion_key),
-            BoundInput::Action(action_key) => action_input.release(action_key),
+            BoundInput::Action(action_key) => actions.send(action_key),
         }
     }
 

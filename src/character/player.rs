@@ -1,7 +1,25 @@
-use bevy::{prelude::*};
+use bevy::prelude::*;
 
-use crate::physics::Velocity;
 use super::*;
+use crate::{input_mapping::ActionKey, physics::Velocity};
+
+pub struct PlayerPlugin;
+
+impl Plugin for PlayerPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        let character_motion = SystemSet::new()
+            .label("character-motion")
+            .before("collisions")
+            .with_system(player_focal_rotate.system())
+            .with_system(player_movement.system());
+        let character_actions = SystemSet::new()
+            .label("character-actions")
+            .with_system(player_action.system())
+            .with_system(player_char_select.system());
+        app.add_system_set(character_motion)
+            .add_system_set(character_actions);
+    }
+}
 
 pub struct Player;
 
@@ -25,7 +43,7 @@ pub fn spawn_player(mut commands: Commands, mut materials: ResMut<Assets<ColorMa
     commands.spawn_bundle(character).insert(Player);
 }
 
-/// Receives a [`SelectClick`] and selects a character.
+/// Receives a [`SelectClick`] event and selects a character.
 pub fn player_char_select(
     mut select_clicks: EventReader<SelectClick>,
     mut char_query: QuerySet<(
@@ -155,4 +173,10 @@ pub fn player_movement(
 
     // Assign velocity
     **velocity = direction * speed_multiplier.speed();
+}
+
+pub fn player_action(mut events: EventReader<ActionKey>) {
+    for action in events.iter() {
+        error!(?action);
+    }
 }

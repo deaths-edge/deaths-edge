@@ -11,7 +11,7 @@ use std::{
 };
 
 use ansi_to_tui::ansi_to_text;
-use bevy::{prelude::*, utils::Instant};
+use bevy::{core::FixedTimestep, prelude::*, utils::Instant};
 use crossterm::{
     event::EnableMouseCapture,
     execute,
@@ -30,12 +30,20 @@ use logs::SharedLogs;
 
 pub struct DebugTerminalPlugin {
     env_filter: Cow<'static, str>,
+    fps_interval: f64,
+    render_interval: f64,
 }
 
 impl DebugTerminalPlugin {
-    pub fn new<S: Into<Cow<'static, str>>>(env_filter: S) -> Self {
+    pub fn new<S: Into<Cow<'static, str>>>(
+        env_filter: S,
+        fps_interval: Duration,
+        render_interval: Duration,
+    ) -> Self {
         Self {
             env_filter: env_filter.into(),
+            fps_interval: fps_interval.as_secs_f64(),
+            render_interval: render_interval.as_secs_f64(),
         }
     }
 }
@@ -57,11 +65,19 @@ impl Plugin for DebugTerminalPlugin {
         let backend = CrosstermBackend::new(stdout);
         let terminal = Terminal::new(backend).expect("failed to initialize terminal");
 
+        let fps_system = SystemSet::new()
+            .with_run_criteria(FixedTimestep::step(self.fps_interval))
+            .with_system(record_fps.system());
+
+        let render_system = SystemSet::new()
+            .with_run_criteria(FixedTimestep::step(self.render_interval))
+            .with_system(terminal_render.system());
+
         app.init_resource::<FrameCounter>()
             .insert_resource(shared_logs)
             .insert_resource(DebugTerminal::new(terminal))
-            .add_system(record_fps.system())
-            .add_system(terminal_render.system());
+            .add_system_set(render_system)
+            .add_system_set(fps_system);
     }
 }
 
@@ -70,8 +86,6 @@ pub struct DebugTerminal {
 }
 
 impl DebugTerminal {
-    const UPDATE_INTERVAL: Duration = Duration::from_secs(1);
-
     fn render<'a, I, S>(&mut self, fps_data: &[(&str, u64)], logs: I)
     where
         S: Into<tui::text::Text<'a>> + 'a,
@@ -121,26 +135,16 @@ impl Default for LastRender {
 }
 
 pub fn terminal_render(
-    time: Res<Time>,
-    mut last_render: Local<LastRender>,
     mut terminal: ResMut<DebugTerminal>,
     frames: Res<FrameCounter>,
     logs: ResMut<SharedLogs>,
 ) {
-    let delta = time
-        .last_update()
-        .and_then(|now| now.checked_duration_since(last_render.0));
-    if let Some(delta) = delta {
-        if delta > DebugTerminal::UPDATE_INTERVAL {
-            let logs = logs.0.lock().expect("poisoned");
-            let recent_logs = logs
-                .iter()
-                .rev()
-                .take(10)
-                .map(|x| ansi_to_text(x.as_bytes().to_vec()))
-                .flatten();
-            terminal.render(frames.history(), recent_logs);
-            *last_render = LastRender(Instant::now());
-        }
-    }
+    let logs = logs.lock().expect("poisoned");
+    let recent_logs = logs
+        .iter()
+        .rev()
+        .take(10)
+        .map(|x| ansi_to_text(x.as_bytes().to_vec()))
+        .flatten();
+    terminal.render(frames.history(), recent_logs);
 }

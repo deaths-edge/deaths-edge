@@ -10,7 +10,7 @@ use crate::{character::CharacterIndex, spell::SpellIndex};
 // pub enum GameEvent {
 //     CastBegin {
 //         character: CharacterIndex,
-//         spell_type: 
+//         spell_type:
 //     },
 //     CastComplete {
 //         character: CharacterIndex

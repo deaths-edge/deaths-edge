@@ -31,7 +31,15 @@ impl Deref for Logs {
 }
 
 #[derive(Clone)]
-pub struct SharedLogs(pub Arc<Mutex<Logs>>);
+pub struct SharedLogs(Arc<Mutex<Logs>>);
+
+impl Deref for SharedLogs {
+    type Target = Mutex<Logs>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 impl SharedLogs {
     pub fn with_capacity(capacity: usize) -> Self {
