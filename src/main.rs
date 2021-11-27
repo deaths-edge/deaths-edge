@@ -7,6 +7,8 @@ mod input_mapping;
 mod physics;
 mod state;
 mod ui;
+mod game_event;
+mod spell;
 
 use bevy::{log::LogPlugin, prelude::*};
 
@@ -28,7 +30,7 @@ fn main() {
         .insert_resource(window_description)
         .add_plugins_with(DefaultPlugins, |plugins| plugins.disable::<LogPlugin>())
         .add_plugin(debug_plugin)
-        .add_plugin(PlayerPlugin)
+        .add_plugin(CharacterPlugin)
         .add_plugin(input_mapping::InputMapPlugin)
         .add_plugin(physics::PhysicsPlugin)
         .add_plugin(ui::UIPlugin)
