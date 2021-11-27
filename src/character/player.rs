@@ -61,7 +61,7 @@ pub fn player_char_select(
         return;
     };
 
-    // Find selected index
+    // Find and set selection
     let selected_index_opt = char_query
         .q1_mut()
         .iter_mut()
@@ -74,30 +74,28 @@ pub fn player_char_select(
             )
             .is_some()
         })
-        .map(|(index, _, _, selected)| (index, selected));
-
-    let selected_index_copy = selected_index_opt
+        .map(|(index, _, _, selected)| (index, selected))
         .map(|(index, mut selected)| {
             // Set selection
             *selected = Selected::Selected;
 
             *index
-        })
-        .map(|index| {
-            // Set character selection
-            if let Ok((_, mut character_target)) = char_query.q2_mut().single_mut() {
-                trace!(message = "selected character", ?index);
-
-                character_target.set_index(index);
-            };
-            index
         });
+
+    // Set character selection
+    if let Ok((_, mut character_target)) = char_query.q2_mut().single_mut() {
+        if let Some(index) = selected_index_opt {
+            character_target.set_index(index);
+        } else {
+            character_target.deselect();
+        }
+    };
 
     // Deselect everything else
     for (_, mut selected) in char_query
         .q0_mut()
         .iter_mut()
-        .filter(|(index, _)| Some(**index) != selected_index_copy)
+        .filter(|(index, _)| Some(**index) != selected_index_opt)
     {
         *selected = Selected::Unselected;
     }

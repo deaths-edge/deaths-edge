@@ -27,7 +27,7 @@ fn main() {
     };
 
     const FPS_COLLECTION_INTERVAL: Duration = Duration::from_secs(1);
-    const RENDER_UPDATE_INTERVAL: Duration = Duration::from_secs(1);
+    const RENDER_UPDATE_INTERVAL: Duration = Duration::from_millis(1_000);
     const ENV_FILTER: &str = "deaths_edge=trace";
     let debug_plugin = debug::DebugTerminalPlugin::new(
         ENV_FILTER,
