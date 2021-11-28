@@ -1,8 +1,26 @@
-use bevy::prelude::*;
+use std::time::Duration;
+
+pub struct SpellMarker;
 
 pub struct SpellIndex(usize);
 
-#[derive(Bundle)]
-pub struct SpellBundle {
-    index: SpellIndex,
+impl From<usize> for SpellIndex {
+    fn from(value: usize) -> Self {
+        Self(value)
+    }
+}
+
+#[derive(Debug)]
+pub enum Spell {
+    Fireball,
+}
+
+impl Spell {
+    pub fn duration(&self) -> Duration {
+        use Spell::*;
+
+        match self {
+            Fireball => Duration::from_secs(2),
+        }
+    }
 }

@@ -126,14 +126,6 @@ impl DebugTerminal {
     }
 }
 
-pub struct LastRender(Instant);
-
-impl Default for LastRender {
-    fn default() -> Self {
-        Self(Instant::now())
-    }
-}
-
 pub fn terminal_render(
     mut terminal: ResMut<DebugTerminal>,
     frames: Res<FrameCounter>,

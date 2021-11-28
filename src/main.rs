@@ -1,5 +1,4 @@
 mod buffs;
-mod camera;
 mod character;
 mod debug;
 mod environment;
@@ -14,9 +13,9 @@ use std::time::Duration;
 
 use bevy::{log::LogPlugin, prelude::*};
 
-use camera::setup_camera;
 use character::*;
 use environment::spawn_environment;
+use ui::setup_camera;
 
 fn main() {
     let window_description = WindowDescriptor {

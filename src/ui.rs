@@ -1,9 +1,18 @@
 use bevy::{app::Events, prelude::*, window::Windows};
 
-use crate::{
-    camera::PlayerCamera,
-    character::{CharacterIndex, CharacterTarget, Player},
-};
+use crate::character::{CharacterIndex, CharacterTarget, PlayerMarker};
+
+use bevy::prelude::*;
+
+pub struct PlayerCamera;
+
+pub fn setup_camera(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands
+        .spawn()
+        .insert_bundle(UiCameraBundle::default())
+        .insert(PlayerCamera);
+}
 
 pub struct UIPlugin;
 
@@ -13,6 +22,12 @@ impl Plugin for UIPlugin {
             .add_system(select_highlight.system())
             .add_system(world_mouse.system());
     }
+}
+
+#[derive(Bundle)]
+pub struct HealthBarBundle {
+    #[bundle]
+    bar: NodeBundle,
 }
 
 #[derive(Debug, Default)]
@@ -84,9 +99,9 @@ pub fn select_highlight(
 ) {
     for (mut material, selected) in query.iter_mut() {
         if selected.is_selected() {
-            *material = materials.add(Color::CYAN.into())
+            *material = materials.add(Color::OLIVE.into())
         } else {
-            *material = materials.add(Color::FUCHSIA.into())
+            *material = materials.add(Color::MAROON.into())
         }
     }
 }

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use super::*;
-use crate::{input_mapping::ActionKey, physics::Velocity};
+use crate::{input_mapping::ActionKey, physics::Velocity, spell::Spell};
 
 pub struct PlayerPlugin;
 
@@ -21,26 +21,31 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-pub struct Player;
+pub struct PlayerMarker;
 
-pub fn spawn_player(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
-    let character = CharacterBundle {
-        index: CharacterIndex::from(0),
-        velocity: Velocity::from(Vec2::ZERO),
-        sprite: SpriteBundle {
-            material: materials.add(Color::rgb(1.0, 0.5, 0.5).into()),
-            sprite: Sprite::new(Vec2::new(30.0, 30.0)),
-            ..Default::default()
-        },
-        speed_modifier: CharacterSpeedMultiplier::from(1.),
-        health: CharacterHealth {
-            current: 75,
-            total: 100,
-        },
-        target: CharacterTarget::default(),
-        selected: Selected::default(),
+#[derive(Bundle)]
+pub struct PlayerBundle {
+    marker: PlayerMarker,
+    #[bundle]
+    character_bundle: CharacterBundle,
+}
+
+pub fn spawn_player(
+    time: Res<Time>,
+    mut commands: Commands,
+    materials: ResMut<Assets<ColorMaterial>>,
+) {
+    let character_bundle = CharacterBundle::new(
+        CharacterIndex::from(1),
+        CharacterClass::Medea,
+        &time,
+        materials,
+    );
+    let player_bundle = PlayerBundle {
+        marker: PlayerMarker,
+        character_bundle,
     };
-    commands.spawn_bundle(character).insert(Player);
+    commands.spawn_bundle(player_bundle);
 }
 
 /// Receives a [`SelectClick`] event and selects a character.
@@ -49,7 +54,7 @@ pub fn player_char_select(
     mut char_query: QuerySet<(
         Query<(&CharacterIndex, &mut Selected)>,
         Query<(&CharacterIndex, &Transform, &Sprite, &mut Selected)>,
-        Query<(&Player, &mut CharacterTarget), Changed<CharacterTarget>>,
+        Query<&mut CharacterTarget, With<PlayerMarker>>,
     )>,
 ) {
     const SELECT_SIZE: (f32, f32) = (30., 30.);
@@ -83,8 +88,9 @@ pub fn player_char_select(
         });
 
     // Set character selection
-    if let Ok((_, mut character_target)) = char_query.q2_mut().single_mut() {
+    if let Ok(mut character_target) = char_query.q2_mut().single_mut() {
         if let Some(index) = selected_index_opt {
+            tracing::info!(message = "selected character", ?index);
             character_target.set_index(index);
         } else {
             character_target.deselect();
@@ -103,7 +109,7 @@ pub fn player_char_select(
 
 /// Receives [`FocalHold`] event and rotates character in that direction.
 pub fn player_focal_rotate(
-    mut char_query: Query<&mut Transform, With<Player>>,
+    mut char_query: Query<&mut Transform, With<PlayerMarker>>,
     mut events: EventReader<FocalHold>,
 ) {
     let mut transform = char_query.single_mut().expect("player not found");
@@ -129,14 +135,12 @@ pub fn player_movement(
     motion_input: Res<Input<MotionKey>>,
 
     // CharacterIndex query
-    mut char_query: Query<(
-        &CharacterSpeedMultiplier,
-        &mut Transform,
-        &mut Velocity,
-        With<Player>,
-    )>,
+    mut char_query: Query<
+        (&CharacterSpeedMultiplier, &mut Transform, &mut Velocity),
+        With<PlayerMarker>,
+    >,
 ) {
-    let (speed_multiplier, transform, mut velocity, _) =
+    let (speed_multiplier, transform, mut velocity) =
         char_query.single_mut().expect("player not found");
 
     const FORWARD_SPEED: f32 = 1.0;
@@ -173,8 +177,58 @@ pub fn player_movement(
     **velocity = direction * speed_multiplier.speed();
 }
 
-pub fn player_action(mut events: EventReader<ActionKey>) {
-    for action in events.iter() {
-        error!(?action);
+/// Receives an [`ActionKey`] and performs the associated action.
+pub fn player_action(
+    time: Res<Time>,
+
+    // ActionKey events
+    mut events: EventReader<ActionKey>,
+
+    // CharacterIndex query
+    mut char_query: Query<
+        (
+            &CharacterClass,
+            &LastCastInstant,
+            &mut CharacterCastState,
+            &CharacterTarget,
+        ),
+        With<PlayerMarker>,
+    >,
+
+    // Commands
+    mut commands: Commands,
+) {
+    let (class, last_cast_instant, mut cast_state, target) =
+        char_query.single_mut().expect("player not found");
+
+    // Check whether global cooldown has expired
+    let global_cooldown_expired =
+        last_cast_instant.elapsed(&time).unwrap_or_default() > GLOBAL_COOLDOWN;
+
+    for action_key in events.iter() {
+        match class {
+            CharacterClass::Mars => {}
+            CharacterClass::Medea => match action_key {
+                ActionKey::Action1 => {
+                    // Check global cooldown
+                    if global_cooldown_expired {
+                        let start = time.last_update().expect("last update not found");
+                        let spell = Spell::Fireball;
+                        tracing::info!(message = "casting", ?spell, ?start);
+                        cast_state.set_cast(CharacterCast::new(start, *target, spell));
+                    }
+                }
+                ActionKey::Action2 => todo!(),
+                ActionKey::Action3 => todo!(),
+                ActionKey::Action4 => todo!(),
+                ActionKey::Action5 => todo!(),
+                ActionKey::Action6 => todo!(),
+                ActionKey::Action7 => todo!(),
+                ActionKey::Action8 => todo!(),
+            },
+            CharacterClass::Heka => {}
+            CharacterClass::Pluto => {}
+            CharacterClass::Mammon => {}
+        }
     }
 }
