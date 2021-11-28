@@ -5,7 +5,11 @@ use bevy::{
     sprite::collide_aabb::{collide, Collision},
 };
 
-use crate::{character::CharacterIndex, environment::Environment};
+use crate::{
+    character::CharacterIndex,
+    environment::Environment,
+    spell::{SpellMarker, SpellTarget, SpellTracking},
+};
 
 pub struct Velocity(Vec2);
 
@@ -41,7 +45,9 @@ impl Plugin for PhysicsPlugin {
             .label("kinetics")
             .after("collisions")
             .with_system(kinetics.system());
-        app.add_system_set(collisions).add_system_set(kinetics);
+        app.add_system(spell_tracking.system())
+            .add_system_set(collisions)
+            .add_system_set(kinetics);
     }
 }
 
@@ -90,5 +96,27 @@ pub fn collisions(
 pub fn kinetics(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity)>) {
     for (mut transform, velocity) in query.iter_mut() {
         transform.translation += velocity.0.extend(0.) * time.delta_seconds();
+    }
+}
+
+pub fn spell_tracking(
+    mut spell_query: Query<
+        (&mut Transform, &mut Velocity, &SpellTarget),
+        (With<SpellTracking>, With<SpellMarker>),
+    >,
+    char_query: Query<(&Transform, &CharacterIndex), Without<SpellMarker>>,
+) {
+    for (mut spell_transform, mut spell_velocity, spell_target) in spell_query.iter_mut() {
+        let char_target = char_query.iter().find(|(_, index)| spell_target == *index);
+        if let Some((char_transform, _)) = char_target {
+            let diff = (char_transform.translation - spell_transform.translation).truncate();
+            let angle = Vec2::new(1., 0.).angle_between(diff);
+            spell_transform.rotation = Quat::from_rotation_z(angle);
+
+            **spell_velocity = spell_transform
+                .rotation
+                .mul_vec3(Vec3::new(spell_velocity.length(), 0., 0.))
+                .truncate();
+        }
     }
 }

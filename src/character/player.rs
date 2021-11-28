@@ -36,7 +36,7 @@ pub fn spawn_player(
     materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let character_bundle = CharacterBundle::new(
-        CharacterIndex::from(1),
+        CharacterIndex::from(0),
         CharacterClass::Medea,
         &time,
         materials,

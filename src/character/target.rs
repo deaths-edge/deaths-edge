@@ -2,7 +2,8 @@ use super::CharacterIndex;
 
 #[derive(Default, Debug, Clone, Copy)]
 pub struct CharacterTarget {
-    target: Option<CharacterIndex>,
+    // TODO: Remove pub
+    pub target: Option<CharacterIndex>,
 }
 
 impl From<CharacterIndex> for CharacterTarget {

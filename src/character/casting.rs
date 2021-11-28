@@ -23,9 +23,8 @@ impl CharacterCastState {
         self
     }
 
-    pub fn stop_cast(&mut self) -> &mut Self {
-        self.cast = None;
-        self
+    pub fn stop_cast(&mut self) -> Option<CharacterCast> {
+        self.cast.take()
     }
 
     pub fn cast(&self) -> Option<&CharacterCast> {
@@ -54,15 +53,36 @@ impl CharacterCast {
     }
 }
 
-fn complete_casting(time: Res<Time>, mut query: Query<&mut CharacterCastState>) {
+fn complete_casting(
+    mut query: Query<(
+        Entity,
+        &Transform,
+        &mut CharacterCastState,
+        &CharacterTarget,
+    )>,
+    mut commands: Commands,
+
+    time: Res<Time>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
     let last_update = time.last_update().expect("last update not found");
-    for mut cast_state in query.iter_mut().filter(|cast_state| {
-        cast_state
-            .cast()
-            .map(|cast| cast.is_complete(last_update))
-            .unwrap_or_default()
-    }) {
+    for (character_entity, transform, mut cast_state, target) in
+        query.iter_mut().filter(|(_, _, cast_state, _)| {
+            cast_state
+                .cast()
+                .map(|cast| cast.is_complete(last_update))
+                .unwrap_or_default()
+        })
+    {
         tracing::info!(message = "completed cast", ?cast_state);
-        cast_state.stop_cast();
+        let cast = cast_state.stop_cast().expect("checked valid");
+
+        cast.spell.spawn_bundle(
+            character_entity,
+            transform,
+            target,
+            &mut commands,
+            &mut materials,
+        )
     }
 }
