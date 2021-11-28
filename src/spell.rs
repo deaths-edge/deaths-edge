@@ -11,7 +11,7 @@ pub struct SpellMarker;
 
 pub struct SpellTracking;
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct SpellTarget(CharacterIndex);
 
 impl From<CharacterIndex> for SpellTarget {
@@ -36,7 +36,7 @@ impl From<usize> for SpellIndex {
 
 #[derive(Debug)]
 pub enum Spell {
-    Fireball,
+    Fireball { target: SpellTarget },
 }
 
 #[derive(Bundle)]
@@ -54,7 +54,7 @@ impl Spell {
         use Spell::*;
 
         match self {
-            Fireball => Duration::from_secs(2),
+            Fireball { .. } => Duration::from_secs(2),
         }
     }
 
@@ -62,14 +62,13 @@ impl Spell {
         &self,
         parent: Entity,
         transform: &Transform,
-        target: &CharacterTarget,
         commands: &mut Commands,
         materials: &mut Assets<ColorMaterial>,
     ) {
         use Spell::*;
 
         match self {
-            Fireball => {
+            Fireball { target } => {
                 const FIREBALL_SPEED: f32 = 300.;
 
                 let entity_commands = commands.spawn_bundle(FireballBundle {
@@ -80,7 +79,7 @@ impl Spell {
                         transform: *transform,
                         ..Default::default()
                     },
-                    target: SpellTarget::from(target.target.expect("fucked")),
+                    target: *target,
                     tracking: SpellTracking,
                     velocity: Velocity::from(Vec2::new(FIREBALL_SPEED, 0.)),
                 });

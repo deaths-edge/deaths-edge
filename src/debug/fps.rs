@@ -4,7 +4,7 @@ use bevy::{prelude::*, utils::Instant};
 
 pub struct FrameCounter {
     pub frames: u64,
-    pub last_flush: Instant,
+    pub last_flush: Option<Instant>,
     pub history: VecDeque<(&'static str, u64)>,
 }
 
@@ -12,7 +12,7 @@ impl Default for FrameCounter {
     fn default() -> Self {
         Self {
             frames: 0,
-            last_flush: Instant::now(),
+            last_flush: None,
             history: std::iter::repeat(("", 0)).take(Self::LENGTH).collect(),
         }
     }
@@ -31,7 +31,10 @@ impl FrameCounter {
     pub fn update(&mut self, time: Instant) {
         self.frames += 1;
 
-        let delta = time.checked_duration_since(self.last_flush);
+        let delta = self
+            .last_flush
+            .and_then(|last_time| time.checked_duration_since(last_time));
+
         if let Some(delta) = delta {
             if delta > Self::FLUSH_INTERVAL {
                 if self.history.len() < Self::LENGTH {
@@ -44,7 +47,7 @@ impl FrameCounter {
                 self.history.push_back(("", fps as u64));
 
                 self.frames = 0;
-                self.last_flush = time;
+                self.last_flush = Some(time);
             }
         }
 

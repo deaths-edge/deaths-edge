@@ -1,7 +1,11 @@
 use bevy::prelude::*;
 
 use super::*;
-use crate::{input_mapping::ActionKey, physics::Velocity, spell::Spell};
+use crate::{
+    input_mapping::ActionKey,
+    physics::Velocity,
+    spell::{Spell, SpellTarget},
+};
 
 pub struct PlayerPlugin;
 
@@ -213,9 +217,15 @@ pub fn player_action(
                     // Check global cooldown
                     if global_cooldown_expired {
                         let start = time.last_update().expect("last update not found");
-                        let spell = Spell::Fireball;
-                        tracing::info!(message = "casting", ?spell, ?start);
-                        cast_state.set_cast(CharacterCast::new(start, *target, spell));
+                        if let Some(target) = target.index() {
+                            let spell = Spell::Fireball {
+                                target: SpellTarget::from(target),
+                            };
+                            tracing::info!(message = "casting", ?spell, ?start);
+                            cast_state.set_cast(CharacterCast::new(start, spell));
+                        } else {
+                            tracing::warn!("no target");
+                        }
                     }
                 }
                 ActionKey::Action2 => todo!(),

@@ -35,17 +35,12 @@ impl CharacterCastState {
 #[derive(Debug)]
 pub struct CharacterCast {
     pub start: Instant,
-    pub target: CharacterTarget,
     pub spell: Spell,
 }
 
 impl CharacterCast {
-    pub fn new(start: Instant, target: CharacterTarget, spell: Spell) -> Self {
-        Self {
-            start,
-            target,
-            spell,
-        }
+    pub fn new(start: Instant, spell: Spell) -> Self {
+        Self { start, spell }
     }
 
     pub fn is_complete(&self, now: Instant) -> bool {
@@ -77,12 +72,7 @@ fn complete_casting(
         tracing::info!(message = "completed cast", ?cast_state);
         let cast = cast_state.stop_cast().expect("checked valid");
 
-        cast.spell.spawn_bundle(
-            character_entity,
-            transform,
-            target,
-            &mut commands,
-            &mut materials,
-        )
+        cast.spell
+            .spawn_bundle(character_entity, transform, &mut commands, &mut materials)
     }
 }
