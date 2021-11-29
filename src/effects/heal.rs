@@ -21,7 +21,7 @@ pub fn health_effect_apply(
             .find(|(index, _)| effect_target == *index)
         {
             tracing::info!(message = "applied healing", amount = %effect_damage.amount);
-            character_health.apply_damage(effect_damage.amount);
+            character_health.apply_heal(effect_damage.amount);
         }
     }
 }

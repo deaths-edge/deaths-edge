@@ -1,6 +1,10 @@
+mod nameplate;
+mod selected;
+
 use bevy::{app::Events, prelude::*, window::Windows};
 
-use crate::character::CharacterIndex;
+pub use nameplate::*;
+pub use selected::*;
 
 pub struct PlayerCamera;
 
@@ -17,15 +21,55 @@ pub struct UIPlugin;
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<WorldMousePosition>()
+            .init_resource::<NameplateMaterials>()
             .add_system(select_highlight.system())
             .add_system(world_mouse.system());
     }
 }
 
-#[derive(Bundle)]
+#[derive(Debug)]
+pub struct HealthBarMarker;
+
+#[derive(Debug, Bundle)]
 pub struct HealthBarBundle {
+    marker: HealthBarMarker,
     #[bundle]
-    bar: NodeBundle,
+    node: NodeBundle,
+}
+
+impl HealthBarBundle {
+    pub fn new(nameplate_materials: &NameplateMaterials) -> Self {
+        Self {
+            marker: HealthBarMarker,
+            node: NodeBundle {
+                style: Style {
+                    size: Size::new(Val::Percent(100.), Val::Percent(50.)),
+                    ..Default::default()
+                },
+                material: nameplate_materials.primary_health_bar.clone(),
+                ..Default::default()
+            },
+        }
+    }
+}
+
+pub fn setup_nameplate(
+    player_entity: In<Entity>,
+
+    nameplate_materials: Res<NameplateMaterials>,
+
+    mut commands: Commands,
+) {
+    let nameplate_bundle = NameplateBundle::new(&nameplate_materials);
+    commands
+        .spawn_bundle(nameplate_bundle)
+        .with_children(|commands| {
+            let health_bar_bundle = HealthBarBundle::new(&nameplate_materials);
+            let power_bar_bundle = PowerBarBundle::new(&nameplate_materials);
+
+            commands.spawn_bundle(health_bar_bundle);
+            commands.spawn_bundle(power_bar_bundle);
+        });
 }
 
 #[derive(Debug, Default)]
@@ -67,39 +111,5 @@ pub fn world_mouse(
             window_to_local_position(&windows, camera_transform, mouse_position.position);
 
         *world_mouse_pos = WorldMousePosition { position };
-    }
-}
-
-#[derive(PartialEq, Clone, Copy)]
-pub enum Selected {
-    Selected,
-    Unselected,
-}
-
-impl Selected {
-    pub fn is_selected(&self) -> bool {
-        *self == Selected::Selected
-    }
-}
-
-impl Default for Selected {
-    fn default() -> Self {
-        Self::Unselected
-    }
-}
-
-pub fn select_highlight(
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    mut query: Query<
-        (&mut Handle<ColorMaterial>, &Selected),
-        (Changed<Selected>, With<CharacterIndex>),
-    >,
-) {
-    for (mut material, selected) in query.iter_mut() {
-        if selected.is_selected() {
-            *material = materials.add(Color::OLIVE.into())
-        } else {
-            *material = materials.add(Color::MAROON.into())
-        }
     }
 }

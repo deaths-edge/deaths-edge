@@ -6,6 +6,7 @@ mod environment;
 mod game_event;
 mod input_mapping;
 mod physics;
+mod spawning;
 mod spells;
 mod state;
 mod ui;
@@ -40,6 +41,7 @@ fn main() {
         .add_plugins_with(DefaultPlugins, |plugins| plugins.disable::<LogPlugin>())
         .add_plugin(debug_plugin)
         .add_plugins(CharacterPlugins)
+        .add_plugin(spawning::SpawnPlugin)
         .add_plugin(input_mapping::InputMapPlugin)
         .add_plugin(spells::SpellPlugin)
         .add_plugin(effects::EffectPlugin)

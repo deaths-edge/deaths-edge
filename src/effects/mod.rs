@@ -3,8 +3,6 @@ mod heal;
 mod interupt;
 mod target;
 
-use std::time::Duration;
-
 use bevy::prelude::*;
 
 pub use damage::*;

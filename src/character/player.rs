@@ -30,27 +30,23 @@ pub struct PlayerMarker;
 
 #[derive(Bundle)]
 pub struct PlayerBundle {
-    marker: PlayerMarker,
+    player_marker: PlayerMarker,
     #[bundle]
     character_bundle: CharacterBundle,
 }
 
-pub fn spawn_player(
-    time: Res<Time>,
-    mut commands: Commands,
-    materials: ResMut<Assets<ColorMaterial>>,
-) {
-    let character_bundle = CharacterBundle::new(
-        CharacterIndex::from(0),
-        CharacterClass::Medea,
-        &time,
-        materials,
-    );
-    let player_bundle = PlayerBundle {
-        marker: PlayerMarker,
-        character_bundle,
-    };
-    commands.spawn_bundle(player_bundle);
+impl PlayerBundle {
+    pub fn new(
+        index: CharacterIndex,
+        class: CharacterClass,
+        time: &Time,
+        materials: &CharacterMaterials,
+    ) -> Self {
+        Self {
+            player_marker: PlayerMarker,
+            character_bundle: CharacterBundle::new(index, class, time, materials),
+        }
+    }
 }
 
 /// Receives a [`SelectClick`] event and selects a character.

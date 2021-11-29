@@ -5,6 +5,7 @@ mod cooldowns;
 mod health;
 mod index;
 mod interupt;
+mod materials;
 mod player;
 mod power;
 mod speed_multiplier;
@@ -25,27 +26,11 @@ pub use cooldowns::*;
 pub use health::*;
 pub use index::*;
 pub use interupt::*;
+pub use materials::*;
 pub use player::*;
 pub use power::*;
 pub use speed_multiplier::*;
 pub use target::*;
-
-pub struct CharacterPlugins;
-
-impl PluginGroup for CharacterPlugins {
-    fn build(&mut self, group: &mut bevy::app::PluginGroupBuilder) {
-        group.add(PlayerPlugin).add(SpawnPlugin).add(CastingPlugin);
-    }
-}
-
-pub struct SpawnPlugin;
-
-impl Plugin for SpawnPlugin {
-    fn build(&self, app: &mut AppBuilder) {
-        app.add_startup_system(spawn_player.system())
-            .add_startup_system(spawn_char_1.system());
-    }
-}
 
 pub struct CharacterMarker;
 
@@ -78,8 +63,9 @@ impl CharacterBundle {
         index: CharacterIndex,
         class: CharacterClass,
         time: &Time,
-        mut materials: ResMut<Assets<ColorMaterial>>,
+        materials: &CharacterMaterials,
     ) -> Self {
+        let material = materials.handle(class).clone();
         Self {
             index,
             marker: CharacterMarker,
@@ -89,7 +75,7 @@ impl CharacterBundle {
             velocity: Velocity::from(Vec2::ZERO),
 
             sprite: SpriteBundle {
-                material: materials.add(Color::rgb(1.0, 0.5, 0.5).into()),
+                material,
                 sprite: Sprite::new(Vec2::new(30.0, 30.0)),
                 ..Default::default()
             },
@@ -113,16 +99,13 @@ impl CharacterBundle {
     }
 }
 
-pub fn spawn_char_1(
-    time: Res<Time>,
-    mut commands: Commands,
-    materials: ResMut<Assets<ColorMaterial>>,
-) {
-    let character_bundle = CharacterBundle::new(
-        CharacterIndex::from(1),
-        CharacterClass::Heka,
-        &time,
-        materials,
-    );
-    commands.spawn_bundle(character_bundle);
+pub struct CharacterPlugins;
+
+impl PluginGroup for CharacterPlugins {
+    fn build(&mut self, group: &mut bevy::app::PluginGroupBuilder) {
+        group
+            .add(CharacterMaterialPlugins)
+            .add(PlayerPlugin)
+            .add(CastingPlugin);
+    }
 }
