@@ -15,9 +15,9 @@ impl From<Instant> for LastCastInstant {
 }
 
 impl LastCastInstant {
-    pub fn elapsed(&self, time: &Time) -> Option<Duration> {
-        let last_update = time.last_update()?;
+    pub fn elapsed(&self, time: &Time) -> Duration {
+        let last_update = time.last_update().expect("last input not found");
 
-        last_update.checked_duration_since(self.0)
+        last_update - self.0
     }
 }

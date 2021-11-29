@@ -45,10 +45,13 @@ impl Plugin for SpawnPlugin {
     }
 }
 
+pub struct CharacterMarker;
+
 // TODO: Stratify into base vs full (base only including that which should be reconcilled over the internet)
 #[derive(Bundle)]
 pub struct CharacterBundle {
     index: CharacterIndex,
+    marker: CharacterMarker,
     class: CharacterClass,
     velocity: Velocity,
     #[bundle]
@@ -71,6 +74,7 @@ impl CharacterBundle {
     ) -> Self {
         Self {
             index,
+            marker: CharacterMarker,
             class,
             velocity: Velocity::from(Vec2::ZERO),
             sprite: SpriteBundle {

@@ -1,14 +1,15 @@
 use std::ops::{Deref, DerefMut};
 
 use bevy::{
+    ecs::world::EntityMut,
     prelude::*,
     sprite::collide_aabb::{collide, Collision},
 };
 
 use crate::{
-    character::CharacterIndex,
-    environment::Environment,
-    spell::{SpellMarker, SpellTarget, SpellTracking},
+    character::{CharacterIndex, CharacterMarker, PlayerMarker},
+    environment::EnvironmentMarker,
+    spells::{SpellCast, SpellImpactEvent, SpellMarker, SpellProjectileMarker, SpellTarget},
 };
 
 pub struct Velocity(Vec2);
@@ -33,36 +34,41 @@ impl From<Vec2> for Velocity {
     }
 }
 
+/// Requires [`SpellPlugin`](crate::spells::SpellPlugin) to be loaded.
 pub struct PhysicsPlugin;
 
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let collisions = SystemSet::new()
-            .label("collisions")
-            .before("kinetics")
-            .with_system(collisions.system());
-        let kinetics = SystemSet::new()
-            .label("kinetics")
-            .after("collisions")
-            .with_system(kinetics.system());
-        app.add_system(spell_tracking.system())
-            .add_system_set(collisions)
-            .add_system_set(kinetics);
+        let env_collisions = SystemSet::new()
+            .label("env-collisions")
+            .before("motion")
+            .with_system(env_collisions.system());
+        let spell_collisions = SystemSet::new()
+            .label("spell-collisions")
+            .before("motion")
+            .with_system(spell_projectile_collisions.system());
+
+        let motion = SystemSet::new()
+            .label("motion")
+            .after("env-collisions")
+            .with_system(motion.system());
+        app.add_system_set(env_collisions)
+            .add_system_set(spell_collisions)
+            .add_system_set(motion);
     }
 }
 
-pub fn collisions(
-    environment_query: Query<(&Environment, &Transform, &Sprite)>,
+pub fn env_collisions(
+    environment_query: Query<(&Transform, &Sprite), With<EnvironmentMarker>>,
     mut player_query: Query<(
-        &CharacterIndex,
         &Transform,
         &Sprite,
         &mut Velocity,
-        Without<Environment>,
+        (With<CharacterMarker>, Without<EnvironmentMarker>),
     )>,
 ) {
-    for (_, player_transform, player_sprite, mut velocity, _) in player_query.iter_mut() {
-        for (_, env_transform, env_sprite) in &mut environment_query.iter() {
+    for (player_transform, player_sprite, mut velocity, _) in player_query.iter_mut() {
+        for (env_transform, env_sprite) in &mut environment_query.iter() {
             let collision = collide(
                 player_transform.translation,
                 player_sprite.size,
@@ -93,30 +99,50 @@ pub fn collisions(
     }
 }
 
-pub fn kinetics(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity)>) {
+pub fn motion(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity)>) {
     for (mut transform, velocity) in query.iter_mut() {
         transform.translation += velocity.0.extend(0.) * time.delta_seconds();
     }
 }
 
-pub fn spell_tracking(
-    mut spell_query: Query<
-        (&mut Transform, &mut Velocity, &SpellTarget),
-        (With<SpellTracking>, With<SpellMarker>),
+pub fn spell_projectile_collisions(
+    mut spell_impact_events: EventWriter<SpellImpactEvent>,
+    spell_query: Query<
+        (Entity, &SpellMarker, &Transform, &Sprite, &SpellTarget),
+        With<SpellProjectileMarker>,
     >,
-    char_query: Query<(&Transform, &CharacterIndex), Without<SpellMarker>>,
-) {
-    for (mut spell_transform, mut spell_velocity, spell_target) in spell_query.iter_mut() {
-        let char_target = char_query.iter().find(|(_, index)| spell_target == *index);
-        if let Some((char_transform, _)) = char_target {
-            let diff = (char_transform.translation - spell_transform.translation).truncate();
-            let angle = Vec2::new(1., 0.).angle_between(diff);
-            spell_transform.rotation = Quat::from_rotation_z(angle);
+    char_query: Query<
+        (&CharacterIndex, &Transform, &Sprite),
+        (With<CharacterMarker>, Without<SpellMarker>),
+    >,
 
-            **spell_velocity = spell_transform
-                .rotation
-                .mul_vec3(Vec3::new(spell_velocity.length(), 0., 0.))
-                .truncate();
+    mut commands: Commands,
+) {
+    for (spell_entity, spell_marker, spell_transform, spell_sprite, spell_target) in
+        spell_query.iter()
+    {
+        let target_character_opt = char_query
+            .iter()
+            .find(|(index, _, _)| spell_target == *index);
+
+        if let Some((_, target_transform, target_sprite)) = target_character_opt {
+            let collision = collide(
+                spell_transform.translation,
+                spell_sprite.size,
+                target_transform.translation,
+                target_sprite.size,
+            );
+
+            match collision {
+                Some(_) => {
+                    let impact_event = SpellImpactEvent {
+                        id: spell_entity,
+                        spell_marker: *spell_marker,
+                    };
+                    spell_impact_events.send(impact_event);
+                }
+                None => (),
+            };
         }
     }
 }

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-pub struct Environment;
+pub struct EnvironmentMarker;
 
 pub fn spawn_environment(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
     commands
@@ -10,7 +10,7 @@ pub fn spawn_environment(mut commands: Commands, mut materials: ResMut<Assets<Co
             transform: Transform::from_xyz(300., 300., 0.),
             ..Default::default()
         })
-        .insert(Environment);
+        .insert(EnvironmentMarker);
 
     commands
         .spawn_bundle(SpriteBundle {
@@ -19,5 +19,5 @@ pub fn spawn_environment(mut commands: Commands, mut materials: ResMut<Assets<Co
             transform: Transform::from_xyz(-300., -300., 0.),
             ..Default::default()
         })
-        .insert(Environment);
+        .insert(EnvironmentMarker);
 }

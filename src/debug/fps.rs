@@ -19,9 +19,8 @@ impl Default for FrameCounter {
 }
 
 pub fn record_fps(time: Res<Time>, mut frames: ResMut<FrameCounter>) {
-    if let Some(instant) = time.last_update() {
-        frames.update(instant);
-    }
+    let last_update = time.last_update().expect("last update not found");
+    frames.update(last_update);
 }
 
 impl FrameCounter {

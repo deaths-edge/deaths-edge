@@ -4,7 +4,7 @@ use super::*;
 use crate::{
     input_mapping::ActionKey,
     physics::Velocity,
-    spell::{Spell, SpellTarget},
+    spells::{SpellCast, SpellSource, SpellTarget},
 };
 
 pub struct PlayerPlugin;
@@ -191,6 +191,7 @@ pub fn player_action(
     // CharacterIndex query
     mut char_query: Query<
         (
+            &CharacterIndex,
             &CharacterClass,
             &LastCastInstant,
             &mut CharacterCastState,
@@ -202,12 +203,11 @@ pub fn player_action(
     // Commands
     mut commands: Commands,
 ) {
-    let (class, last_cast_instant, mut cast_state, target) =
+    let (character_index, class, last_cast_instant, mut cast_state, target) =
         char_query.single_mut().expect("player not found");
 
     // Check whether global cooldown has expired
-    let global_cooldown_expired =
-        last_cast_instant.elapsed(&time).unwrap_or_default() > GLOBAL_COOLDOWN;
+    let global_cooldown_expired = last_cast_instant.elapsed(&time) > GLOBAL_COOLDOWN;
 
     for action_key in events.iter() {
         match class {
@@ -218,8 +218,9 @@ pub fn player_action(
                     if global_cooldown_expired {
                         let start = time.last_update().expect("last update not found");
                         if let Some(target) = target.index() {
-                            let spell = Spell::Fireball {
-                                target: SpellTarget::from(target),
+                            let spell = SpellCast::Fireball {
+                                source: SpellSource::from(*character_index),
+                                target: target.into(),
                             };
                             tracing::info!(message = "casting", ?spell, ?start);
                             cast_state.set_cast(CharacterCast::new(start, spell));

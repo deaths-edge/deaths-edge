@@ -1,6 +1,6 @@
 use bevy::{core::Time, prelude::*, utils::Instant};
 
-use crate::spell::Spell;
+use crate::spells::SpellCast;
 
 use super::CharacterTarget;
 
@@ -35,11 +35,11 @@ impl CharacterCastState {
 #[derive(Debug)]
 pub struct CharacterCast {
     pub start: Instant,
-    pub spell: Spell,
+    pub spell: SpellCast,
 }
 
 impl CharacterCast {
-    pub fn new(start: Instant, spell: Spell) -> Self {
+    pub fn new(start: Instant, spell: SpellCast) -> Self {
         Self { start, spell }
     }
 

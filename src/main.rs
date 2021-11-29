@@ -5,7 +5,7 @@ mod environment;
 mod game_event;
 mod input_mapping;
 mod physics;
-mod spell;
+mod spells;
 mod state;
 mod ui;
 
@@ -40,6 +40,7 @@ fn main() {
         .add_plugin(debug_plugin)
         .add_plugins(CharacterPlugins)
         .add_plugin(input_mapping::InputMapPlugin)
+        .add_plugin(spells::SpellPlugin)
         .add_plugin(physics::PhysicsPlugin)
         .add_plugin(ui::UIPlugin)
         .add_startup_system(setup_camera.system())
