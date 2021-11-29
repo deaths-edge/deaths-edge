@@ -1,8 +1,9 @@
 use bevy::{app::Events, prelude::*};
 
-use crate::spells::instances::FireballBundle;
-
-use super::SpellMarker;
+use super::{
+    instances::{FireballBundle, FireballEffect},
+    DamageEffect, EffectMarker, SpellMarker,
+};
 
 pub struct SpellImpactEvent {
     pub id: Entity,
@@ -15,7 +16,16 @@ impl SpellImpactEvent {
         match self.spell_marker {
             Fireball => {
                 let mut spell_entity_mut = world.entity_mut(self.id);
-                let fireball_bundle = spell_entity_mut.remove_bundle::<FireballBundle>();
+                let fireball_bundle = spell_entity_mut
+                    .remove_bundle::<FireballBundle>()
+                    .expect("fireball bundle not found");
+
+                let fireball_effect = FireballEffect {
+                    marker: EffectMarker,
+                    target: fireball_bundle.target,
+                    damage: DamageEffect { amount: 30 },
+                };
+                world.spawn().insert_bundle(fireball_effect);
             }
         }
     }

@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use super::effects::DamageEffect;
+
 use super::*;
 
 #[derive(Bundle)]
@@ -8,9 +10,10 @@ pub struct FireballBundle {
     #[bundle]
     sprite: SpriteBundle,
     source: SpellSource,
-    target: SpellTarget,
+    pub target: SpellTarget,
     tracking: SpellProjectileMarker,
     velocity: Velocity,
+    // TODO: Maybe include effect here?
 }
 
 impl FireballBundle {
@@ -39,4 +42,9 @@ impl FireballBundle {
     }
 }
 
-pub struct FireballImpactBundle {}
+#[derive(Bundle)]
+pub struct FireballEffect {
+    pub marker: EffectMarker,
+    pub target: SpellTarget,
+    pub damage: DamageEffect,
+}

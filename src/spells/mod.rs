@@ -1,4 +1,5 @@
 mod cast;
+pub mod effects;
 mod impact;
 mod index;
 pub mod instances;
@@ -11,6 +12,7 @@ use bevy::prelude::*;
 use crate::{character::CharacterIndex, physics::Velocity};
 
 pub use cast::*;
+pub use effects::*;
 pub use impact::*;
 pub use marker::*;
 pub use source::*;
@@ -23,7 +25,8 @@ impl Plugin for SpellPlugin {
         let spell_tracking = SystemSet::new().with_system(spell_tracking.system());
         app.add_event::<SpellImpactEvent>()
             .add_system_set(spell_tracking)
-            .add_system(spell_impact_system.exclusive_system());
+            .add_system(spell_impact_system.exclusive_system())
+            .add_system(damage_effect_apply.system());
     }
 }
 

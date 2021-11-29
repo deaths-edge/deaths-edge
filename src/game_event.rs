@@ -1,4 +1,4 @@
-use crate::{character::CharacterIndex};
+use crate::character::CharacterIndex;
 
 // pub enum Interuption {
 //     Movement,
