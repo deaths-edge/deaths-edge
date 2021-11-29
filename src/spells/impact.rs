@@ -1,10 +1,10 @@
 use bevy::{app::Events, prelude::*};
 
-use super::EffectTarget;
+use crate::effects::{DamageEffect, EffectMarker, EffectTarget};
 
 use super::{
     instances::{FireballBundle, FireballEffect},
-    DamageEffect, EffectMarker, SpellMarker,
+    SpellMarker,
 };
 
 pub struct SpellImpactEvent {

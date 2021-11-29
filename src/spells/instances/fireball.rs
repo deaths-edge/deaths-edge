@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::effects::DamageEffect;
+use crate::effects::{DamageEffect, EffectMarker, EffectTarget};
 
 use super::*;
 

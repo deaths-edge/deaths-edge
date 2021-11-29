@@ -1,6 +1,7 @@
 mod buffs;
 mod character;
 mod debug;
+mod effects;
 mod environment;
 mod game_event;
 mod input_mapping;
@@ -41,6 +42,7 @@ fn main() {
         .add_plugins(CharacterPlugins)
         .add_plugin(input_mapping::InputMapPlugin)
         .add_plugin(spells::SpellPlugin)
+        .add_plugin(effects::EffectPlugin)
         .add_plugin(physics::PhysicsPlugin)
         .add_plugin(ui::UIPlugin)
         .add_startup_system(setup_camera.system())

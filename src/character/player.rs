@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use super::*;
 use crate::{
+    effects::{EffectMarker, EffectTarget, InteruptEffect},
     input_mapping::ActionKey,
     physics::Velocity,
     spells::{SpellCast, SpellSource},
@@ -134,17 +135,41 @@ pub fn player_focal_rotate(
     }
 }
 
+#[derive(Bundle)]
+pub struct MovementInteruptBundle {
+    effect_marker: EffectMarker,
+    interupt: InteruptEffect,
+    target: EffectTarget,
+}
+
+impl MovementInteruptBundle {
+    pub fn new<T: Into<EffectTarget>>(target: T) -> Self {
+        Self {
+            effect_marker: EffectMarker,
+            interupt: InteruptEffect::default(),
+            target: target.into(),
+        }
+    }
+}
+
 /// Receives [`MotionKey`] input and accelerates character in said direction.
 pub fn player_movement(
     motion_input: Res<Input<MotionKey>>,
 
     // CharacterIndex query
     mut char_query: Query<
-        (&CharacterSpeedMultiplier, &mut Transform, &mut Velocity),
+        (
+            &CharacterIndex,
+            &CharacterSpeedMultiplier,
+            &mut Transform,
+            &mut Velocity,
+        ),
         With<PlayerMarker>,
     >,
+
+    mut commands: Commands,
 ) {
-    let (speed_multiplier, transform, mut velocity) =
+    let (character_index, speed_multiplier, transform, mut velocity) =
         char_query.single_mut().expect("player not found");
 
     const FORWARD_SPEED: f32 = 1.0;
@@ -169,10 +194,14 @@ pub fn player_movement(
         direction.y -= BACKPEDDLE_SPEED;
     }
 
-    // Normalize
     if direction != Vec2::ZERO {
+        // Normalize
         let mag = direction.length().max(1.);
         direction = direction / mag;
+
+        commands
+            .spawn()
+            .insert_bundle(MovementInteruptBundle::new(*character_index));
     }
 
     direction = (transform.rotation * (direction.extend(0.))).truncate();

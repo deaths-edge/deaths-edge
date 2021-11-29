@@ -28,4 +28,5 @@ impl Plugin for EffectPlugin {
     }
 }
 
+#[derive(Default)]
 pub struct EffectMarker;
