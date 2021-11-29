@@ -4,7 +4,7 @@ use super::*;
 use crate::{
     input_mapping::ActionKey,
     physics::Velocity,
-    spells::{SpellCast, SpellSource, SpellTarget},
+    spells::{SpellCast, SpellSource},
 };
 
 pub struct PlayerPlugin;
@@ -199,9 +199,6 @@ pub fn player_action(
         ),
         With<PlayerMarker>,
     >,
-
-    // Commands
-    mut commands: Commands,
 ) {
     let (character_index, class, last_cast_instant, mut cast_state, target) =
         char_query.single_mut().expect("player not found");

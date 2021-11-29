@@ -1,12 +1,10 @@
 use bevy::{app::Events, prelude::*, window::Windows};
 
-use crate::character::{CharacterIndex, CharacterTarget, PlayerMarker};
-
-use bevy::prelude::*;
+use crate::character::CharacterIndex;
 
 pub struct PlayerCamera;
 
-pub fn setup_camera(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
+pub fn setup_camera(mut commands: Commands) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     commands
         .spawn()

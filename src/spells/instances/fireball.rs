@@ -45,6 +45,6 @@ impl FireballBundle {
 #[derive(Bundle)]
 pub struct FireballEffect {
     pub marker: EffectMarker,
-    pub target: SpellTarget,
+    pub target: EffectTarget,
     pub damage: DamageEffect,
 }

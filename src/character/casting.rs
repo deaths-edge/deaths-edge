@@ -2,8 +2,6 @@ use bevy::{core::Time, prelude::*, utils::Instant};
 
 use crate::spells::SpellCast;
 
-use super::CharacterTarget;
-
 pub struct CastingPlugin;
 
 impl Plugin for CastingPlugin {
@@ -49,20 +47,15 @@ impl CharacterCast {
 }
 
 fn complete_casting(
-    mut query: Query<(
-        Entity,
-        &Transform,
-        &mut CharacterCastState,
-        &CharacterTarget,
-    )>,
+    mut query: Query<(Entity, &Transform, &mut CharacterCastState)>,
     mut commands: Commands,
 
     time: Res<Time>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let last_update = time.last_update().expect("last update not found");
-    for (character_entity, transform, mut cast_state, target) in
-        query.iter_mut().filter(|(_, _, cast_state, _)| {
+    for (character_entity, transform, mut cast_state) in
+        query.iter_mut().filter(|(_, _, cast_state)| {
             cast_state
                 .cast()
                 .map(|cast| cast.is_complete(last_update))

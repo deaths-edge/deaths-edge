@@ -11,7 +11,7 @@ use std::{
 };
 
 use ansi_to_tui::ansi_to_text;
-use bevy::{core::FixedTimestep, prelude::*, utils::Instant};
+use bevy::{core::FixedTimestep, prelude::*};
 use crossterm::{
     event::EnableMouseCapture,
     execute,

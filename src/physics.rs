@@ -1,15 +1,14 @@
 use std::ops::{Deref, DerefMut};
 
 use bevy::{
-    ecs::world::EntityMut,
     prelude::*,
     sprite::collide_aabb::{collide, Collision},
 };
 
 use crate::{
-    character::{CharacterIndex, CharacterMarker, PlayerMarker},
+    character::{CharacterIndex, CharacterMarker},
     environment::EnvironmentMarker,
-    spells::{SpellCast, SpellImpactEvent, SpellMarker, SpellProjectileMarker, SpellTarget},
+    spells::{SpellImpactEvent, SpellMarker, SpellProjectileMarker, SpellTarget},
 };
 
 pub struct Velocity(Vec2);
@@ -116,7 +115,7 @@ pub fn spell_projectile_collisions(
         (With<CharacterMarker>, Without<SpellMarker>),
     >,
 
-    mut commands: Commands,
+    commands: Commands,
 ) {
     for (spell_entity, spell_marker, spell_transform, spell_sprite, spell_target) in
         spell_query.iter()

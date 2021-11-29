@@ -9,6 +9,12 @@ impl From<CharacterIndex> for SpellTarget {
     }
 }
 
+impl Into<CharacterIndex> for SpellTarget {
+    fn into(self) -> CharacterIndex {
+        self.0
+    }
+}
+
 impl PartialEq<CharacterIndex> for SpellTarget {
     fn eq(&self, other: &CharacterIndex) -> bool {
         self.0 == *other
