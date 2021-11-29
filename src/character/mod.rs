@@ -4,6 +4,7 @@ mod control;
 mod cooldowns;
 mod health;
 mod index;
+mod interupt;
 mod player;
 mod power;
 mod speed_multiplier;
@@ -23,6 +24,7 @@ pub use control::*;
 pub use cooldowns::*;
 pub use health::*;
 pub use index::*;
+pub use interupt::*;
 pub use player::*;
 pub use power::*;
 pub use speed_multiplier::*;
@@ -53,14 +55,20 @@ pub struct CharacterBundle {
     index: CharacterIndex,
     marker: CharacterMarker,
     class: CharacterClass,
+
+    speed_modifier: CharacterSpeedMultiplier,
     velocity: Velocity,
+
     #[bundle]
     sprite: SpriteBundle,
-    speed_modifier: CharacterSpeedMultiplier,
+
     health: CharacterHealth,
     power: CharacterPower,
+
     cast_state: CharacterCastState,
+    interupt_state: InteruptState,
     last_cast_instant: LastCastInstant,
+
     target: CharacterTarget,
     selected: Selected,
 }
@@ -76,25 +84,31 @@ impl CharacterBundle {
             index,
             marker: CharacterMarker,
             class,
+
+            speed_modifier: CharacterSpeedMultiplier::from(1.),
             velocity: Velocity::from(Vec2::ZERO),
+
             sprite: SpriteBundle {
                 material: materials.add(Color::rgb(1.0, 0.5, 0.5).into()),
                 sprite: Sprite::new(Vec2::new(30.0, 30.0)),
                 ..Default::default()
             },
+
             power: CharacterPower {
                 current: 0,
                 total: 100,
             },
-            speed_modifier: CharacterSpeedMultiplier::from(1.),
             health: CharacterHealth {
                 current: 75,
                 total: 100,
             },
+
+            cast_state: CharacterCastState::default(),
+            interupt_state: InteruptState::default(),
+            last_cast_instant: time.startup().into(),
+
             target: CharacterTarget::default(),
             selected: Selected::default(),
-            last_cast_instant: time.startup().into(),
-            cast_state: CharacterCastState::default(),
         }
     }
 }

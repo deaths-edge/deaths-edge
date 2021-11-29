@@ -1,16 +1,15 @@
 mod damage;
 mod heal;
+mod interupt;
 mod target;
 
 use std::time::Duration;
 
 use bevy::prelude::*;
 
-use super::SpellTarget;
-use crate::character::{CharacterHealth, CharacterIndex};
-
 pub use damage::*;
 pub use heal::*;
+pub use interupt::*;
 pub use target::*;
 pub use target::*;
 
@@ -23,13 +22,10 @@ impl Plugin for EffectPlugin {
         let system_set = SystemSet::new()
             .label(EFFECT_SET)
             .with_system(damage_effect_apply.system())
-            .with_system(health_effect_apply.system());
+            .with_system(health_effect_apply.system())
+            .with_system(interupt_effect_apply.system());
         app.add_system_set(system_set);
     }
 }
 
 pub struct EffectMarker;
-
-pub struct InteruptEffect {
-    lock_duration: Duration,
-}

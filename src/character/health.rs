@@ -9,4 +9,9 @@ impl CharacterHealth {
         self.current = self.current.saturating_sub(damage);
         self
     }
+
+    pub fn apply_heal(&mut self, heal: u32) -> &mut Self {
+        self.current = self.total.min(self.current + heal);
+        self
+    }
 }
