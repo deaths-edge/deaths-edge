@@ -18,7 +18,7 @@ impl SpellCast {
         use SpellCast::*;
 
         match self {
-            Fireball { .. } => Duration::from_secs(2),
+            Fireball { .. } => Duration::from_secs(1),
         }
     }
 

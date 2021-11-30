@@ -73,12 +73,9 @@ impl NameplateBundle {
             offset,
             node: NodeBundle {
                 style: Style {
-                    justify_content: JustifyContent::Center,
                     size,
                     position_type: PositionType::Absolute,
                     align_content: AlignContent::Center,
-                    // direction: Direction::,
-                    // align_items: AlignItems::FlexEnd,
                     flex_direction: FlexDirection::Column,
                     ..Default::default()
                 },
