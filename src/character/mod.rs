@@ -16,7 +16,7 @@ use bevy::{prelude::*, sprite::collide_aabb::collide};
 use crate::{
     input_mapping::{FocalHold, MotionKey, SelectClick},
     physics::Velocity,
-    ui::Selected,
+    ui::selected::Selected,
 };
 
 pub use casting::*;

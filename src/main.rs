@@ -41,12 +41,12 @@ fn main() {
         .add_plugins_with(DefaultPlugins, |plugins| plugins.disable::<LogPlugin>())
         .add_plugin(debug_plugin)
         .add_plugins(CharacterPlugins)
+        .add_plugins(ui::UIPlugins)
         .add_plugin(spawning::SpawnPlugin)
         .add_plugin(input_mapping::InputMapPlugin)
         .add_plugin(spells::SpellPlugin)
         .add_plugin(effects::EffectPlugin)
         .add_plugin(physics::PhysicsPlugin)
-        .add_plugin(ui::UIPlugin)
         .add_startup_system(setup_camera.system())
         .add_startup_system(spawn_environment.system())
         .run();

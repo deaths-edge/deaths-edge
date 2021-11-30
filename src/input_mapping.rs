@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::ui::WorldMousePosition;
+use crate::ui::mouse::WorldMousePosition;
 
 pub struct InputMapPlugin;
 

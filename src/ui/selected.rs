@@ -2,6 +2,14 @@ use bevy::prelude::*;
 
 use crate::character::CharacterIndex;
 
+pub struct SelectedPlugin;
+
+impl Plugin for SelectedPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        app.add_system(select_highlight.system());
+    }
+}
+
 #[derive(PartialEq, Clone, Copy)]
 pub enum Selected {
     Selected,
