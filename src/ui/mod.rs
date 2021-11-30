@@ -20,6 +20,7 @@ impl PluginGroup for UIPlugins {
     fn build(&mut self, group: &mut PluginGroupBuilder) {
         group
             .add(mouse::WorldMousePlugin)
-            .add(nameplate::NameplatePlugin);
+            .add(nameplate::NameplatePlugin)
+            .add(selected::SelectedPlugin);
     }
 }

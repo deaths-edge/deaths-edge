@@ -17,15 +17,11 @@ pub struct WorldMousePosition {
 }
 
 pub fn window_to_local_position(
-    windows: &Windows,
+    window: &Window,
     camera_transform: &Transform,
     window_position: Vec2,
 ) -> Vec2 {
-    let primary_window = windows.get_primary().expect("no monitor");
-    let size = Vec2::new(
-        primary_window.width() as f32,
-        primary_window.height() as f32,
-    );
+    let size = Vec2::new(window.width() as f32, window.height() as f32);
 
     let p = window_position - size / 2.0;
 
@@ -34,18 +30,14 @@ pub fn window_to_local_position(
 }
 
 pub fn local_to_window_position(
-    windows: &Windows,
+    window: &Window,
     camera_transform: &Transform,
     world_position: Vec3,
 ) -> Vec2 {
-    let primary_window = windows.get_primary().expect("no monitor");
-    let size = Vec2::new(
-        primary_window.width() as f32,
-        primary_window.height() as f32,
-    );
+    let size = Vec2::new(window.width() as f32, window.height() as f32);
 
     let window_position = camera_transform.compute_matrix().inverse() * world_position.extend(1.0);
-    let window_position = window_position.truncate().truncate() + 2. * size;
+    let window_position = window_position.truncate().truncate() + size / 2.;
     window_position
 }
 
@@ -61,8 +53,9 @@ pub fn world_mouse(
             .single()
             .expect("there must be a player camera");
 
+        let primary_window = windows.get_primary().expect("no monitor");
         let position =
-            window_to_local_position(&windows, camera_transform, mouse_position.position);
+            window_to_local_position(&primary_window, camera_transform, mouse_position.position);
 
         *world_mouse_pos = WorldMousePosition { position };
     }

@@ -3,6 +3,8 @@ mod materials;
 mod parent;
 mod power;
 
+use std::ops::Deref;
+
 use bevy::prelude::*;
 
 pub use health::*;
@@ -10,7 +12,12 @@ pub use materials::*;
 pub use parent::*;
 pub use power::*;
 
-use crate::character::{CharacterIndex, CharacterMarker};
+use crate::{
+    character::{CharacterIndex, CharacterMarker},
+    ui::mouse::local_to_window_position,
+};
+
+use super::PlayerCamera;
 
 pub struct NameplatePlugin;
 
@@ -24,31 +31,55 @@ impl Plugin for NameplatePlugin {
 #[derive(Debug)]
 pub struct NameplateMarker;
 
+#[derive(Debug)]
+pub struct NameplateOffset(Size<Val>);
+
+impl Deref for NameplateOffset {
+    type Target = Size<Val>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl From<Size<Val>> for NameplateOffset {
+    fn from(value: Size<Val>) -> Self {
+        Self(value)
+    }
+}
+
 #[derive(Debug, Bundle)]
 pub struct NameplateBundle {
     marker: NameplateMarker,
     parent: NameplateParent,
+    offset: NameplateOffset,
     #[bundle]
     node: NodeBundle,
 }
 
 impl NameplateBundle {
     pub fn new(parent: NameplateParent, nameplate_materials: &NameplateMaterials) -> Self {
+        let width_pct = 8.;
+        let height_pct = 2.5;
+        let size = Size::new(Val::Percent(width_pct), Val::Percent(height_pct));
+        let offset = NameplateOffset::from(Size::new(
+            Val::Percent(width_pct / 2.),
+            Val::Percent(height_pct * 2.),
+        ));
+
         Self {
             marker: NameplateMarker,
             parent,
+            offset,
             node: NodeBundle {
                 style: Style {
-                    size: Size::new(Val::Percent(7.5), Val::Percent(2.5)),
-                    position_type: PositionType::Absolute,
-                    align_items: AlignItems::FlexEnd,
                     justify_content: JustifyContent::Center,
+                    size,
+                    position_type: PositionType::Absolute,
+                    align_content: AlignContent::Center,
+                    // direction: Direction::,
+                    // align_items: AlignItems::FlexEnd,
                     flex_direction: FlexDirection::Column,
-                    position: Rect {
-                        left: Val::Px(400.0),
-                        bottom: Val::Px(300.0),
-                        ..Default::default()
-                    },
                     ..Default::default()
                 },
                 material: nameplate_materials.primary_health_bar.clone(),
@@ -78,18 +109,52 @@ pub fn setup_nameplate(
 }
 
 pub fn update_nameplate_position(
-    mut nameplate_query: Query<(&NameplateParent, &mut NodeBundle), With<NameplateMarker>>,
+    windows: Res<Windows>,
+
+    mut nameplate_query: Query<
+        (&NameplateParent, &NameplateOffset, &mut Style),
+        With<NameplateMarker>,
+    >,
+
     character_query: Query<
         (&CharacterIndex, &Transform),
         (With<CharacterMarker>, Changed<Transform>),
     >,
+
+    camera_query: Query<&Transform, With<PlayerCamera>>,
 ) {
-    for (nameplate_parent, mut node_bundle) in nameplate_query.iter_mut() {
+    let camera_transform = camera_query
+        .single()
+        .expect("there must be a player camera");
+
+    for (nameplate_parent, node_offset, mut node_style) in nameplate_query.iter_mut() {
         let (_, character_transform) = character_query
             .iter()
             .find(|(index, _)| nameplate_parent == *index)
             .expect("character not found");
-        tracing::info!("found char");
-        node_bundle.transform = *character_transform;
+
+        let primary_window = windows.get_primary().expect("no monitor");
+
+        let window_position = local_to_window_position(
+            &primary_window,
+            &camera_transform,
+            character_transform.translation,
+        );
+
+        let offset_width_px = match node_offset.width {
+            Val::Px(px) => px,
+            Val::Percent(pct) => pct / 100. * primary_window.width(),
+            Val::Undefined => 0.,
+            Val::Auto => 0.,
+        };
+        let offset_height_px = match node_offset.height {
+            Val::Px(px) => px,
+            Val::Percent(pct) => pct / 100. * primary_window.height(),
+            Val::Undefined => 0.,
+            Val::Auto => 0.,
+        };
+
+        node_style.position.left = Val::Px(window_position.x) + -offset_width_px;
+        node_style.position.bottom = Val::Px(window_position.y) + offset_height_px;
     }
 }
