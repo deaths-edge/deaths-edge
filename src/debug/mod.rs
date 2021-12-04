@@ -1,3 +1,4 @@
+mod fps;
 mod logs;
 
 use tracing_subscriber::EnvFilter;
@@ -9,11 +10,7 @@ use std::{
 };
 
 use ansi_to_tui::ansi_to_text;
-use bevy::{
-    core::FixedTimestep,
-    diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
-    prelude::*,
-};
+use bevy::{core::FixedTimestep, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use crossterm::{
     event::EnableMouseCapture,
     execute,
@@ -27,7 +24,8 @@ use tui::{
     Terminal,
 };
 
-use logs::SharedLogs;
+use fps::*;
+use logs::*;
 
 pub struct DebugTerminalPlugin {
     env_filter: Cow<'static, str>,
@@ -140,18 +138,5 @@ fn terminal_render(
         .map(|x| ansi_to_text(x.as_bytes().to_vec()))
         .flatten();
 
-    terminal.render(&fps.history, recent_logs);
-}
-
-#[derive(Default)]
-struct FPSHistory {
-    history: Vec<(&'static str, u64)>,
-}
-
-fn collect_fps(diagnostics: Res<Diagnostics>, mut fps_history: ResMut<FPSHistory>) {
-    if let Some(diagnostic) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
-        if let Some(value) = diagnostic.value() {
-            fps_history.history.push(("", value as u64));
-        }
-    }
+    terminal.render(fps.history(), recent_logs);
 }
