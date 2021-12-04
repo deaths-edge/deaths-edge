@@ -14,7 +14,7 @@ impl FromWorld for NameplateMaterials {
             none: materials.add(Color::rgba(0., 0., 0., 0.5).into()),
             health_bar: materials.add(Color::GREEN.into()),
             energy_bar: materials.add(Color::BLUE.into()),
-            cast_bar: materials.add(Color::YELLOW.into())
+            cast_bar: materials.add(Color::YELLOW.into()),
         }
     }
 }
