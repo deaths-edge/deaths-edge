@@ -24,7 +24,7 @@ impl SpellCast {
 
     pub fn spawn_bundle(
         &self,
-        parent: Entity,
+        parent_entity: Entity,
         transform: &Transform,
         commands: &mut Commands,
         materials: &mut Assets<ColorMaterial>,

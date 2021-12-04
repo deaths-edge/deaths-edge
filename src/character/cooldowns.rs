@@ -2,8 +2,6 @@ use std::time::Duration;
 
 use bevy::{core::Time, utils::Instant};
 
-// pub struct Cooldown(Instant);
-
 pub const GLOBAL_COOLDOWN: Duration = Duration::from_secs(1);
 
 pub struct LastCastInstant(Instant);

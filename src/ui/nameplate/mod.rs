@@ -12,10 +12,7 @@ pub use materials::*;
 pub use parent::*;
 pub use power::*;
 
-use crate::{
-    character::{CharacterIndex, CharacterMarker},
-    ui::mouse::local_to_window_position,
-};
+use crate::{character::CharacterMarker, ui::mouse::local_to_window_position};
 
 use super::PlayerCamera;
 
@@ -90,13 +87,13 @@ impl NameplateBundle {
 }
 
 pub fn setup_nameplate(
-    character_index: In<Entity>,
+    character_entity: In<Entity>,
 
     nameplate_materials: Res<NameplateMaterials>,
 
     mut commands: Commands,
 ) {
-    let nameplate_bundle = NameplateBundle::new(character_index.0.into(), &nameplate_materials);
+    let nameplate_bundle = NameplateBundle::new(character_entity.0.into(), &nameplate_materials);
     commands
         .spawn_bundle(nameplate_bundle)
         .with_children(|commands| {
@@ -132,8 +129,8 @@ pub fn update_nameplate_position(
         let primary_window = windows.get_primary().expect("no monitor");
 
         let window_position = local_to_window_position(
-            &primary_window,
-            &camera_transform,
+            primary_window,
+            camera_transform,
             character_transform.translation,
         );
 

@@ -52,7 +52,7 @@ impl PlayerBundle {
 /// Receives a [`SelectClick`] event and selects a character.
 pub fn player_char_select(
     mut select_clicks: EventReader<SelectClick>,
-    mut char_query: QuerySet<(
+    mut character_query: QuerySet<(
         Query<(Entity, &mut Selected)>,
         Query<(Entity, &Transform, &Sprite, &mut Selected)>,
         Query<&mut CharacterTarget, With<PlayerMarker>>,
@@ -68,7 +68,7 @@ pub fn player_char_select(
     };
 
     // Find and set selection
-    let selected_index_opt = char_query
+    let selected_entity_opt = character_query
         .q1_mut()
         .iter_mut()
         .find(|(_, char_transform, char_sprite, _)| {
@@ -89,8 +89,8 @@ pub fn player_char_select(
         });
 
     // Set character selection
-    if let Ok(mut character_target) = char_query.q2_mut().single_mut() {
-        if let Some(index) = selected_index_opt {
+    if let Ok(mut character_target) = character_query.q2_mut().single_mut() {
+        if let Some(index) = selected_entity_opt {
             tracing::info!(message = "selected character", ?index);
             character_target.set_entity(index);
         } else {
@@ -99,10 +99,10 @@ pub fn player_char_select(
     };
 
     // Deselect everything else
-    for (_, mut selected) in char_query
+    for (_, mut selected) in character_query
         .q0_mut()
         .iter_mut()
-        .filter(|(entity, _)| Some(*entity) != selected_index_opt)
+        .filter(|(entity, _)| Some(*entity) != selected_entity_opt)
     {
         *selected = Selected::Unselected;
     }
@@ -110,10 +110,10 @@ pub fn player_char_select(
 
 /// Receives [`FocalHold`] event and rotates character in that direction.
 pub fn player_focal_rotate(
-    mut char_query: Query<&mut Transform, With<PlayerMarker>>,
+    mut character_query: Query<&mut Transform, With<PlayerMarker>>,
     mut events: EventReader<FocalHold>,
 ) {
-    let mut transform = char_query.single_mut().expect("player not found");
+    let mut transform = character_query.single_mut().expect("player not found");
 
     const MINIMUM_FOCAL_LENGTH: f32 = 200.;
 
@@ -153,7 +153,7 @@ pub fn player_movement(
     motion_input: Res<Input<MotionKey>>,
 
     // CharacterIndex query
-    mut char_query: Query<
+    mut character_query: Query<
         (
             Entity,
             &CharacterSpeedMultiplier,
@@ -166,7 +166,7 @@ pub fn player_movement(
     mut commands: Commands,
 ) {
     let (character_entity, speed_multiplier, transform, mut velocity) =
-        char_query.single_mut().expect("player not found");
+        character_query.single_mut().expect("player not found");
 
     const FORWARD_SPEED: f32 = 1.0;
     const STRAFE_SPEED: f32 = 0.8;
@@ -193,7 +193,7 @@ pub fn player_movement(
     if direction != Vec2::ZERO {
         // Normalize
         let mag = direction.length().max(1.);
-        direction = direction / mag;
+        direction /= mag;
 
         commands
             .spawn()
@@ -214,7 +214,7 @@ pub fn player_action(
     mut events: EventReader<ActionKey>,
 
     // CharacterIndex query
-    mut char_query: Query<
+    mut character_query: Query<
         (
             Entity,
             &CharacterClass,
@@ -226,7 +226,7 @@ pub fn player_action(
     >,
 ) {
     let (character_entity, class, last_cast_instant, mut cast_state, target) =
-        char_query.single_mut().expect("player not found");
+        character_query.single_mut().expect("player not found");
 
     // Check whether global cooldown has expired
     let global_cooldown_expired = last_cast_instant.elapsed(&time) > GLOBAL_COOLDOWN;

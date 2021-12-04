@@ -6,7 +6,7 @@ use bevy::{
 };
 
 use crate::{
-    character::{CharacterIndex, CharacterMarker},
+    character::CharacterMarker,
     environment::EnvironmentMarker,
     spells::{SpellImpactEvent, SpellMarker, SpellProjectileMarker, SpellTarget},
 };
@@ -110,14 +110,12 @@ pub fn spell_projectile_collisions(
         (Entity, &SpellMarker, &Transform, &Sprite, &SpellTarget),
         With<SpellProjectileMarker>,
     >,
-    char_query: Query<(&Transform, &Sprite), (With<CharacterMarker>, Without<SpellMarker>)>,
-
-    commands: Commands,
+    character_query: Query<(&Transform, &Sprite), (With<CharacterMarker>, Without<SpellMarker>)>,
 ) {
     for (spell_entity, spell_marker, spell_transform, spell_sprite, spell_target) in
         spell_query.iter()
     {
-        if let Ok((target_transform, target_sprite)) = char_query.get(spell_target.id()) {
+        if let Ok((target_transform, target_sprite)) = character_query.get(spell_target.id()) {
             let collision = collide(
                 spell_transform.translation,
                 spell_sprite.size,
@@ -125,16 +123,13 @@ pub fn spell_projectile_collisions(
                 target_sprite.size,
             );
 
-            match collision {
-                Some(_) => {
-                    let impact_event = SpellImpactEvent {
-                        id: spell_entity,
-                        spell_marker: *spell_marker,
-                    };
-                    spell_impact_events.send(impact_event);
-                }
-                None => (),
-            };
+            if collision.is_some() {
+                let impact_event = SpellImpactEvent {
+                    id: spell_entity,
+                    spell_marker: *spell_marker,
+                };
+                spell_impact_events.send(impact_event);
+            }
         }
     }
 }

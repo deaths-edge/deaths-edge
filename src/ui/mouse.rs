@@ -55,7 +55,7 @@ pub fn world_mouse(
 
         let primary_window = windows.get_primary().expect("no monitor");
         let position =
-            window_to_local_position(&primary_window, camera_transform, mouse_position.position);
+            window_to_local_position(primary_window, camera_transform, mouse_position.position);
 
         *world_mouse_pos = WorldMousePosition { position };
     }

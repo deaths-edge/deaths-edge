@@ -16,11 +16,17 @@ impl From<Entity> for EffectTarget {
     }
 }
 
-impl Into<Entity> for EffectTarget {
-    fn into(self) -> Entity {
-        self.0
+impl From<EffectTarget> for Entity {
+    fn from(value: EffectTarget) -> Entity {
+        value.0
     }
 }
+
+// impl Into<Entity> for EffectTarget {
+//     fn into(self) -> Entity {
+//         self.0
+//     }
+// }
 
 impl From<SpellTarget> for EffectTarget {
     fn from(value: SpellTarget) -> Self {

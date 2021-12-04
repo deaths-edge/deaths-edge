@@ -33,12 +33,13 @@ impl HealthBarBundle {
 pub fn health_bar_update(
     mut healthbar_query: Query<(&Parent, &mut Style), With<HealthBarMarker>>,
     nameplate_query: Query<&NameplateParent, With<NameplateMarker>>,
-    char_query: Query<&CharacterHealth, (With<CharacterMarker>, Changed<CharacterHealth>)>,
+    character_query: Query<&CharacterHealth, (With<CharacterMarker>, Changed<CharacterHealth>)>,
 ) {
     for (healthbar_parent, mut healthbar_style) in healthbar_query.iter_mut() {
         if let Ok(nameplate_parent) = nameplate_query.get(healthbar_parent.0) {
-            if let Ok(character_health) = char_query.get(nameplate_parent.id()) {
-                let percent = 100. * character_health.current as f32 / character_health.total as f32;
+            if let Ok(character_health) = character_query.get(nameplate_parent.id()) {
+                let percent =
+                    100. * character_health.current as f32 / character_health.total as f32;
                 info!(%percent);
                 healthbar_style.margin.right = Val::Percent(percent);
             }

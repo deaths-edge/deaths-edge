@@ -15,9 +15,9 @@ impl From<Entity> for SpellTarget {
     }
 }
 
-impl Into<Entity> for SpellTarget {
-    fn into(self) -> Entity {
-        self.0
+impl From<SpellTarget> for Entity {
+    fn from(value: SpellTarget) -> Entity {
+        value.0
     }
 }
 

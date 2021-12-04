@@ -8,7 +8,7 @@ mod target;
 
 use bevy::prelude::*;
 
-use crate::{character::CharacterIndex, physics::Velocity};
+use crate::physics::Velocity;
 
 pub use cast::*;
 pub use impact::*;
@@ -34,10 +34,10 @@ pub fn spell_tracking(
         (&SpellTarget, &mut Transform, &mut Velocity),
         (With<SpellProjectileMarker>, With<SpellMarker>),
     >,
-    char_query: Query<(Entity, &Transform), Without<SpellMarker>>,
+    character_query: Query<(Entity, &Transform), Without<SpellMarker>>,
 ) {
     for (spell_target, mut spell_transform, mut spell_velocity) in spell_query.iter_mut() {
-        if let Ok((_, char_transform)) = char_query.get(spell_target.id()) {
+        if let Ok((_, char_transform)) = character_query.get(spell_target.id()) {
             let diff = (char_transform.translation - spell_transform.translation).truncate();
             let angle = Vec2::new(1., 0.).angle_between(diff);
             spell_transform.rotation = Quat::from_rotation_z(angle);

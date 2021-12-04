@@ -9,9 +9,9 @@ impl NameplateParent {
     }
 }
 
-impl Into<Entity> for NameplateParent {
-    fn into(self) -> Entity {
-        self.0
+impl From<NameplateParent> for Entity {
+    fn from(value: NameplateParent) -> Entity {
+        value.0
     }
 }
 
