@@ -18,7 +18,7 @@ impl PowerBarBundle {
             marker: PowerBarMarker,
             node: NodeBundle {
                 style: Style {
-                    size: Size::new(Val::Percent(100.), Val::Percent(50.)),
+                    size: Size::new(Val::Percent(100.), Val::Percent(100.)),
                     ..Default::default()
                 },
                 material: nameplate_materials.energy_bar.clone(),
