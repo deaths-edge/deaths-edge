@@ -1,3 +1,4 @@
+mod castbar;
 mod health;
 mod materials;
 mod parent;
@@ -7,6 +8,7 @@ use std::ops::Deref;
 
 use bevy::prelude::*;
 
+pub use castbar::*;
 pub use health::*;
 pub use materials::*;
 pub use parent::*;
@@ -22,7 +24,8 @@ impl Plugin for NameplatePlugin {
     fn build(&self, app: &mut AppBuilder) {
         let nameplate_system_set = SystemSet::new()
             .with_system(update_nameplate_position.system())
-            .with_system(health_bar_update.system());
+            .with_system(health_bar_update.system())
+            .with_system(cast_bar_update.system());
         app.init_resource::<NameplateMaterials>()
             .add_system_set(nameplate_system_set);
     }
@@ -76,7 +79,7 @@ impl NameplateBundle {
                     size,
                     position_type: PositionType::Absolute,
                     flex_direction: FlexDirection::Column,
-                    justify_content: JustifyContent::FlexStart,
+                    // justify_content: JustifyContent::FlexStart,
                     ..Default::default()
                 },
                 material: nameplate_materials.none.clone(),
@@ -99,9 +102,11 @@ pub fn setup_nameplate(
         .with_children(|commands| {
             let health_bar_bundle = HealthBarBundle::new(&nameplate_materials);
             let power_bar_bundle = PowerBarBundle::new(&nameplate_materials);
+            let cast_bar_bundle = CastBarBundle::new(&nameplate_materials);
 
-            commands.spawn_bundle(health_bar_bundle);
+            commands.spawn_bundle(cast_bar_bundle);
             commands.spawn_bundle(power_bar_bundle);
+            commands.spawn_bundle(health_bar_bundle);
         });
 }
 

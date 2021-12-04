@@ -23,7 +23,7 @@ impl HealthBarBundle {
                     size: Size::new(Val::Percent(100.), Val::Percent(100.)),
                     ..Default::default()
                 },
-                material: nameplate_materials.primary_health_bar.clone(),
+                material: nameplate_materials.health_bar.clone(),
                 ..Default::default()
             },
         }
@@ -40,8 +40,8 @@ pub fn health_bar_update(
             if let Ok(character_health) = character_query.get(nameplate_parent.id()) {
                 let percent =
                     100. * character_health.current as f32 / character_health.total as f32;
-                info!(%percent);
-                healthbar_style.margin.right = Val::Percent(percent);
+                info!(%percent, current = ?healthbar_style.margin.right);
+                healthbar_style.size.width = Val::Percent(percent);
             }
         }
     }
