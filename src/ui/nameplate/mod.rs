@@ -23,8 +23,11 @@ pub struct NameplatePlugin;
 
 impl Plugin for NameplatePlugin {
     fn build(&self, app: &mut AppBuilder) {
+        let nameplate_system_set = SystemSet::new()
+            .with_system(update_nameplate_position.system())
+            .with_system(health_bar_update.system());
         app.init_resource::<NameplateMaterials>()
-            .add_system(update_nameplate_position.system());
+            .add_system_set(nameplate_system_set);
     }
 }
 
@@ -75,11 +78,11 @@ impl NameplateBundle {
                 style: Style {
                     size,
                     position_type: PositionType::Absolute,
-                    align_content: AlignContent::Center,
                     flex_direction: FlexDirection::Column,
+                    justify_content: JustifyContent::FlexStart,
                     ..Default::default()
                 },
-                material: nameplate_materials.primary_health_bar.clone(),
+                material: nameplate_materials.none.clone(),
                 ..Default::default()
             },
         }
@@ -87,7 +90,7 @@ impl NameplateBundle {
 }
 
 pub fn setup_nameplate(
-    character_index: In<CharacterIndex>,
+    character_index: In<Entity>,
 
     nameplate_materials: Res<NameplateMaterials>,
 
@@ -113,10 +116,7 @@ pub fn update_nameplate_position(
         With<NameplateMarker>,
     >,
 
-    character_query: Query<
-        (&CharacterIndex, &Transform),
-        (With<CharacterMarker>, Changed<Transform>),
-    >,
+    character_query: Query<&Transform, (With<CharacterMarker>, Changed<Transform>)>,
 
     camera_query: Query<&Transform, With<PlayerCamera>>,
 ) {
@@ -125,9 +125,8 @@ pub fn update_nameplate_position(
         .expect("there must be a player camera");
 
     for (nameplate_parent, node_offset, mut node_style) in nameplate_query.iter_mut() {
-        let (_, character_transform) = character_query
-            .iter()
-            .find(|(index, _)| nameplate_parent == *index)
+        let character_transform = character_query
+            .get(nameplate_parent.id())
             .expect("character not found");
 
         let primary_window = windows.get_primary().expect("no monitor");

@@ -1,16 +1,16 @@
-use crate::character::CharacterIndex;
+use bevy::prelude::*;
 
 #[derive(Debug, Clone, Copy)]
-pub struct SpellSource(CharacterIndex);
+pub struct SpellSource(Entity);
 
-impl From<CharacterIndex> for SpellSource {
-    fn from(value: CharacterIndex) -> Self {
+impl From<Entity> for SpellSource {
+    fn from(value: Entity) -> Self {
         Self(value)
     }
 }
 
-impl PartialEq<CharacterIndex> for SpellSource {
-    fn eq(&self, other: &CharacterIndex) -> bool {
+impl PartialEq<Entity> for SpellSource {
+    fn eq(&self, other: &Entity) -> bool {
         self.0 == *other
     }
 }

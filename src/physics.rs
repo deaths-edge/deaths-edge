@@ -110,21 +110,14 @@ pub fn spell_projectile_collisions(
         (Entity, &SpellMarker, &Transform, &Sprite, &SpellTarget),
         With<SpellProjectileMarker>,
     >,
-    char_query: Query<
-        (&CharacterIndex, &Transform, &Sprite),
-        (With<CharacterMarker>, Without<SpellMarker>),
-    >,
+    char_query: Query<(&Transform, &Sprite), (With<CharacterMarker>, Without<SpellMarker>)>,
 
     commands: Commands,
 ) {
     for (spell_entity, spell_marker, spell_transform, spell_sprite, spell_target) in
         spell_query.iter()
     {
-        let target_character_opt = char_query
-            .iter()
-            .find(|(index, _, _)| spell_target == *index);
-
-        if let Some((_, target_transform, target_sprite)) = target_character_opt {
+        if let Ok((target_transform, target_sprite)) = char_query.get(spell_target.id()) {
             let collision = collide(
                 spell_transform.translation,
                 spell_sprite.size,

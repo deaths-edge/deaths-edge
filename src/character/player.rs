@@ -53,8 +53,8 @@ impl PlayerBundle {
 pub fn player_char_select(
     mut select_clicks: EventReader<SelectClick>,
     mut char_query: QuerySet<(
-        Query<(&CharacterIndex, &mut Selected)>,
-        Query<(&CharacterIndex, &Transform, &Sprite, &mut Selected)>,
+        Query<(Entity, &mut Selected)>,
+        Query<(Entity, &Transform, &Sprite, &mut Selected)>,
         Query<&mut CharacterTarget, With<PlayerMarker>>,
     )>,
 ) {
@@ -80,19 +80,19 @@ pub fn player_char_select(
             )
             .is_some()
         })
-        .map(|(index, _, _, selected)| (index, selected))
-        .map(|(index, mut selected)| {
+        .map(|(entity, _, _, selected)| (entity, selected))
+        .map(|(entity, mut selected)| {
             // Set selection
             *selected = Selected::Selected;
 
-            *index
+            entity
         });
 
     // Set character selection
     if let Ok(mut character_target) = char_query.q2_mut().single_mut() {
         if let Some(index) = selected_index_opt {
             tracing::info!(message = "selected character", ?index);
-            character_target.set_index(index);
+            character_target.set_entity(index);
         } else {
             character_target.deselect();
         }
@@ -102,7 +102,7 @@ pub fn player_char_select(
     for (_, mut selected) in char_query
         .q0_mut()
         .iter_mut()
-        .filter(|(index, _)| Some(**index) != selected_index_opt)
+        .filter(|(entity, _)| Some(*entity) != selected_index_opt)
     {
         *selected = Selected::Unselected;
     }
@@ -155,7 +155,7 @@ pub fn player_movement(
     // CharacterIndex query
     mut char_query: Query<
         (
-            &CharacterIndex,
+            Entity,
             &CharacterSpeedMultiplier,
             &mut Transform,
             &mut Velocity,
@@ -165,7 +165,7 @@ pub fn player_movement(
 
     mut commands: Commands,
 ) {
-    let (character_index, speed_multiplier, transform, mut velocity) =
+    let (character_entity, speed_multiplier, transform, mut velocity) =
         char_query.single_mut().expect("player not found");
 
     const FORWARD_SPEED: f32 = 1.0;
@@ -197,7 +197,7 @@ pub fn player_movement(
 
         commands
             .spawn()
-            .insert_bundle(MovementInteruptBundle::new(*character_index));
+            .insert_bundle(MovementInteruptBundle::new(character_entity));
     }
 
     direction = (transform.rotation * (direction.extend(0.))).truncate();
@@ -216,7 +216,7 @@ pub fn player_action(
     // CharacterIndex query
     mut char_query: Query<
         (
-            &CharacterIndex,
+            Entity,
             &CharacterClass,
             &LastCastInstant,
             &mut CharacterCastState,
@@ -225,7 +225,7 @@ pub fn player_action(
         With<PlayerMarker>,
     >,
 ) {
-    let (character_index, class, last_cast_instant, mut cast_state, target) =
+    let (character_entity, class, last_cast_instant, mut cast_state, target) =
         char_query.single_mut().expect("player not found");
 
     // Check whether global cooldown has expired
@@ -239,9 +239,9 @@ pub fn player_action(
                     // Check global cooldown
                     if global_cooldown_expired {
                         let start = time.last_update().expect("last update not found");
-                        if let Some(target) = target.index() {
+                        if let Some(target) = target.id() {
                             let spell = SpellCast::Fireball {
-                                source: SpellSource::from(*character_index),
+                                source: SpellSource::from(character_entity),
                                 target: target.into(),
                             };
                             tracing::info!(message = "casting", ?spell, ?start);

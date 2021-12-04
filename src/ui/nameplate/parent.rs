@@ -1,16 +1,28 @@
-use crate::character::CharacterIndex;
+use bevy::prelude::*;
 
 #[derive(Debug)]
-pub struct NameplateParent(CharacterIndex);
+pub struct NameplateParent(Entity);
 
-impl From<CharacterIndex> for NameplateParent {
-    fn from(value: CharacterIndex) -> Self {
+impl NameplateParent {
+    pub fn id(&self) -> Entity {
+        self.0
+    }
+}
+
+impl Into<Entity> for NameplateParent {
+    fn into(self) -> Entity {
+        self.0
+    }
+}
+
+impl From<Entity> for NameplateParent {
+    fn from(value: Entity) -> Self {
         Self(value)
     }
 }
 
-impl PartialEq<CharacterIndex> for NameplateParent {
-    fn eq(&self, other: &CharacterIndex) -> bool {
+impl PartialEq<Entity> for NameplateParent {
+    fn eq(&self, other: &Entity) -> bool {
         self.0 == *other
     }
 }

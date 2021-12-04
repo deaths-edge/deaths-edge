@@ -31,14 +31,13 @@ pub struct SpellProjectileMarker;
 
 pub fn spell_tracking(
     mut spell_query: Query<
-        (&mut Transform, &mut Velocity, &SpellTarget),
+        (&SpellTarget, &mut Transform, &mut Velocity),
         (With<SpellProjectileMarker>, With<SpellMarker>),
     >,
-    char_query: Query<(&Transform, &CharacterIndex), Without<SpellMarker>>,
+    char_query: Query<(Entity, &Transform), Without<SpellMarker>>,
 ) {
-    for (mut spell_transform, mut spell_velocity, spell_target) in spell_query.iter_mut() {
-        let char_target = char_query.iter().find(|(_, index)| spell_target == *index);
-        if let Some((char_transform, _)) = char_target {
+    for (spell_target, mut spell_transform, mut spell_velocity) in spell_query.iter_mut() {
+        if let Ok((_, char_transform)) = char_query.get(spell_target.id()) {
             let diff = (char_transform.translation - spell_transform.translation).truncate();
             let angle = Vec2::new(1., 0.).angle_between(diff);
             spell_transform.rotation = Quat::from_rotation_z(angle);

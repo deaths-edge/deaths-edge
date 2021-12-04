@@ -1,28 +1,36 @@
-use crate::{character::CharacterIndex, spells::SpellTarget};
+use bevy::prelude::*;
 
-pub struct EffectTarget(CharacterIndex);
+use crate::spells::SpellTarget;
 
-impl From<CharacterIndex> for EffectTarget {
-    fn from(value: CharacterIndex) -> Self {
+pub struct EffectTarget(Entity);
+
+impl EffectTarget {
+    pub fn id(&self) -> Entity {
+        self.0
+    }
+}
+
+impl From<Entity> for EffectTarget {
+    fn from(value: Entity) -> Self {
         Self(value)
     }
 }
 
-impl Into<CharacterIndex> for EffectTarget {
-    fn into(self) -> CharacterIndex {
+impl Into<Entity> for EffectTarget {
+    fn into(self) -> Entity {
         self.0
     }
 }
 
 impl From<SpellTarget> for EffectTarget {
     fn from(value: SpellTarget) -> Self {
-        let value: CharacterIndex = value.into();
+        let value: Entity = value.into();
         value.into()
     }
 }
 
-impl PartialEq<CharacterIndex> for EffectTarget {
-    fn eq(&self, other: &CharacterIndex) -> bool {
+impl PartialEq<Entity> for EffectTarget {
+    fn eq(&self, other: &Entity) -> bool {
         self.0 == *other
     }
 }

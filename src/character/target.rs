@@ -1,21 +1,21 @@
-use super::CharacterIndex;
+use bevy::prelude::*;
 
 #[derive(Default, Debug, Clone, Copy)]
 pub struct CharacterTarget {
     // TODO: Remove pub
-    pub target: Option<CharacterIndex>,
+    pub target: Option<Entity>,
 }
 
-impl From<CharacterIndex> for CharacterTarget {
-    fn from(index: CharacterIndex) -> Self {
+impl From<Entity> for CharacterTarget {
+    fn from(entity: Entity) -> Self {
         Self {
-            target: Some(index),
+            target: Some(entity),
         }
     }
 }
 
 impl CharacterTarget {
-    pub fn set_index(&mut self, character: CharacterIndex) -> &mut Self {
+    pub fn set_entity(&mut self, character: Entity) -> &mut Self {
         self.target = Some(character);
         self
     }
@@ -25,7 +25,7 @@ impl CharacterTarget {
         self
     }
 
-    pub fn index(&self) -> Option<CharacterIndex> {
+    pub fn id(&self) -> Option<Entity> {
         self.target
     }
 }

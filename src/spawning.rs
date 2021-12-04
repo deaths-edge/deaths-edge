@@ -22,20 +22,18 @@ pub fn spawn_player(
     time: Res<Time>,
     materials: Res<CharacterMaterials>,
     mut commands: Commands,
-) -> CharacterIndex {
+) -> Entity {
     let index = CharacterIndex::from(0);
     let player_bundle = PlayerBundle::new(index, CharacterClass::Medea, &time, &materials);
-    commands.spawn_bundle(player_bundle);
-    index
+    commands.spawn_bundle(player_bundle).id()
 }
 
 pub fn spawn_char_1(
     time: Res<Time>,
     materials: Res<CharacterMaterials>,
     mut commands: Commands,
-) -> CharacterIndex {
+) -> Entity {
     let index = CharacterIndex::from(1);
     let character_bundle = CharacterBundle::new(index, CharacterClass::Heka, &time, &materials);
-    commands.spawn_bundle(character_bundle);
-    index
+    commands.spawn_bundle(character_bundle).id()
 }

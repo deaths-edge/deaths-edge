@@ -1,7 +1,5 @@
-mod fps;
 mod logs;
 
-pub use fps::*;
 use tracing_subscriber::EnvFilter;
 
 use std::{
@@ -11,7 +9,11 @@ use std::{
 };
 
 use ansi_to_tui::ansi_to_text;
-use bevy::{core::FixedTimestep, prelude::*};
+use bevy::{
+    core::FixedTimestep,
+    diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
+    prelude::*,
+};
 use crossterm::{
     event::EnableMouseCapture,
     execute,
@@ -25,7 +27,6 @@ use tui::{
     Terminal,
 };
 
-use fps::FrameCounter;
 use logs::SharedLogs;
 
 pub struct DebugTerminalPlugin {
@@ -65,19 +66,20 @@ impl Plugin for DebugTerminalPlugin {
         let backend = CrosstermBackend::new(stdout);
         let terminal = Terminal::new(backend).expect("failed to initialize terminal");
 
-        let fps_system = SystemSet::new()
-            .with_run_criteria(FixedTimestep::step(self.fps_interval))
-            .with_system(record_fps.system());
-
         let render_system = SystemSet::new()
             .with_run_criteria(FixedTimestep::step(self.render_interval))
             .with_system(terminal_render.system());
 
-        app.init_resource::<FrameCounter>()
+        let collect_fps = SystemSet::new()
+            .with_run_criteria(FixedTimestep::step(self.fps_interval))
+            .with_system(collect_fps.system());
+
+        app.add_plugin(FrameTimeDiagnosticsPlugin::default())
             .insert_resource(shared_logs)
+            .init_resource::<FPSHistory>()
             .insert_resource(DebugTerminal::new(terminal))
             .add_system_set(render_system)
-            .add_system_set(fps_system);
+            .add_system_set(collect_fps);
     }
 }
 
@@ -125,11 +127,10 @@ impl DebugTerminal {
         Self { terminal }
     }
 }
-
-pub fn terminal_render(
+fn terminal_render(
     mut terminal: ResMut<DebugTerminal>,
-    frames: Res<FrameCounter>,
-    logs: ResMut<SharedLogs>,
+    logs: Res<SharedLogs>,
+    fps: Res<FPSHistory>,
 ) {
     let logs = logs.lock().expect("poisoned");
     let recent_logs = logs
@@ -138,5 +139,19 @@ pub fn terminal_render(
         .take(10)
         .map(|x| ansi_to_text(x.as_bytes().to_vec()))
         .flatten();
-    terminal.render(frames.history(), recent_logs);
+
+    terminal.render(&fps.history, recent_logs);
+}
+
+#[derive(Default)]
+struct FPSHistory {
+    history: Vec<(&'static str, u64)>,
+}
+
+fn collect_fps(diagnostics: Res<Diagnostics>, mut fps_history: ResMut<FPSHistory>) {
+    if let Some(diagnostic) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
+        if let Some(value) = diagnostic.value() {
+            fps_history.history.push(("", value as u64));
+        }
+    }
 }
