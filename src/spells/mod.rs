@@ -112,7 +112,7 @@ pub fn check_global_cooldown(
     time: &Time,
     last_cast_instant: &LastCastInstant,
 ) -> Result<(), GlobalCooldown> {
-    if last_cast_instant.elapsed(&time) > GLOBAL_COOLDOWN {
+    if last_cast_instant.elapsed(time) > GLOBAL_COOLDOWN {
         Ok(())
     } else {
         Err(GlobalCooldown)

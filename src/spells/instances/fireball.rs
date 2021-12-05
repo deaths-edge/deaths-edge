@@ -67,7 +67,7 @@ pub fn fireball_action(
     check_line_of_sight(
         character_transform,
         target_transform.translation,
-        &physics_world,
+        physics_world,
     )?;
 
     check_in_front(character_transform, target_transform.translation)?;

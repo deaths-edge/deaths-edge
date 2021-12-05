@@ -37,8 +37,7 @@ pub fn local_to_window_position(
     let size = Vec2::new(window.width() as f32, window.height() as f32);
 
     let window_position = camera_transform.compute_matrix().inverse() * world_position.extend(1.0);
-    let window_position = window_position.truncate().truncate() + size / 2.;
-    window_position
+    window_position.truncate().truncate() + size / 2.
 }
 
 pub fn world_mouse(

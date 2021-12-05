@@ -5,9 +5,7 @@ use super::*;
 use crate::{
     effects::{EffectMarker, EffectTarget, InteruptEffect},
     input_mapping::ActionKey,
-    spells::{
-        check_in_front, check_line_of_sight, instances::fireball_action, SpellCast, SpellSource,
-    },
+    spells::instances::fireball_action,
 };
 
 pub struct PlayerPlugin;
