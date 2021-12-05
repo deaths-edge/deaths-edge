@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use heron::prelude::*;
 
+use crate::physics::WorldLayer;
+
 pub struct EnvironmentMarker;
 
 #[derive(Bundle)]
@@ -10,6 +12,7 @@ pub struct Environment {
     // Physics
     rigid_body: RigidBody,
     collision_shape: CollisionShape,
+    collision_layer: CollisionLayers,
 
     #[bundle]
     sprite: SpriteBundle,
@@ -25,6 +28,9 @@ impl Environment {
                 half_extends: Vec2::new(size.width / 2., size.height / 2.).extend(0.),
                 border_radius: None,
             },
+            collision_layer: CollisionLayers::none()
+                .with_group(WorldLayer::Environment)
+                .with_masks(&[WorldLayer::Character, WorldLayer::Spell]),
 
             sprite: SpriteBundle {
                 material: materials.add(Color::rgb(0.5, 1.0, 0.5).into()),

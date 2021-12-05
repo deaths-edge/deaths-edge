@@ -51,7 +51,7 @@ fn complete_casting(
     mut commands: Commands,
 
     time: Res<Time>,
-    mut spell_materials: Res<SpellMaterials>,
+    spell_materials: Res<SpellMaterials>,
 ) {
     let last_update = time.last_update().expect("last update not found");
     for (character_entity, transform, mut cast_state) in

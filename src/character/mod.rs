@@ -16,6 +16,7 @@ use heron::prelude::*;
 
 use crate::{
     input_mapping::{FocalHold, MotionKey, SelectClick},
+    physics::WorldLayer,
     ui::selected::Selected,
 };
 
@@ -45,6 +46,7 @@ pub struct CharacterBundle {
     speed_modifier: CharacterSpeedMultiplier,
     rigid_body: RigidBody,
     collision_shape: CollisionShape,
+    collision_layers: CollisionLayers,
     velocity: Velocity,
     rotational_constraints: RotationConstraints,
 
@@ -66,6 +68,7 @@ impl CharacterBundle {
     pub fn new(
         index: CharacterIndex,
         class: CharacterClass,
+        transform: Transform,
         time: &Time,
         materials: &CharacterMaterials,
     ) -> Self {
@@ -81,11 +84,15 @@ impl CharacterBundle {
                 half_extends: Vec2::new(size.width / 2., size.height / 2.).extend(0.),
                 border_radius: None,
             },
+            collision_layers: CollisionLayers::none()
+                .with_group(WorldLayer::Character)
+                .with_mask(WorldLayer::Environment),
             velocity: Vec3::ZERO.into(),
             rotational_constraints: RotationConstraints::lock(),
 
             sprite: SpriteBundle {
                 material: materials.handle(class).clone(),
+                transform,
                 sprite: Sprite::new(Vec2::new(size.width, size.width)),
                 ..Default::default()
             },

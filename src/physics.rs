@@ -1,12 +1,8 @@
-use std::ops::{Deref, DerefMut};
+use heron::PhysicsLayer;
 
-use bevy::{
-    prelude::*,
-    sprite::collide_aabb::{collide, Collision},
-};
-
-use crate::{
-    character::CharacterMarker,
-    environment::EnvironmentMarker,
-    spells::{SpellImpactEvent, SpellMarker, SpellProjectileMarker, SpellTarget},
-};
+#[derive(PhysicsLayer)]
+pub enum WorldLayer {
+    Spell,
+    Environment,
+    Character,
+}

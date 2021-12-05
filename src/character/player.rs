@@ -1,10 +1,13 @@
 use bevy::prelude::*;
+use heron::rapier_plugin::PhysicsWorld;
 
 use super::*;
 use crate::{
     effects::{EffectMarker, EffectTarget, InteruptEffect},
     input_mapping::ActionKey,
-    spells::{SpellCast, SpellSource},
+    spells::{
+        check_in_front, check_line_of_sight, instances::fireball_action, SpellCast, SpellSource,
+    },
 };
 
 pub struct PlayerPlugin;
@@ -38,12 +41,13 @@ impl PlayerBundle {
     pub fn new(
         index: CharacterIndex,
         class: CharacterClass,
+        transform: Transform,
         time: &Time,
         materials: &CharacterMaterials,
     ) -> Self {
         Self {
             player_marker: PlayerMarker,
-            character_bundle: CharacterBundle::new(index, class, time, materials),
+            character_bundle: CharacterBundle::new(index, class, transform, time, materials),
         }
     }
 }
@@ -208,14 +212,15 @@ pub fn player_movement(
 /// Receives an [`ActionKey`] and performs the associated action.
 pub fn player_action(
     time: Res<Time>,
+    physics_world: PhysicsWorld,
 
     // ActionKey events
     mut events: EventReader<ActionKey>,
 
-    // CharacterIndex query
     mut character_query: Query<
         (
             Entity,
+            &Transform,
             &CharacterClass,
             &LastCastInstant,
             &mut CharacterCastState,
@@ -223,31 +228,36 @@ pub fn player_action(
         ),
         With<PlayerMarker>,
     >,
-) {
-    let (character_entity, class, last_cast_instant, mut cast_state, target) =
-        character_query.single_mut().expect("player not found");
 
-    // Check whether global cooldown has expired
-    let global_cooldown_expired = last_cast_instant.elapsed(&time) > GLOBAL_COOLDOWN;
+    target_query: Query<&Transform, With<CharacterMarker>>,
+) {
+    let (
+        character_entity,
+        character_transform,
+        character_class,
+        last_cast_instant,
+        mut character_cast_state,
+        character_target,
+    ) = character_query.single_mut().expect("player not found");
 
     for action_key in events.iter() {
-        match class {
+        match character_class {
             CharacterClass::Mars => {}
             CharacterClass::Medea => match action_key {
                 ActionKey::Action1 => {
-                    // Check global cooldown
-                    if global_cooldown_expired {
-                        let start = time.last_update().expect("last update not found");
-                        if let Some(target) = target.id() {
-                            let spell = SpellCast::Fireball {
-                                source: SpellSource::from(character_entity),
-                                target: target.into(),
-                            };
-                            tracing::info!(message = "casting", ?spell, ?start);
-                            cast_state.set_cast(CharacterCast::new(start, spell));
-                        } else {
-                            tracing::warn!("no target");
-                        }
+                    let result = fireball_action(
+                        &time,
+                        &physics_world,
+                        &last_cast_instant,
+                        character_entity,
+                        character_transform,
+                        &character_target,
+                        &mut character_cast_state,
+                        &target_query,
+                    );
+
+                    if let Err(error) = result {
+                        warn!(message = "failed to cast fireball", %error)
                     }
                 }
                 ActionKey::Action2 => todo!(),

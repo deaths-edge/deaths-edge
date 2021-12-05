@@ -24,7 +24,13 @@ pub fn spawn_player(
     mut commands: Commands,
 ) -> Entity {
     let index = CharacterIndex::from(0);
-    let player_bundle = PlayerBundle::new(index, CharacterClass::Medea, &time, &materials);
+    let player_bundle = PlayerBundle::new(
+        index,
+        CharacterClass::Medea,
+        Transform::from_xyz(50., 50., 0.),
+        &time,
+        &materials,
+    );
     commands.spawn_bundle(player_bundle).id()
 }
 
@@ -34,6 +40,12 @@ pub fn spawn_char_1(
     mut commands: Commands,
 ) -> Entity {
     let index = CharacterIndex::from(1);
-    let character_bundle = CharacterBundle::new(index, CharacterClass::Heka, &time, &materials);
+    let character_bundle = CharacterBundle::new(
+        index,
+        CharacterClass::Heka,
+        Transform::from_xyz(-50., -50., 0.),
+        &time,
+        &materials,
+    );
     commands.spawn_bundle(character_bundle).id()
 }
