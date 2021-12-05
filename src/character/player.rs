@@ -4,7 +4,6 @@ use super::*;
 use crate::{
     effects::{EffectMarker, EffectTarget, InteruptEffect},
     input_mapping::ActionKey,
-    physics::Velocity,
     spells::{SpellCast, SpellSource},
 };
 
@@ -200,10 +199,10 @@ pub fn player_movement(
             .insert_bundle(MovementInteruptBundle::new(character_entity));
     }
 
-    direction = (transform.rotation * (direction.extend(0.))).truncate();
+    let direction = transform.rotation * (direction.extend(0.));
 
     // Assign velocity
-    **velocity = direction * speed_multiplier.speed();
+    *velocity = Velocity::from(direction * speed_multiplier.speed());
 }
 
 /// Receives an [`ActionKey`] and performs the associated action.

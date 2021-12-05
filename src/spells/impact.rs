@@ -1,6 +1,6 @@
 use bevy::{app::Events, prelude::*};
 
-use crate::effects::{DamageEffect, EffectMarker, EffectTarget};
+use crate::effects::{DamageEffect, EffectMarker};
 
 use super::{
     instances::{FireballBundle, FireballEffect},
@@ -24,7 +24,7 @@ impl SpellImpactEvent {
 
                 let fireball_effect = FireballEffect {
                     marker: EffectMarker,
-                    target: EffectTarget::from(fireball_bundle.target),
+                    target: fireball_bundle.target().into(),
                     damage: DamageEffect { amount: 30 },
                 };
                 world.spawn().insert_bundle(fireball_effect);

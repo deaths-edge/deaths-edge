@@ -9,13 +9,18 @@ use super::SpellMaterials;
 
 #[derive(Bundle)]
 pub struct FireballBundle {
-    marker: SpellMarker,
+    spell_marker: SpellMarker,
+    projectile_marker: SpellProjectileMarker,
+
     #[bundle]
     sprite: SpriteBundle,
-    source: SpellSource,
-    pub target: SpellTarget,
-    tracking: SpellProjectileMarker,
+
+    rigid_body: RigidBody,
+    collision_shape: CollisionShape,
     velocity: Velocity,
+
+    source: SpellSource,
+    target: SpellTarget,
     // TODO: Maybe include effect here?
 }
 
@@ -31,18 +36,30 @@ impl FireballBundle {
         const FIREBALL_SIZE: f32 = 15.;
 
         Self {
-            marker: SpellMarker::Fireball,
+            spell_marker: SpellMarker::Fireball,
+            projectile_marker: SpellProjectileMarker,
+
             sprite: SpriteBundle {
                 material: materials.fireball_material.clone(),
                 sprite: Sprite::new(Vec2::new(FIREBALL_SIZE, FIREBALL_SIZE)),
                 transform,
                 ..Default::default()
             },
+
             source,
             target,
-            tracking: SpellProjectileMarker,
+
+            rigid_body: RigidBody::Dynamic,
+            collision_shape: CollisionShape::Cuboid {
+                half_extends: Vec3::new(FIREBALL_SIZE / 2., FIREBALL_SIZE / 2., 0.),
+                border_radius: None,
+            },
             velocity: Velocity::from(Vec2::new(0., speed_multiplier * FIREBALL_SPEED)),
         }
+    }
+
+    pub fn target(&self) -> SpellTarget {
+        self.target
     }
 }
 

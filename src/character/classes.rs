@@ -1,3 +1,5 @@
+use bevy::math::Size;
+
 #[derive(Clone, Copy)]
 pub enum CharacterClass {
     /// Warrior class
@@ -22,7 +24,7 @@ pub enum CharacterClass {
 }
 
 impl CharacterClass {
-    pub fn size(&self) -> (f32, f32) {
-        (30., 30.)
+    pub fn size(&self) -> Size {
+        Size::new(30., 30.)
     }
 }

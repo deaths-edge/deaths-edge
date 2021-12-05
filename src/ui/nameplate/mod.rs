@@ -127,32 +127,30 @@ pub fn update_nameplate_position(
         .expect("there must be a player camera");
 
     for (nameplate_parent, node_offset, mut node_style) in nameplate_query.iter_mut() {
-        let character_transform = character_query
-            .get(nameplate_parent.id())
-            .expect("character not found");
+        if let Ok(character_transform) = character_query.get(nameplate_parent.id()) {
+            let primary_window = windows.get_primary().expect("no monitor");
 
-        let primary_window = windows.get_primary().expect("no monitor");
+            let window_position = local_to_window_position(
+                primary_window,
+                camera_transform,
+                character_transform.translation,
+            );
 
-        let window_position = local_to_window_position(
-            primary_window,
-            camera_transform,
-            character_transform.translation,
-        );
+            let offset_width_px = match node_offset.width {
+                Val::Px(px) => px,
+                Val::Percent(pct) => pct / 100. * primary_window.width(),
+                Val::Undefined => 0.,
+                Val::Auto => 0.,
+            };
+            let offset_height_px = match node_offset.height {
+                Val::Px(px) => px,
+                Val::Percent(pct) => pct / 100. * primary_window.height(),
+                Val::Undefined => 0.,
+                Val::Auto => 0.,
+            };
 
-        let offset_width_px = match node_offset.width {
-            Val::Px(px) => px,
-            Val::Percent(pct) => pct / 100. * primary_window.width(),
-            Val::Undefined => 0.,
-            Val::Auto => 0.,
-        };
-        let offset_height_px = match node_offset.height {
-            Val::Px(px) => px,
-            Val::Percent(pct) => pct / 100. * primary_window.height(),
-            Val::Undefined => 0.,
-            Val::Auto => 0.,
-        };
-
-        node_style.position.left = Val::Px(window_position.x) + -offset_width_px;
-        node_style.position.bottom = Val::Px(window_position.y) + offset_height_px;
+            node_style.position.left = Val::Px(window_position.x) + -offset_width_px;
+            node_style.position.bottom = Val::Px(window_position.y) + offset_height_px;
+        }
     }
 }

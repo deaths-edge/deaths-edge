@@ -14,6 +14,7 @@ mod ui;
 use std::time::Duration;
 
 use bevy::{log::LogPlugin, prelude::*};
+use heron::prelude::*;
 
 use character::*;
 use environment::spawn_environment;
@@ -46,7 +47,7 @@ fn main() {
         .add_plugin(input_mapping::InputMapPlugin)
         .add_plugin(spells::SpellPlugin)
         .add_plugin(effects::EffectPlugin)
-        .add_plugin(physics::PhysicsPlugin)
+        .add_plugin(PhysicsPlugin::default())
         .add_startup_system(setup_camera.system())
         .add_startup_system(spawn_environment.system())
         .run();

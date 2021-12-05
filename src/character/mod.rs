@@ -12,10 +12,10 @@ mod speed_multiplier;
 mod target;
 
 use bevy::{prelude::*, sprite::collide_aabb::collide};
+use heron::prelude::*;
 
 use crate::{
     input_mapping::{FocalHold, MotionKey, SelectClick},
-    physics::Velocity,
     ui::selected::Selected,
 };
 
@@ -41,8 +41,12 @@ pub struct CharacterBundle {
     marker: CharacterMarker,
     class: CharacterClass,
 
+    // Physics
     speed_modifier: CharacterSpeedMultiplier,
+    rigid_body: RigidBody,
+    collision_shape: CollisionShape,
     velocity: Velocity,
+    rotational_constraints: RotationConstraints,
 
     #[bundle]
     sprite: SpriteBundle,
@@ -65,18 +69,24 @@ impl CharacterBundle {
         time: &Time,
         materials: &CharacterMaterials,
     ) -> Self {
-        let material = materials.handle(class).clone();
+        let size = class.size();
         Self {
             index,
             marker: CharacterMarker,
             class,
 
             speed_modifier: CharacterSpeedMultiplier::from(1.),
-            velocity: Velocity::from(Vec2::ZERO),
+            rigid_body: RigidBody::Dynamic,
+            collision_shape: CollisionShape::Cuboid {
+                half_extends: Vec2::new(size.width / 2., size.height / 2.).extend(0.),
+                border_radius: None,
+            },
+            velocity: Vec3::ZERO.into(),
+            rotational_constraints: RotationConstraints::lock(),
 
             sprite: SpriteBundle {
-                material,
-                sprite: Sprite::new(Vec2::new(30.0, 30.0)),
+                material: materials.handle(class).clone(),
+                sprite: Sprite::new(Vec2::new(size.width, size.width)),
                 ..Default::default()
             },
 
