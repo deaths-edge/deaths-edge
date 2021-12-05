@@ -11,7 +11,7 @@ mod power;
 mod speed_multiplier;
 mod target;
 
-use bevy::{prelude::*, sprite::collide_aabb::collide};
+use bevy::prelude::*;
 use heron::prelude::*;
 
 use crate::{

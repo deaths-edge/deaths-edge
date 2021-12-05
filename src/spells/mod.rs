@@ -156,8 +156,8 @@ pub struct OutOfFieldOfView(pub f32);
 
 /// Check whether target is in front of source.
 pub fn check_in_front(source: &Transform, target: Vec3) -> Result<f32, OutOfFieldOfView> {
-    let rotated = source.rotation * (source.translation - target);
-    let angle = rotated.truncate().angle_between(Vec2::new(0., 1.));
+    let diff = target - source.translation;
+    let angle = diff.angle_between(source.rotation * Vec3::new(0., 1., 0.));
     if -std::f32::consts::PI / 2. < angle && angle < std::f32::consts::PI / 2. {
         Ok(angle)
     } else {

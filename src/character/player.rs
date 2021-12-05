@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, sprite::collide_aabb::collide};
 use heron::rapier_plugin::PhysicsWorld;
 
 use super::*;
@@ -246,10 +246,10 @@ pub fn player_action(
                     let result = fireball_action(
                         &time,
                         &physics_world,
-                        &last_cast_instant,
+                        last_cast_instant,
                         character_entity,
                         character_transform,
-                        &character_target,
+                        character_target,
                         &mut character_cast_state,
                         &target_query,
                     );
