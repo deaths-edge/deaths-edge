@@ -16,12 +16,15 @@ pub use marker::*;
 pub use source::*;
 pub use target::*;
 
+use instances::SpellMaterials;
+
 pub struct SpellPlugin;
 
 impl Plugin for SpellPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let spell_tracking = SystemSet::new().with_system(spell_tracking.system());
-        app.add_event::<SpellImpactEvent>()
+        app.init_resource::<SpellMaterials>()
+            .add_event::<SpellImpactEvent>()
             .add_system_set(spell_tracking)
             .add_system(spell_impact_system.exclusive_system());
     }

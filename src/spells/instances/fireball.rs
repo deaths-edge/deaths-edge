@@ -1,8 +1,11 @@
 use bevy::prelude::*;
 
-use crate::effects::{DamageEffect, EffectMarker, EffectTarget};
+use crate::{
+    effects::{DamageEffect, EffectMarker, EffectTarget},
+    spells::*,
+};
 
-use super::*;
+use super::SpellMaterials;
 
 #[derive(Bundle)]
 pub struct FireballBundle {
@@ -22,15 +25,16 @@ impl FireballBundle {
         source: SpellSource,
         target: SpellTarget,
         speed_multiplier: f32,
-        materials: &mut Assets<ColorMaterial>,
+        materials: &SpellMaterials,
     ) -> Self {
         const FIREBALL_SPEED: f32 = 300.;
+        const FIREBALL_SIZE: f32 = 15.;
 
         Self {
             marker: SpellMarker::Fireball,
             sprite: SpriteBundle {
-                material: materials.add(Color::rgb(1.0, 0.5, 0.5).into()),
-                sprite: Sprite::new(Vec2::new(15.0, 15.0)),
+                material: materials.fireball_material.clone(),
+                sprite: Sprite::new(Vec2::new(FIREBALL_SIZE, FIREBALL_SIZE)),
                 transform,
                 ..Default::default()
             },

@@ -1,6 +1,6 @@
 use bevy::{core::Time, prelude::*, utils::Instant};
 
-use crate::spells::SpellCast;
+use crate::spells::{instances::SpellMaterials, SpellCast};
 
 pub struct CastingPlugin;
 
@@ -51,7 +51,7 @@ fn complete_casting(
     mut commands: Commands,
 
     time: Res<Time>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut spell_materials: Res<SpellMaterials>,
 ) {
     let last_update = time.last_update().expect("last update not found");
     for (character_entity, transform, mut cast_state) in
@@ -66,6 +66,6 @@ fn complete_casting(
         let cast = cast_state.stop_cast().expect("checked valid");
 
         cast.spell
-            .spawn_bundle(character_entity, transform, &mut commands, &mut materials)
+            .spawn_bundle(character_entity, transform, &mut commands, &spell_materials)
     }
 }

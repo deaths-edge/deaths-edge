@@ -1,6 +1,5 @@
 mod fireball;
+mod materials;
 
 pub use fireball::*;
-
-use super::*;
-use crate::physics::Velocity;
+pub use materials::*;

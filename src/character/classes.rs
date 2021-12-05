@@ -20,3 +20,9 @@ pub enum CharacterClass {
     // Eygpt
     Heka,
 }
+
+impl CharacterClass {
+    pub fn size(&self) -> (f32, f32) {
+        (30., 30.)
+    }
+}

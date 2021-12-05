@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use super::{SpellSource, SpellTarget};
+use super::{instances::SpellMaterials, SpellSource, SpellTarget};
 use crate::spells::instances::FireballBundle;
 
 #[derive(Debug)]
@@ -27,7 +27,7 @@ impl SpellCast {
         parent_entity: Entity,
         transform: &Transform,
         commands: &mut Commands,
-        materials: &mut Assets<ColorMaterial>,
+        materials: &SpellMaterials,
     ) {
         use SpellCast::*;
 
