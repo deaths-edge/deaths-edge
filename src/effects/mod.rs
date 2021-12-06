@@ -16,7 +16,7 @@ use crate::state::AppState;
 pub struct EffectPlugin;
 
 impl Plugin for EffectPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let system_set = SystemSet::on_update(AppState::Arena)
             .label("effects")
             .with_system(damage_effect_apply.system())
@@ -26,5 +26,5 @@ impl Plugin for EffectPlugin {
     }
 }
 
-#[derive(Default)]
+#[derive(Debug, Default, Component)]
 pub struct EffectMarker;

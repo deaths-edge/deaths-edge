@@ -8,7 +8,7 @@ use crate::{state::AppState, ui::mouse::WorldMousePosition};
 pub struct InputMapPlugin;
 
 impl Plugin for InputMapPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let system_set = SystemSet::on_update(AppState::Arena)
             .label("input-mapping")
             .with_system(input_map.system());
@@ -192,7 +192,7 @@ fn input_map(
     mut select_clicks: EventWriter<SelectClick>,
     mut focal_holds: EventWriter<FocalHold>,
 ) {
-    motion_input.update();
+    motion_input.clear();
 
     let pressed_iter = keyboard_input
         .get_just_pressed()

@@ -11,7 +11,7 @@ use crate::{
 pub struct SpawnPlugin;
 
 impl Plugin for SpawnPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let char_spawn = SystemSet::on_enter(AppState::Arena)
             .with_system(spawn_player.system().chain(setup_nameplate.system()))
             .with_system(spawn_char_1.system().chain(setup_nameplate.system()));

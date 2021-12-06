@@ -1,6 +1,6 @@
-use bevy::utils::Instant;
+use bevy::{prelude::*, utils::Instant};
 
-#[derive(Default)]
+#[derive(Debug, Default, Component)]
 pub struct InterruptState {
     interrupted_until: Option<Instant>,
 }

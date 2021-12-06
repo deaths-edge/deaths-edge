@@ -27,6 +27,7 @@ impl FromWorld for SplashMaterials {
     }
 }
 
+#[derive(Component)]
 pub struct SplashMarker;
 
 #[derive(Bundle)]
@@ -82,14 +83,14 @@ pub fn setup_splash(mut commands: Commands, fonts: Res<UIFonts>, materials: Res<
 }
 
 pub fn remove_splash(mut commands: Commands, query: Query<Entity, With<SplashMarker>>) {
-    let node = query.single().expect("splash root node not found");
+    let node = query.single();
     commands.entity(node).despawn_recursive();
 }
 
 pub struct SplashUIPlugin;
 
 impl Plugin for SplashUIPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let teardown = SystemSet::on_exit(AppState::Splash).with_system(remove_splash.system());
         app.init_resource::<UIFonts>()
             .init_resource::<SplashMaterials>()

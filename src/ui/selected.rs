@@ -5,14 +5,14 @@ use crate::{character::CharacterIndex, state::AppState};
 pub struct SelectedPlugin;
 
 impl Plugin for SelectedPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let selection =
             SystemSet::on_update(AppState::Arena).with_system(select_highlight.system());
         app.add_system_set(selection);
     }
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, Component)]
 pub enum Selected {
     Selected,
     Unselected,

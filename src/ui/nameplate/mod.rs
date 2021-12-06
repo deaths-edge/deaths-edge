@@ -23,7 +23,7 @@ use super::camera::UICameraMarker;
 pub struct NameplatePlugin;
 
 impl Plugin for NameplatePlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let nameplate_system_set = SystemSet::on_update(AppState::Arena)
             .label("nameplate")
             .with_system(update_nameplate_position.system())
@@ -34,10 +34,10 @@ impl Plugin for NameplatePlugin {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 pub struct NameplateMarker;
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 pub struct NameplateOffset(Size<Val>);
 
 impl Deref for NameplateOffset {
@@ -105,9 +105,7 @@ pub fn update_nameplate_position(
 
     camera_query: Query<&Transform, With<UICameraMarker>>,
 ) {
-    let camera_transform = camera_query
-        .single()
-        .expect("there must be a player camera");
+    let camera_transform = camera_query.single();
 
     for (nameplate_parent, node_offset, mut node_style) in nameplate_query.iter_mut() {
         if let Ok(character_transform) = character_query.get(nameplate_parent.id()) {

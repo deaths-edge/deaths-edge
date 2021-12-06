@@ -33,6 +33,7 @@ pub use power::*;
 pub use speed_multiplier::*;
 pub use target::*;
 
+#[derive(Debug, Component)]
 pub struct CharacterMarker;
 
 // TODO: Stratify into base vs full (base only including that which should be reconcilled over the internet)

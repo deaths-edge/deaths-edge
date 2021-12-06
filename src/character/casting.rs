@@ -8,7 +8,7 @@ use crate::{
 pub struct CastingPlugin;
 
 impl Plugin for CastingPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let casting_system = SystemSet::on_update(AppState::Arena)
             .label("casting")
             .with_system(complete_casting.system());
@@ -16,7 +16,7 @@ impl Plugin for CastingPlugin {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Component)]
 pub struct CharacterCastState {
     cast: Option<CharacterCast>,
 }

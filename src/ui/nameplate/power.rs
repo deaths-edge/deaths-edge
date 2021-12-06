@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use super::NameplateMaterials;
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 pub struct PowerBarMarker;
 
 #[derive(Debug, Bundle)]

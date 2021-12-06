@@ -9,7 +9,7 @@ pub fn setup_camera(mut commands: Commands) {
 pub struct GameCameraPlugin;
 
 impl Plugin for GameCameraPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let setup_camera = SystemSet::on_enter(AppState::Arena).with_system(setup_camera.system());
         app.add_system_set(setup_camera);
     }

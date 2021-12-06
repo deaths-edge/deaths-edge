@@ -12,7 +12,7 @@ use crate::{
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let character_motion = SystemSet::on_update(AppState::Arena)
             .label("character-motion")
             .with_system(player_focal_rotate.system())
@@ -26,6 +26,7 @@ impl Plugin for PlayerPlugin {
     }
 }
 
+#[derive(Debug, Component)]
 pub struct PlayerMarker;
 
 #[derive(Bundle)]
@@ -54,9 +55,9 @@ impl PlayerBundle {
 pub fn player_char_select(
     mut select_clicks: EventReader<SelectClick>,
     mut character_query: QuerySet<(
-        Query<(Entity, &mut Selected)>,
-        Query<(Entity, &Transform, &Sprite, &mut Selected)>,
-        Query<&mut CharacterTarget, With<PlayerMarker>>,
+        QueryState<(Entity, &mut Selected)>,
+        QueryState<(Entity, &Transform, &Sprite, &mut Selected)>,
+        QueryState<&mut CharacterTarget, With<PlayerMarker>>,
     )>,
 ) {
     const SELECT_SIZE: (f32, f32) = (30., 30.);
@@ -70,7 +71,7 @@ pub fn player_char_select(
 
     // Find and set selection
     let selected_entity_opt = character_query
-        .q1_mut()
+        .q1()
         .iter_mut()
         .find(|(_, char_transform, char_sprite, _)| {
             collide(
@@ -90,7 +91,7 @@ pub fn player_char_select(
         });
 
     // Set character selection
-    if let Ok(mut character_target) = character_query.q2_mut().single_mut() {
+    if let Ok(mut character_target) = character_query.q2().get_single_mut() {
         if let Some(index) = selected_entity_opt {
             tracing::info!(message = "selected character", ?index);
             character_target.set_entity(index);
@@ -101,7 +102,7 @@ pub fn player_char_select(
 
     // Deselect everything else
     for (_, mut selected) in character_query
-        .q0_mut()
+        .q0()
         .iter_mut()
         .filter(|(entity, _)| Some(*entity) != selected_entity_opt)
     {
@@ -114,7 +115,7 @@ pub fn player_focal_rotate(
     mut character_query: Query<&mut Transform, With<PlayerMarker>>,
     mut events: EventReader<FocalHold>,
 ) {
-    let mut transform = character_query.single_mut().expect("player not found");
+    let mut transform = character_query.single_mut();
 
     const MINIMUM_FOCAL_LENGTH: f32 = 200.;
 
@@ -167,7 +168,7 @@ pub fn player_movement(
     mut commands: Commands,
 ) {
     let (character_entity, speed_multiplier, transform, mut velocity) =
-        character_query.single_mut().expect("player not found");
+        character_query.single_mut();
 
     const FORWARD_SPEED: f32 = 1.0;
     const STRAFE_SPEED: f32 = 0.8;
@@ -236,7 +237,7 @@ pub fn player_action(
         last_cast_instant,
         mut character_cast_state,
         character_target,
-    ) = character_query.single_mut().expect("player not found");
+    ) = character_query.single_mut();
 
     for action_key in events.iter() {
         match character_class {

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Default, Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy, Component)]
 pub struct CharacterTarget {
     // TODO: Remove pub
     pub target: Option<Entity>,

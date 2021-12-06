@@ -39,7 +39,7 @@ impl CharacterMaterials {
 pub struct CharacterMaterialPlugins;
 
 impl Plugin for CharacterMaterialPlugins {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.init_resource::<CharacterMaterials>();
     }
 }

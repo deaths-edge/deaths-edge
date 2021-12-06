@@ -4,7 +4,7 @@ use crate::character::{CharacterCastState, CharacterMarker};
 
 use super::{NameplateMarker, NameplateMaterials, NameplateParent};
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 pub struct CastBarMarker;
 
 #[derive(Debug, Bundle)]

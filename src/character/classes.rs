@@ -1,6 +1,6 @@
-use bevy::math::Size;
+use bevy::{math::Size, prelude::*};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Component)]
 pub enum CharacterClass {
     /// Warrior class
     // Roman

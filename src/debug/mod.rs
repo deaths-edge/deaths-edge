@@ -48,7 +48,7 @@ impl DebugTerminalPlugin {
 }
 
 impl Plugin for DebugTerminalPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         // Initialize logs
         let shared_logs = SharedLogs::with_capacity(32);
         tracing_subscriber::fmt()

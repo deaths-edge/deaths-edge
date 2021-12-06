@@ -6,7 +6,7 @@ use crate::character::{CharacterCastState, InterruptState};
 
 use super::{EffectMarker, EffectTarget};
 
-#[derive(Default)]
+#[derive(Default, Component)]
 pub struct InterruptEffect {
     lock_duration: Duration,
 }

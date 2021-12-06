@@ -4,6 +4,7 @@ use crate::character::CharacterHealth;
 
 use super::{EffectMarker, EffectTarget};
 
+#[derive(Debug, Component)]
 pub struct DamageEffect {
     pub amount: u32,
 }

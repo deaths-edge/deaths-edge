@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 pub struct NameplateParent(Entity);
 
 impl NameplateParent {

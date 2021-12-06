@@ -4,7 +4,7 @@ use crate::character::{CharacterHealth, CharacterMarker};
 
 use super::{NameplateMarker, NameplateMaterials, NameplateParent};
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 pub struct HealthBarMarker;
 
 #[derive(Debug, Bundle)]

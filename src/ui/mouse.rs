@@ -7,7 +7,7 @@ use super::camera::UICameraMarker;
 pub struct WorldMousePlugin;
 
 impl Plugin for WorldMousePlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let world_mouse = SystemSet::on_update(AppState::Arena).with_system(world_mouse.system());
         app.init_resource::<WorldMousePosition>()
             .add_system_set(world_mouse);
@@ -51,9 +51,7 @@ pub fn world_mouse(
 ) {
     let mut mouse_pos_reader = mouse_motion_events.get_reader();
     if let Some(mouse_position) = mouse_pos_reader.iter(&mouse_motion_events).last() {
-        let camera_transform = camera_query
-            .single()
-            .expect("there must be a player camera");
+        let camera_transform = camera_query.single();
 
         let primary_window = windows.get_primary().expect("no monitor");
         let position =

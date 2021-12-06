@@ -3,6 +3,7 @@ use heron::prelude::*;
 
 use crate::{physics::WorldLayer, state::AppState};
 
+#[derive(Debug, Component)]
 pub struct EnvironmentMarker;
 
 #[derive(Bundle)]
@@ -45,7 +46,7 @@ impl Environment {
 pub struct EnvironmentPlugin;
 
 impl Plugin for EnvironmentPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let spawn_environment =
             SystemSet::on_enter(AppState::Arena).with_system(spawn_environment.system());
 

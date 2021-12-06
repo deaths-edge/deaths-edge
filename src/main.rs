@@ -6,6 +6,7 @@ mod environment;
 mod game_camera;
 mod game_event;
 mod input_mapping;
+mod networking;
 mod physics;
 mod spawning;
 mod spells;
@@ -39,7 +40,7 @@ fn main() {
 
     ////
     // App construction
-    App::build()
+    App::new()
         // Window description
         .insert_resource(window_description)
         // Default plugins

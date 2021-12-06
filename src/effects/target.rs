@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::spells::SpellTarget;
 
+#[derive(Debug, Component)]
 pub struct EffectTarget(Entity);
 
 impl EffectTarget {

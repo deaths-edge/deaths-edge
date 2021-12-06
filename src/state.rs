@@ -22,7 +22,7 @@ pub enum AppState {
 pub struct SplashPlugin;
 
 impl Plugin for SplashPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.add_plugin(SplashUIPlugin);
     }
 }
@@ -30,7 +30,7 @@ impl Plugin for SplashPlugin {
 pub struct ArenaPlugin;
 
 impl Plugin for ArenaPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.add_plugins(CharacterPlugins)
             .add_plugins(UIPlugins)
             .add_plugin(SpawnPlugin)

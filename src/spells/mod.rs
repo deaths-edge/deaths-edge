@@ -29,7 +29,7 @@ use crate::{
 pub struct SpellPlugin;
 
 impl Plugin for SpellPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let spells = SystemSet::on_update(AppState::Arena)
             .label("spells")
             .with_system(spell_tracking.system())
@@ -43,6 +43,7 @@ impl Plugin for SpellPlugin {
     }
 }
 
+#[derive(Debug, Component)]
 pub struct SpellProjectileMarker;
 
 pub fn spell_tracking(

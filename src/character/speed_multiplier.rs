@@ -1,5 +1,8 @@
 use std::ops::{Deref, DerefMut};
 
+use bevy::prelude::*;
+
+#[derive(Debug, Component)]
 pub struct CharacterSpeedMultiplier(f32);
 
 impl From<f32> for CharacterSpeedMultiplier {
