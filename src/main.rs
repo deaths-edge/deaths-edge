@@ -16,7 +16,6 @@ use std::time::Duration;
 
 use bevy::{log::LogPlugin, prelude::*};
 
-use environment::spawn_environment;
 use state::*;
 
 fn main() {
@@ -49,7 +48,7 @@ fn main() {
         .add_plugin(debug_plugin)
         .add_state(AppState::Splash)
         .add_plugin(ArenaPlugin)
-        // .add_system(state_transition.system())
+        .add_system(state_transition.system())
         .run();
 }
 

@@ -147,7 +147,8 @@ pub fn check_line_of_sight(
         collision_point, ..
     }) = collision_opt
     {
-        if ray.length() < collision_point.length() {
+        let collision_diff = source_position - collision_point;
+        if ray.length() < collision_diff.length() {
             Ok(())
         } else {
             Err(LineOfSightObstruction)
