@@ -2,6 +2,7 @@ pub mod camera;
 pub mod mouse;
 pub mod nameplate;
 pub mod selected;
+pub mod splash;
 
 use bevy::{app::PluginGroupBuilder, prelude::*};
 

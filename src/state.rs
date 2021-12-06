@@ -2,9 +2,14 @@ use bevy::prelude::*;
 use heron::PhysicsPlugin;
 
 use crate::{
-    character::CharacterPlugins, effects::EffectPlugin, environment::EnvironmentPlugin,
-    game_camera::GameCameraPlugin, input_mapping::InputMapPlugin, spawning::SpawnPlugin,
-    spells::SpellPlugin, ui::UIPlugins,
+    character::CharacterPlugins,
+    effects::EffectPlugin,
+    environment::EnvironmentPlugin,
+    game_camera::GameCameraPlugin,
+    input_mapping::InputMapPlugin,
+    spawning::SpawnPlugin,
+    spells::SpellPlugin,
+    ui::{splash::SplashUIPlugin, UIPlugins},
 };
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -18,7 +23,7 @@ pub struct SplashPlugin;
 
 impl Plugin for SplashPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        todo!()
+        app.add_plugin(SplashUIPlugin);
     }
 }
 

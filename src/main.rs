@@ -47,12 +47,19 @@ fn main() {
         // Debug plugins
         .add_plugin(debug_plugin)
         .add_state(AppState::Splash)
+        .add_plugin(SplashPlugin)
         .add_plugin(ArenaPlugin)
         .add_system(state_transition.system())
         .run();
 }
 
-fn state_transition(mut app_state: ResMut<State<AppState>>) {
+fn state_transition(time: Res<Time>, mut app_state: ResMut<State<AppState>>) {
+    let duration = time.time_since_startup();
+
+    if duration < Duration::from_secs(3) {
+        return;
+    }
+
     if *app_state.current() != AppState::Arena {
         app_state
             .set(AppState::Arena)

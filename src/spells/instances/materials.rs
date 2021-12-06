@@ -6,7 +6,7 @@ pub struct SpellMaterials {
 impl FromWorld for SpellMaterials {
     fn from_world(world: &mut World) -> Self {
         let mut materials = world.get_resource_mut::<Assets<ColorMaterial>>().unwrap();
-        SpellMaterials {
+        Self {
             fireball_material: materials.add(Color::RED.into()),
         }
     }

@@ -13,7 +13,7 @@ pub struct CharacterMaterials {
 impl FromWorld for CharacterMaterials {
     fn from_world(world: &mut World) -> Self {
         let mut materials = world.get_resource_mut::<Assets<ColorMaterial>>().unwrap();
-        CharacterMaterials {
+        Self {
             medea_material: materials.add(Color::rgb(0.15, 0.15, 0.15).into()),
             mars_material: materials.add(Color::rgb(0.15, 0.15, 0.15).into()),
             pluto_material: materials.add(Color::rgb(0.15, 0.15, 0.15).into()),

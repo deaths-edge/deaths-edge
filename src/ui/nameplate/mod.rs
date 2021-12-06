@@ -82,6 +82,7 @@ impl NameplateBundle {
                     size,
                     position_type: PositionType::Absolute,
                     flex_direction: FlexDirection::Column,
+                    align_self: AlignSelf::Center,
                     // justify_content: JustifyContent::FlexStart,
                     ..Default::default()
                 },
@@ -100,7 +101,7 @@ pub fn update_nameplate_position(
         With<NameplateMarker>,
     >,
 
-    character_query: Query<&Transform, (With<CharacterMarker>, Changed<Transform>)>,
+    character_query: Query<&Transform, With<CharacterMarker>>,
 
     camera_query: Query<&Transform, With<UICameraMarker>>,
 ) {

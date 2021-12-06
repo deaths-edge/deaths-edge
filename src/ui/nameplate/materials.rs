@@ -10,7 +10,7 @@ pub struct NameplateMaterials {
 impl FromWorld for NameplateMaterials {
     fn from_world(world: &mut World) -> Self {
         let mut materials = world.get_resource_mut::<Assets<ColorMaterial>>().unwrap();
-        NameplateMaterials {
+        Self {
             none: materials.add(Color::rgba(0., 0., 0., 0.5).into()),
             health_bar: materials.add(Color::GREEN.into()),
             energy_bar: materials.add(Color::BLUE.into()),
