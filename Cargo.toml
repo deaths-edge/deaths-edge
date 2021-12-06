@@ -4,8 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = { git = "https://github.com/jrxb/bevy.git" }
-heron = { git = "https://github.com/jrxb/heron.git", features = ["2d"] }
+bevy = { git = "https://github.com/bevyengine/bevy.git", branch = "main" }
+
+heron = { path = "../heron", features = ["2d"] }
+
 
 crossterm = "0.22.1"
 tui = { version = "0.16.0", default-features = false, features = ['crossterm'] }

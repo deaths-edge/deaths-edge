@@ -120,7 +120,7 @@ pub fn player_focal_rotate(
     const MINIMUM_FOCAL_LENGTH: f32 = 200.;
 
     if let Some(event) = events.iter().last() {
-        let translation = Vec2::from(transform.translation);
+        let translation = transform.translation.truncate();
 
         let diff = event.mouse_position - translation;
         let distance = diff.length();

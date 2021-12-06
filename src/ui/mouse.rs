@@ -29,7 +29,7 @@ pub fn window_to_local_position(
     let p = window_position - size / 2.0;
 
     let pos_wld = camera_transform.compute_matrix() * p.extend(0.0).extend(1.0);
-    Vec2::from(pos_wld)
+    pos_wld.truncate().truncate()
 }
 
 pub fn local_to_window_position(
