@@ -1,8 +1,8 @@
 // use crate::character::CharacterIndex;
 
-// pub enum Interuption {
+// pub enum Interruption {
 //     Movement,
-//     SpellInterupt {
+//     SpellInterrupt {
 
 //     }
 // }
@@ -15,9 +15,9 @@
 //     CastComplete {
 //         character: CharacterIndex
 //     },
-//     CastInterupted {
+//     CastInterrupted {
 //         character: CharacterIndex,
-//         cause: Interuption
+//         cause: Interruption
 //     },
 //     Damaged {
 

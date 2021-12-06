@@ -3,6 +3,7 @@ mod health;
 mod materials;
 mod parent;
 mod power;
+mod setup;
 
 use std::ops::Deref;
 
@@ -13,16 +14,18 @@ pub use health::*;
 pub use materials::*;
 pub use parent::*;
 pub use power::*;
+pub use setup::*;
 
-use crate::{character::CharacterMarker, ui::mouse::local_to_window_position};
+use crate::{character::CharacterMarker, state::AppState, ui::mouse::local_to_window_position};
 
-use super::PlayerCamera;
+use super::camera::UICameraMarker;
 
 pub struct NameplatePlugin;
 
 impl Plugin for NameplatePlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let nameplate_system_set = SystemSet::new()
+        let nameplate_system_set = SystemSet::on_update(AppState::Arena)
+            .label("nameplate")
             .with_system(update_nameplate_position.system())
             .with_system(health_bar_update.system())
             .with_system(cast_bar_update.system());
@@ -89,27 +92,6 @@ impl NameplateBundle {
     }
 }
 
-pub fn setup_nameplate(
-    character_entity: In<Entity>,
-
-    nameplate_materials: Res<NameplateMaterials>,
-
-    mut commands: Commands,
-) {
-    let nameplate_bundle = NameplateBundle::new(character_entity.0.into(), &nameplate_materials);
-    commands
-        .spawn_bundle(nameplate_bundle)
-        .with_children(|commands| {
-            let health_bar_bundle = HealthBarBundle::new(&nameplate_materials);
-            let power_bar_bundle = PowerBarBundle::new(&nameplate_materials);
-            let cast_bar_bundle = CastBarBundle::new(&nameplate_materials);
-
-            commands.spawn_bundle(cast_bar_bundle);
-            commands.spawn_bundle(power_bar_bundle);
-            commands.spawn_bundle(health_bar_bundle);
-        });
-}
-
 pub fn update_nameplate_position(
     windows: Res<Windows>,
 
@@ -120,7 +102,7 @@ pub fn update_nameplate_position(
 
     character_query: Query<&Transform, (With<CharacterMarker>, Changed<Transform>)>,
 
-    camera_query: Query<&Transform, With<PlayerCamera>>,
+    camera_query: Query<&Transform, With<UICameraMarker>>,
 ) {
     let camera_transform = camera_query
         .single()

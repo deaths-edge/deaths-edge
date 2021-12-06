@@ -3,6 +3,7 @@ mod character;
 mod debug;
 mod effects;
 mod environment;
+mod game_camera;
 mod game_event;
 mod input_mapping;
 mod physics;
@@ -14,11 +15,9 @@ mod ui;
 use std::time::Duration;
 
 use bevy::{log::LogPlugin, prelude::*};
-use heron::prelude::*;
 
-use character::*;
 use environment::spawn_environment;
-use ui::setup_camera;
+use state::*;
 
 fn main() {
     let window_description = WindowDescriptor {
@@ -28,6 +27,8 @@ fn main() {
         ..Default::default()
     };
 
+    ////
+    // Debug plugin
     const FPS_COLLECTION_INTERVAL: Duration = Duration::from_secs(1);
     const RENDER_UPDATE_INTERVAL: Duration = Duration::from_millis(1_000);
     const ENV_FILTER: &str = "deaths_edge=trace";
@@ -37,18 +38,25 @@ fn main() {
         RENDER_UPDATE_INTERVAL,
     );
 
+    ////
+    // App construction
     App::build()
+        // Window description
         .insert_resource(window_description)
+        // Default plugins
         .add_plugins_with(DefaultPlugins, |plugins| plugins.disable::<LogPlugin>())
+        // Debug plugins
         .add_plugin(debug_plugin)
-        .add_plugins(CharacterPlugins)
-        .add_plugins(ui::UIPlugins)
-        .add_plugin(spawning::SpawnPlugin)
-        .add_plugin(input_mapping::InputMapPlugin)
-        .add_plugin(spells::SpellPlugin)
-        .add_plugin(effects::EffectPlugin)
-        .add_plugin(PhysicsPlugin::default())
-        .add_startup_system(setup_camera.system())
-        .add_startup_system(spawn_environment.system())
+        .add_state(AppState::Splash)
+        .add_plugin(ArenaPlugin)
+        // .add_system(state_transition.system())
         .run();
+}
+
+fn state_transition(mut app_state: ResMut<State<AppState>>) {
+    if *app_state.current() != AppState::Arena {
+        app_state
+            .set(AppState::Arena)
+            .expect("state transition failed");
+    }
 }

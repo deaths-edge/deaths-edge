@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use heron::prelude::*;
 
-use crate::physics::WorldLayer;
+use crate::{physics::WorldLayer, state::AppState};
 
 pub struct EnvironmentMarker;
 
@@ -39,6 +39,17 @@ impl Environment {
                 ..Default::default()
             },
         }
+    }
+}
+
+pub struct EnvironmentPlugin;
+
+impl Plugin for EnvironmentPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        let spawn_environment =
+            SystemSet::on_enter(AppState::Arena).with_system(spawn_environment.system());
+
+        app.add_system_set(spawn_environment);
     }
 }
 

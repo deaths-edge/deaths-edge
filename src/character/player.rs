@@ -3,21 +3,21 @@ use heron::rapier_plugin::PhysicsWorld;
 
 use super::*;
 use crate::{
-    effects::{EffectMarker, EffectTarget, InteruptEffect},
+    effects::{EffectMarker, EffectTarget, InterruptEffect},
     input_mapping::ActionKey,
     spells::instances::fireball_action,
+    state::AppState,
 };
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let character_motion = SystemSet::new()
+        let character_motion = SystemSet::on_update(AppState::Arena)
             .label("character-motion")
-            .before("collisions")
             .with_system(player_focal_rotate.system())
             .with_system(player_movement.system());
-        let character_actions = SystemSet::new()
+        let character_actions = SystemSet::on_update(AppState::Arena)
             .label("character-actions")
             .with_system(player_action.system())
             .with_system(player_char_select.system());
@@ -133,17 +133,17 @@ pub fn player_focal_rotate(
 }
 
 #[derive(Bundle)]
-pub struct MovementInteruptBundle {
+pub struct MovementInterruptBundle {
     effect_marker: EffectMarker,
-    interupt: InteruptEffect,
+    interrupt: InterruptEffect,
     target: EffectTarget,
 }
 
-impl MovementInteruptBundle {
+impl MovementInterruptBundle {
     pub fn new<T: Into<EffectTarget>>(target: T) -> Self {
         Self {
             effect_marker: EffectMarker,
-            interupt: InteruptEffect::default(),
+            interrupt: InterruptEffect::default(),
             target: target.into(),
         }
     }
@@ -198,7 +198,7 @@ pub fn player_movement(
 
         commands
             .spawn()
-            .insert_bundle(MovementInteruptBundle::new(character_entity));
+            .insert_bundle(MovementInterruptBundle::new(character_entity));
     }
 
     let direction = transform.rotation * (direction.extend(0.));

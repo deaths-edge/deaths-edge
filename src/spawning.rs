@@ -4,6 +4,7 @@ use crate::{
     character::{
         CharacterBundle, CharacterClass, CharacterIndex, CharacterMaterials, PlayerBundle,
     },
+    state::AppState,
     ui::nameplate::setup_nameplate,
 };
 
@@ -11,10 +12,11 @@ pub struct SpawnPlugin;
 
 impl Plugin for SpawnPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let player_spawn = spawn_player.system().chain(setup_nameplate.system());
-        let char_1_spawn = spawn_char_1.system().chain(setup_nameplate.system());
-        app.add_startup_system(player_spawn)
-            .add_startup_system(char_1_spawn);
+        let char_spawn = SystemSet::on_enter(AppState::Arena)
+            .with_system(spawn_player.system().chain(setup_nameplate.system()))
+            .with_system(spawn_char_1.system().chain(setup_nameplate.system()));
+
+        app.add_system_set(char_spawn);
     }
 }
 

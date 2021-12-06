@@ -3,13 +3,13 @@ use bevy::{
     prelude::*,
 };
 
-use crate::ui::mouse::WorldMousePosition;
+use crate::{state::AppState, ui::mouse::WorldMousePosition};
 
 pub struct InputMapPlugin;
 
 impl Plugin for InputMapPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let system_set = SystemSet::new()
+        let system_set = SystemSet::on_update(AppState::Arena)
             .label("input-mapping")
             .with_system(input_map.system());
         app.init_resource::<Bindings>()
@@ -18,7 +18,6 @@ impl Plugin for InputMapPlugin {
             .add_event::<FocalHold>()
             .add_event::<SelectClick>()
             .add_system_set(system_set);
-        // TODO: Read from file
     }
 }
 

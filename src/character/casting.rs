@@ -1,12 +1,18 @@
 use bevy::{core::Time, prelude::*, utils::Instant};
 
-use crate::spells::{instances::SpellMaterials, SpellCast};
+use crate::{
+    spells::{instances::SpellMaterials, SpellCast},
+    state::AppState,
+};
 
 pub struct CastingPlugin;
 
 impl Plugin for CastingPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_system(complete_casting.system());
+        let casting_system = SystemSet::on_update(AppState::Arena)
+            .label("casting")
+            .with_system(complete_casting.system());
+        app.add_system_set(casting_system);
     }
 }
 

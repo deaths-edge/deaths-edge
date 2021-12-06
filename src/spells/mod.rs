@@ -23,18 +23,23 @@ use instances::SpellMaterials;
 use crate::{
     character::{CharacterMarker, LastCastInstant, GLOBAL_COOLDOWN},
     physics::WorldLayer,
+    state::AppState,
 };
 
 pub struct SpellPlugin;
 
 impl Plugin for SpellPlugin {
     fn build(&self, app: &mut AppBuilder) {
+        let spells = SystemSet::on_update(AppState::Arena)
+            .label("spells")
+            .with_system(spell_tracking.system())
+            .with_system(spell_projectile_motion.system())
+            .with_system(spell_projectile_collision.system())
+            .with_system(spell_impact_system.exclusive_system());
+
         app.init_resource::<SpellMaterials>()
             .add_event::<SpellImpactEvent>()
-            .add_system(spell_tracking.system())
-            .add_system(spell_projectile_motion.system())
-            .add_system(spell_projectile_collision.system())
-            .add_system(spell_impact_system.exclusive_system());
+            .add_system_set(spells);
     }
 }
 

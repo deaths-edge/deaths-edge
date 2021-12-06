@@ -4,7 +4,7 @@ mod control;
 mod cooldowns;
 mod health;
 mod index;
-mod interupt;
+mod interrupt;
 mod materials;
 mod player;
 mod power;
@@ -26,7 +26,7 @@ pub use control::*;
 pub use cooldowns::*;
 pub use health::*;
 pub use index::*;
-pub use interupt::*;
+pub use interrupt::*;
 pub use materials::*;
 pub use player::*;
 pub use power::*;
@@ -57,7 +57,7 @@ pub struct CharacterBundle {
     power: CharacterPower,
 
     cast_state: CharacterCastState,
-    interupt_state: InteruptState,
+    interrupt_state: InterruptState,
     last_cast_instant: LastCastInstant,
 
     target: CharacterTarget,
@@ -107,7 +107,7 @@ impl CharacterBundle {
             },
 
             cast_state: CharacterCastState::default(),
-            interupt_state: InteruptState::default(),
+            interrupt_state: InterruptState::default(),
             last_cast_instant: time.startup().into(),
 
             target: CharacterTarget::default(),

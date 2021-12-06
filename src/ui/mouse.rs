@@ -1,13 +1,16 @@
 use bevy::{app::Events, prelude::*};
 
-use super::PlayerCamera;
+use crate::state::AppState;
+
+use super::camera::UICameraMarker;
 
 pub struct WorldMousePlugin;
 
 impl Plugin for WorldMousePlugin {
     fn build(&self, app: &mut AppBuilder) {
+        let world_mouse = SystemSet::on_update(AppState::Arena).with_system(world_mouse.system());
         app.init_resource::<WorldMousePosition>()
-            .add_system(world_mouse.system());
+            .add_system_set(world_mouse);
     }
 }
 
@@ -44,7 +47,7 @@ pub fn world_mouse(
     windows: Res<Windows>,
     mut world_mouse_pos: ResMut<WorldMousePosition>,
     mouse_motion_events: Res<Events<CursorMoved>>,
-    camera_query: Query<&Transform, With<PlayerCamera>>,
+    camera_query: Query<&Transform, With<UICameraMarker>>,
 ) {
     let mut mouse_pos_reader = mouse_motion_events.get_reader();
     if let Some(mouse_position) = mouse_pos_reader.iter(&mouse_motion_events).last() {
