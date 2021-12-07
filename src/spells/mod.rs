@@ -7,6 +7,7 @@ mod source;
 mod target;
 
 use bevy::prelude::*;
+use bevy_ggrs::GGRSApp;
 use heron::{
     prelude::*,
     rapier_plugin::{PhysicsWorld, RayCastInfo},
@@ -39,7 +40,10 @@ impl Plugin for SpellPlugin {
 
         app.init_resource::<SpellMaterials>()
             .add_event::<SpellImpactEvent>()
-            .add_system_set(spells);
+            .with_rollback_schedule(Schedule::default().with_stage(
+                "rollback_default",
+                SystemStage::single_threaded().with_system_set(spells),
+            ));
     }
 }
 

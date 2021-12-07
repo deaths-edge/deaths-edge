@@ -1,4 +1,5 @@
 use bevy::{prelude::*, sprite::collide_aabb::collide};
+use ggrs::GameInput;
 use heron::rapier_plugin::PhysicsWorld;
 
 use super::*;
@@ -43,10 +44,18 @@ impl PlayerBundle {
         transform: Transform,
         time: &Time,
         materials: &CharacterMaterials,
+        rollback_id_provider: &mut RollbackIdProvider,
     ) -> Self {
         Self {
             player_marker: PlayerMarker,
-            character_bundle: CharacterBundle::new(index, class, transform, time, materials),
+            character_bundle: CharacterBundle::new(
+                index,
+                class,
+                transform,
+                time,
+                materials,
+                rollback_id_provider,
+            ),
         }
     }
 }
@@ -207,6 +216,38 @@ pub fn player_movement(
     // Assign velocity
     *velocity = Velocity::from(direction * speed_multiplier.speed());
 }
+
+// #[allow(dead_code)]
+// pub fn move_cube_system(
+//     mut query: Query<(&mut Transform, &mut Velocity, &Player), With<Rollback>>,
+//     inputs: Res<Vec<GameInput>>,
+// ) {
+//     for (mut t, mut v, p) in query.iter_mut() {
+//         let input = inputs[p.handle as usize].buffer[0];
+//         // set velocity through key presses
+//         if input & INPUT_UP != 0 && input & INPUT_DOWN == 0 {
+//             v.z -= MOVEMENT_SPEED;
+//         }
+//         if input & INPUT_UP == 0 && input & INPUT_DOWN != 0 {
+//             v.z += MOVEMENT_SPEED;
+//         }
+//         if input & INPUT_LEFT != 0 && input & INPUT_RIGHT == 0 {
+//             v.x -= MOVEMENT_SPEED;
+//         }
+//         if input & INPUT_LEFT == 0 && input & INPUT_RIGHT != 0 {
+//             v.x += MOVEMENT_SPEED;
+//         }
+
+//         // slow down
+//         if input & INPUT_UP == 0 && input & INPUT_DOWN == 0 {
+//             v.z *= FRICTION;
+//         }
+//         if input & INPUT_LEFT == 0 && input & INPUT_RIGHT == 0 {
+//             v.x *= FRICTION;
+//         }
+//         v.y *= FRICTION;
+//     }
+// }
 
 /// Receives an [`ActionKey`] and performs the associated action.
 pub fn player_action(

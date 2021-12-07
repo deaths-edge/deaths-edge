@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Component)]
-pub struct CharacterIndex(usize);
+pub struct CharacterIndex(u32);
 
-impl From<usize> for CharacterIndex {
-    fn from(val: usize) -> Self {
+impl From<u32> for CharacterIndex {
+    fn from(val: u32) -> Self {
         Self(val)
     }
 }

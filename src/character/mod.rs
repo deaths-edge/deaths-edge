@@ -12,6 +12,8 @@ mod speed_multiplier;
 mod target;
 
 use bevy::prelude::*;
+use bevy_ggrs::{Rollback, RollbackIdProvider};
+use ggrs::P2PSession;
 use heron::prelude::*;
 
 use crate::{
@@ -39,6 +41,7 @@ pub struct CharacterMarker;
 // TODO: Stratify into base vs full (base only including that which should be reconcilled over the internet)
 #[derive(Bundle)]
 pub struct CharacterBundle {
+    // Markers
     index: CharacterIndex,
     marker: CharacterMarker,
     class: CharacterClass,
@@ -51,18 +54,25 @@ pub struct CharacterBundle {
     velocity: Velocity,
     rotational_constraints: RotationConstraints,
 
+    // Graphics
     #[bundle]
     sprite: SpriteBundle,
 
+    // Health
     health: CharacterHealth,
     power: CharacterPower,
 
+    // Casting
     cast_state: CharacterCastState,
     interrupt_state: InterruptState,
     last_cast_instant: LastCastInstant,
 
+    // Selection
     target: CharacterTarget,
     selected: Selected,
+
+    // Networking
+    rollback_id: Rollback,
 }
 
 impl CharacterBundle {
@@ -72,6 +82,7 @@ impl CharacterBundle {
         transform: Transform,
         time: &Time,
         materials: &CharacterMaterials,
+        rollback_id_provider: &mut RollbackIdProvider,
     ) -> Self {
         let size = class.size();
         Self {
@@ -113,6 +124,8 @@ impl CharacterBundle {
 
             target: CharacterTarget::default(),
             selected: Selected::default(),
+
+            rollback_id: Rollback::new(rollback_id_provider.next_id()),
         }
     }
 }

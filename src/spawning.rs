@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_ggrs::RollbackIdProvider;
 
 use crate::{
     character::{
@@ -24,6 +25,7 @@ pub fn spawn_player(
     time: Res<Time>,
     materials: Res<CharacterMaterials>,
     mut commands: Commands,
+    mut rip: ResMut<RollbackIdProvider>,
 ) -> Entity {
     let index = CharacterIndex::from(0);
     let player_bundle = PlayerBundle::new(
@@ -32,6 +34,7 @@ pub fn spawn_player(
         Transform::from_xyz(50., 50., 0.),
         &time,
         &materials,
+        &mut rip,
     );
     commands.spawn_bundle(player_bundle).id()
 }
@@ -40,6 +43,7 @@ pub fn spawn_char_1(
     time: Res<Time>,
     materials: Res<CharacterMaterials>,
     mut commands: Commands,
+    mut rip: ResMut<RollbackIdProvider>,
 ) -> Entity {
     let index = CharacterIndex::from(1);
     let character_bundle = CharacterBundle::new(
@@ -48,6 +52,7 @@ pub fn spawn_char_1(
         Transform::from_xyz(-50., -50., 0.),
         &time,
         &materials,
+        &mut rip,
     );
     commands.spawn_bundle(character_bundle).id()
 }
