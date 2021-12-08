@@ -3,13 +3,13 @@ use bevy::{
     prelude::*,
 };
 
-use crate::{state::AppState, ui::mouse::WorldMousePosition};
+use crate::{state::ClientState, ui::mouse::WorldMousePosition};
 
 pub struct InputMapPlugin;
 
 impl Plugin for InputMapPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let system_set = SystemSet::on_update(AppState::Arena)
+        let system_set = SystemSet::on_update(ClientState::Arena)
             .label("input-mapping")
             .with_system(input_map.system());
         app.init_resource::<Bindings>()
@@ -41,6 +41,7 @@ pub enum ActionKey {
     Action8,
 }
 
+#[derive(Debug)]
 pub enum BoundInput {
     Action(ActionKey),
     Motion(MotionKey),
@@ -199,6 +200,7 @@ fn input_map(
         .filter_map(|key| bindings.try_map(*key).ok());
 
     for input in pressed_iter {
+        trace!(message = "just pressed", ?input);
         match input {
             BoundInput::Motion(motion_key) => motion_input.press(motion_key),
             _ => (),

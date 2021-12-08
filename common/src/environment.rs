@@ -1,7 +1,9 @@
+use std::{fmt::Debug, hash::Hash};
+
 use bevy::prelude::*;
 use heron::prelude::*;
 
-use crate::{physics::WorldLayer, state::AppState};
+use crate::physics::WorldLayer;
 
 pub struct EnvironmentMarker;
 
@@ -42,12 +44,23 @@ impl Environment {
     }
 }
 
-pub struct EnvironmentPlugin;
+pub struct EnvironmentPlugin<T> {
+    state: T,
+}
 
-impl Plugin for EnvironmentPlugin {
+impl<T> EnvironmentPlugin<T> {
+    pub fn new(state: T) -> Self {
+        Self { state }
+    }
+}
+
+impl<T> Plugin for EnvironmentPlugin<T>
+where
+    T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
+{
     fn build(&self, app: &mut AppBuilder) {
         let spawn_environment =
-            SystemSet::on_enter(AppState::Arena).with_system(spawn_environment.system());
+            SystemSet::on_enter(self.state).with_system(spawn_environment.system());
 
         app.add_system_set(spawn_environment);
     }

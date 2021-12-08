@@ -1,13 +1,15 @@
 use bevy::prelude::*;
 
-use crate::{character::CharacterIndex, state::AppState};
+use crate::state::ClientState;
+
+use common::character::CharacterIndex;
 
 pub struct SelectedPlugin;
 
 impl Plugin for SelectedPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let selection =
-            SystemSet::on_update(AppState::Arena).with_system(select_highlight.system());
+            SystemSet::on_update(ClientState::Arena).with_system(select_highlight.system());
         app.add_system_set(selection);
     }
 }

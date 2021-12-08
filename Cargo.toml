@@ -2,7 +2,7 @@
 members = [
     "client",
     "server",
-    "library"
+    "common"
 ]
 
 default-members = ["client"]

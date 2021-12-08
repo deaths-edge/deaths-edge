@@ -16,15 +16,16 @@ pub use parent::*;
 pub use power::*;
 pub use setup::*;
 
-use crate::{character::CharacterMarker, state::AppState, ui::mouse::local_to_window_position};
-
 use super::camera::UICameraMarker;
+use crate::{state::ClientState, ui::mouse::local_to_window_position};
+
+use common::character::CharacterMarker;
 
 pub struct NameplatePlugin;
 
 impl Plugin for NameplatePlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let nameplate_system_set = SystemSet::on_update(AppState::Arena)
+        let nameplate_system_set = SystemSet::on_update(ClientState::Arena)
             .label("nameplate")
             .with_system(update_nameplate_position.system())
             .with_system(health_bar_update.system())

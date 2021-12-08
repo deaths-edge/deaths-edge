@@ -3,6 +3,8 @@ mod heal;
 mod interrupt;
 mod target;
 
+use std::{fmt::Debug, hash::Hash};
+
 use bevy::prelude::*;
 
 pub use damage::*;
@@ -11,13 +13,22 @@ pub use interrupt::*;
 pub use target::*;
 pub use target::*;
 
-use crate::state::AppState;
+pub struct EffectPlugin<T> {
+    state: T,
+}
 
-pub struct EffectPlugin;
+impl<T> EffectPlugin<T> {
+    pub fn new(state: T) -> Self {
+        Self { state }
+    }
+}
 
-impl Plugin for EffectPlugin {
+impl<T> Plugin for EffectPlugin<T>
+where
+    T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
+{
     fn build(&self, app: &mut AppBuilder) {
-        let system_set = SystemSet::on_update(AppState::Arena)
+        let system_set = SystemSet::on_update(self.state)
             .label("effects")
             .with_system(damage_effect_apply.system())
             .with_system(health_effect_apply.system())

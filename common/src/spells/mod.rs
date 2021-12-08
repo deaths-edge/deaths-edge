@@ -6,6 +6,8 @@ mod marker;
 mod source;
 mod target;
 
+use std::{fmt::Debug, hash::Hash};
+
 use bevy::prelude::*;
 use heron::{
     prelude::*,
@@ -23,14 +25,24 @@ use instances::SpellMaterials;
 use crate::{
     character::{CharacterMarker, LastCastInstant, GLOBAL_COOLDOWN},
     physics::WorldLayer,
-    state::AppState,
 };
 
-pub struct SpellPlugin;
+pub struct SpellPlugin<T> {
+    state: T,
+}
 
-impl Plugin for SpellPlugin {
+impl<T> SpellPlugin<T> {
+    pub fn new(state: T) -> Self {
+        Self { state }
+    }
+}
+
+impl<T> Plugin for SpellPlugin<T>
+where
+    T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
+{
     fn build(&self, app: &mut AppBuilder) {
-        let spells = SystemSet::on_update(AppState::Arena)
+        let spells = SystemSet::on_update(self.state)
             .label("spells")
             .with_system(spell_tracking.system())
             .with_system(spell_projectile_motion.system())

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::state::AppState;
+use crate::state::ClientState;
 
 pub struct UIFonts {
     splash: Handle<Font>,
@@ -90,7 +90,7 @@ pub struct SplashUIPlugin;
 
 impl Plugin for SplashUIPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let teardown = SystemSet::on_exit(AppState::Splash).with_system(remove_splash.system());
+        let teardown = SystemSet::on_exit(ClientState::Splash).with_system(remove_splash.system());
         app.init_resource::<UIFonts>()
             .init_resource::<SplashMaterials>()
             .add_startup_system(setup_splash.system())

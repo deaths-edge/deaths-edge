@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::character::{CharacterCastState, CharacterMarker};
+use common::character::{CharacterCastState, CharacterMarker};
 
 use super::{NameplateMarker, NameplateMaterials, NameplateParent};
 

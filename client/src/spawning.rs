@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 
+use common::character::{CharacterBundle as CommonCharacterBundle, CharacterClass};
+
 use crate::{
-    character::{
-        CharacterBundle, CharacterClass, CharacterIndex, CharacterMaterials, PlayerBundle,
-    },
-    state::AppState,
+    character::{CharacterBundle, CharacterMaterials, PlayerBundle},
+    state::ClientState,
     ui::nameplate::setup_nameplate,
 };
 
@@ -12,7 +12,7 @@ pub struct SpawnPlugin;
 
 impl Plugin for SpawnPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let char_spawn = SystemSet::on_enter(AppState::Arena)
+        let char_spawn = SystemSet::on_enter(ClientState::Arena)
             .with_system(spawn_player.system().chain(setup_nameplate.system()))
             .with_system(spawn_char_1.system().chain(setup_nameplate.system()));
 
@@ -25,14 +25,10 @@ pub fn spawn_player(
     materials: Res<CharacterMaterials>,
     mut commands: Commands,
 ) -> Entity {
-    let index = CharacterIndex::from(0);
-    let player_bundle = PlayerBundle::new(
-        index,
-        CharacterClass::Medea,
-        Transform::from_xyz(50., 50., 0.),
-        &time,
-        &materials,
-    );
+    let common = CommonCharacterBundle::new(0.into(), CharacterClass::Heka, &time);
+    let character_bundle =
+        CharacterBundle::new(Transform::from_xyz(50., 50., 0.), common, &materials);
+    let player_bundle = PlayerBundle::new(character_bundle);
     commands.spawn_bundle(player_bundle).id()
 }
 
@@ -41,13 +37,8 @@ pub fn spawn_char_1(
     materials: Res<CharacterMaterials>,
     mut commands: Commands,
 ) -> Entity {
-    let index = CharacterIndex::from(1);
-    let character_bundle = CharacterBundle::new(
-        index,
-        CharacterClass::Heka,
-        Transform::from_xyz(-50., -50., 0.),
-        &time,
-        &materials,
-    );
+    let common = CommonCharacterBundle::new(1.into(), CharacterClass::Heka, &time);
+    let character_bundle =
+        CharacterBundle::new(Transform::from_xyz(-50., -50., 0.), common, &materials);
     commands.spawn_bundle(character_bundle).id()
 }

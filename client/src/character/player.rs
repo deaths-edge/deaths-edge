@@ -1,23 +1,40 @@
+use std::{fmt::Debug, hash::Hash};
+
 use bevy::{prelude::*, sprite::collide_aabb::collide};
-use heron::rapier_plugin::PhysicsWorld;
 
 use super::*;
-use crate::{
+use crate::input_mapping::{ActionKey, FocalHold, MotionKey, SelectClick};
+
+use common::{
+    character::{
+        CharacterCastState, CharacterMarker, CharacterSpeedMultiplier, CharacterTarget,
+        LastCastInstant,
+    },
     effects::{EffectMarker, EffectTarget, InterruptEffect},
-    input_mapping::ActionKey,
+    heron::{rapier_plugin::PhysicsWorld, Velocity},
     spells::instances::fireball_action,
-    state::AppState,
 };
 
-pub struct PlayerPlugin;
+pub struct PlayerPlugin<T> {
+    state: T,
+}
 
-impl Plugin for PlayerPlugin {
+impl<T> PlayerPlugin<T> {
+    pub fn new(state: T) -> Self {
+        Self { state }
+    }
+}
+
+impl<T> Plugin for PlayerPlugin<T>
+where
+    T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
+{
     fn build(&self, app: &mut AppBuilder) {
-        let character_motion = SystemSet::on_update(AppState::Arena)
+        let character_motion = SystemSet::on_update(self.state)
             .label("character-motion")
             .with_system(player_focal_rotate.system())
             .with_system(player_movement.system());
-        let character_actions = SystemSet::on_update(AppState::Arena)
+        let character_actions = SystemSet::on_update(self.state)
             .label("character-actions")
             .with_system(player_action.system())
             .with_system(player_char_select.system());
@@ -36,16 +53,10 @@ pub struct PlayerBundle {
 }
 
 impl PlayerBundle {
-    pub fn new(
-        index: CharacterIndex,
-        class: CharacterClass,
-        transform: Transform,
-        time: &Time,
-        materials: &CharacterMaterials,
-    ) -> Self {
+    pub fn new(character_bundle: CharacterBundle) -> Self {
         Self {
             player_marker: PlayerMarker,
-            character_bundle: CharacterBundle::new(index, class, transform, time, materials),
+            character_bundle,
         }
     }
 }

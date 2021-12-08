@@ -1,15 +1,25 @@
+use std::{fmt::Debug, hash::Hash};
+
 use bevy::{core::Time, prelude::*, utils::Instant};
 
-use crate::{
-    spells::{instances::SpellMaterials, SpellCast},
-    state::AppState,
-};
+use crate::spells::{instances::SpellMaterials, SpellCast};
 
-pub struct CastingPlugin;
+pub struct CastingPlugin<T> {
+    state: T,
+}
 
-impl Plugin for CastingPlugin {
+impl<T> CastingPlugin<T> {
+    pub fn new(state: T) -> Self {
+        Self { state }
+    }
+}
+
+impl<T> Plugin for CastingPlugin<T>
+where
+    T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
+{
     fn build(&self, app: &mut AppBuilder) {
-        let casting_system = SystemSet::on_update(AppState::Arena)
+        let casting_system = SystemSet::on_update(self.state)
             .label("casting")
             .with_system(complete_casting.system());
         app.add_system_set(casting_system);

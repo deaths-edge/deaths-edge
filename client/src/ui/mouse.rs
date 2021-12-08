@@ -1,6 +1,6 @@
 use bevy::{app::Events, prelude::*};
 
-use crate::state::AppState;
+use crate::state::ClientState;
 
 use super::camera::UICameraMarker;
 
@@ -8,7 +8,8 @@ pub struct WorldMousePlugin;
 
 impl Plugin for WorldMousePlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let world_mouse = SystemSet::on_update(AppState::Arena).with_system(world_mouse.system());
+        let world_mouse =
+            SystemSet::on_update(ClientState::Arena).with_system(world_mouse.system());
         app.init_resource::<WorldMousePosition>()
             .add_system_set(world_mouse);
     }

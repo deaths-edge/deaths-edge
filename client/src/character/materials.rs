@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::CharacterClass;
+use common::character::CharacterClass;
 
 pub struct CharacterMaterials {
     medea_material: Handle<ColorMaterial>,
@@ -36,9 +36,9 @@ impl CharacterMaterials {
     }
 }
 
-pub struct CharacterMaterialPlugins;
+pub struct CharacterMaterialPlugin;
 
-impl Plugin for CharacterMaterialPlugins {
+impl Plugin for CharacterMaterialPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<CharacterMaterials>();
     }

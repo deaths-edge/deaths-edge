@@ -1,15 +1,9 @@
-mod buffs;
 mod character;
 mod debug;
-mod effects;
-mod environment;
 mod game_camera;
-mod game_event;
 mod input_mapping;
 mod music;
-mod physics;
 mod spawning;
-mod spells;
 mod state;
 mod ui;
 
@@ -31,7 +25,7 @@ fn main() {
     // Debug plugin
     const FPS_COLLECTION_INTERVAL: Duration = Duration::from_secs(1);
     const RENDER_UPDATE_INTERVAL: Duration = Duration::from_millis(1_000);
-    const ENV_FILTER: &str = "deaths_edge=trace";
+    const ENV_FILTER: &str = concat!(env!("CARGO_PKG_NAME"), "=trace");
     let debug_plugin = debug::DebugTerminalPlugin::new(
         ENV_FILTER,
         FPS_COLLECTION_INTERVAL,
@@ -47,23 +41,23 @@ fn main() {
         .add_plugins_with(DefaultPlugins, |plugins| plugins.disable::<LogPlugin>())
         // Debug plugins
         .add_plugin(debug_plugin)
-        .add_state(AppState::Splash)
+        .add_state(ClientState::Splash)
         .add_plugin(SplashPlugin)
         .add_plugin(ArenaPlugin)
         .add_system(state_transition.system())
         .run();
 }
 
-fn state_transition(time: Res<Time>, mut app_state: ResMut<State<AppState>>) {
+fn state_transition(time: Res<Time>, mut app_state: ResMut<State<ClientState>>) {
     let duration = time.time_since_startup();
 
     if duration < Duration::from_secs(3) {
         return;
     }
 
-    if *app_state.current() != AppState::Arena {
+    if *app_state.current() != ClientState::Arena {
         app_state
-            .set(AppState::Arena)
+            .set(ClientState::Arena)
             .expect("state transition failed");
     }
 }
