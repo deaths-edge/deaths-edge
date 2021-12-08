@@ -7,6 +7,7 @@ use crate::{
     environment::EnvironmentPlugin,
     game_camera::GameCameraPlugin,
     input_mapping::InputMapPlugin,
+    music::SplashMusicPlugin,
     spawning::SpawnPlugin,
     spells::SpellPlugin,
     ui::{splash::SplashUIPlugin, UIPlugins},
@@ -23,7 +24,7 @@ pub struct SplashPlugin;
 
 impl Plugin for SplashPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_plugin(SplashUIPlugin);
+        app.add_plugin(SplashUIPlugin).add_plugin(SplashMusicPlugin);
     }
 }
 

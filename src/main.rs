@@ -6,6 +6,7 @@ mod environment;
 mod game_camera;
 mod game_event;
 mod input_mapping;
+mod music;
 mod physics;
 mod spawning;
 mod spells;
