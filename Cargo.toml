@@ -4,5 +4,3 @@ members = [
     "server",
     "common"
 ]
-
-default-members = ["client"]

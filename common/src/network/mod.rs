@@ -1,6 +1,6 @@
-mod client;
+pub mod client;
 pub mod messages;
-mod server;
+pub mod server;
 
 use std::{fmt::Debug, net::SocketAddr, time::Duration};
 
@@ -76,7 +76,7 @@ pub struct NetworkSendEvent<Message> {
     packetting: Packetting,
 }
 
-fn message_broadcast<Message>(
+pub fn message_broadcast<Message>(
     mut message_packet: EventReader<NetworkSendEvent<Message>>,
     network_server: Res<NetworkServer>,
 ) where

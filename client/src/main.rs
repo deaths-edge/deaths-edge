@@ -3,14 +3,16 @@ mod debug;
 mod game_camera;
 mod input_mapping;
 mod music;
+mod network;
 mod spawning;
 mod state;
 mod ui;
 
-use std::time::Duration;
+use std::{net::SocketAddr, time::Duration};
 
 use bevy::{log::LogPlugin, prelude::*};
 
+use network::NetworkPlugin;
 use state::*;
 
 fn main() {
@@ -32,6 +34,10 @@ fn main() {
         RENDER_UPDATE_INTERVAL,
     );
 
+    const NETWORK_POLL_INTERVAL: Duration = Duration::from_millis(500);
+    let socket: SocketAddr = "127.0.0.1:8001".parse().expect("invalid socket");
+    let network_plugin = NetworkPlugin::new(socket, NETWORK_POLL_INTERVAL);
+
     ////
     // App construction
     App::build()
@@ -45,6 +51,8 @@ fn main() {
         .add_plugin(SplashPlugin)
         .add_plugin(ArenaPlugin)
         .add_system(state_transition.system())
+        // Network plugin
+        .add_plugin(network_plugin)
         .run();
 }
 

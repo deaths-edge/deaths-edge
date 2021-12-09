@@ -1,7 +1,7 @@
 pub mod character;
 pub mod effects;
 pub mod environment;
-pub mod networking;
+pub mod network;
 pub mod physics;
 pub mod spells;
 
