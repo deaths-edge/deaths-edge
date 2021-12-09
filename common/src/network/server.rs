@@ -39,7 +39,9 @@ fn handle_messages(network_server: Res<NetworkServer>) {
                     Ok(message) => {
                         info!(?message);
                     }
-                    Err(err) => {}
+                    Err(error) => {
+                        error!(%error)
+                    }
                 }
             }
             SocketEvent::Connect(address) => {

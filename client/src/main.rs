@@ -48,6 +48,7 @@ fn main() {
         // Debug plugins
         .add_plugin(debug_plugin)
         .add_state(ClientState::Splash)
+        .add_plugin(StateTransitionPlugin)
         .add_plugin(SplashPlugin)
         .add_plugin(ArenaPlugin)
         .add_system(state_transition.system())
@@ -56,7 +57,11 @@ fn main() {
         .run();
 }
 
-fn state_transition(time: Res<Time>, mut app_state: ResMut<State<ClientState>>) {
+fn state_transition(
+    time: Res<Time>,
+    app_state: ResMut<State<ClientState>>,
+    mut transition_writer: EventWriter<StateTransitionEvent>,
+) {
     let duration = time.time_since_startup();
 
     if duration < Duration::from_secs(3) {
@@ -64,8 +69,8 @@ fn state_transition(time: Res<Time>, mut app_state: ResMut<State<ClientState>>) 
     }
 
     if *app_state.current() != ClientState::Arena {
-        app_state
-            .set(ClientState::Arena)
-            .expect("state transition failed");
+        let server: SocketAddr = "127.0.0.1:8001".parse().expect("invalid socket");
+
+        transition_writer.send(StateTransitionEvent::ToArena { server });
     }
 }
