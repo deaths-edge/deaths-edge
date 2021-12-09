@@ -25,7 +25,7 @@ pub fn spawn_player(
     materials: Res<CharacterMaterials>,
     mut commands: Commands,
 ) -> Entity {
-    let common = CommonCharacterBundle::new(0.into(), CharacterClass::Heka, &time);
+    let common = CommonCharacterBundle::new(0.into(), CharacterClass::Medea, &time);
     let character_bundle =
         CharacterBundle::new(Transform::from_xyz(50., 50., 0.), common, &materials);
     let player_bundle = PlayerBundle::new(character_bundle);

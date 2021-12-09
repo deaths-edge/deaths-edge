@@ -2,8 +2,6 @@ use bevy::prelude::*;
 
 use crate::state::ClientState;
 
-// use crate::state::ClientState;
-
 pub struct Music {
     splash: Handle<AudioSource>,
 }
@@ -17,7 +15,7 @@ impl FromWorld for Music {
 }
 
 fn setup(asset_server: Res<Music>, audio: Res<Audio>) {
-    audio.play(asset_server.splash.clone());
+    // audio.play(asset_server.splash.clone());
 }
 
 fn fade_splash(asset_server: Res<Music>, audio: Res<Audio>) {
