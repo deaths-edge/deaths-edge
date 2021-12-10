@@ -3,9 +3,10 @@ use std::{fmt::Debug, hash::Hash};
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 
 use super::*;
-use crate::input_mapping::{ActionKey, FocalHold, Motion, MotionDirection, MotionKey, SelectClick};
+use crate::input_mapping::{ActionKey, FocalHold, SelectClick};
 
 use common::{
+    actions::{Motion, MotionDirection},
     character::{
         CharacterCastState, CharacterMarker, CharacterSpeedMultiplier, CharacterTarget,
         LastCastInstant,

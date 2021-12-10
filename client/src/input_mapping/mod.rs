@@ -6,6 +6,7 @@ use bevy::{
     input::{mouse::MouseButtonInput, ElementState},
     prelude::*,
 };
+use common::actions::{Motion, MotionDirection};
 
 use crate::{state::ClientState, ui::mouse::WorldMousePosition};
 
@@ -26,168 +27,6 @@ impl Plugin for InputMapPlugin {
             .add_event::<FocalHold>()
             .add_event::<SelectClick>()
             .add_system_set(system_set);
-    }
-}
-
-#[derive(PartialEq, Clone, Copy)]
-pub enum MotionDirection {
-    Left,
-    Forward,
-    Right,
-    Backward,
-    LeftForward,
-    LeftBackward,
-    RightForward,
-    RightBackward,
-}
-
-#[derive(Default, PartialEq, Clone, Copy)]
-pub struct Motion(pub Option<MotionDirection>);
-
-impl Motion {
-    pub fn release(self, key: MotionKey) -> Self {
-        match self.0 {
-            None => {
-                let direction = match key {
-                    MotionKey::Left => MotionDirection::Right,
-                    MotionKey::Forward => MotionDirection::Backward,
-                    MotionKey::Right => MotionDirection::Left,
-                    MotionKey::Backward => MotionDirection::Forward,
-                };
-                Self(Some(direction))
-            }
-            Some(direction) => {
-                let direction_opt = match (key, direction) {
-                    (MotionKey::Left, MotionDirection::Left) => None,
-                    (MotionKey::Left, MotionDirection::LeftForward) => {
-                        Some(MotionDirection::Forward)
-                    }
-                    (MotionKey::Left, MotionDirection::Forward) => {
-                        Some(MotionDirection::RightForward)
-                    }
-                    (MotionKey::Left, MotionDirection::Backward) => {
-                        Some(MotionDirection::RightBackward)
-                    }
-                    (MotionKey::Left, MotionDirection::LeftBackward) => {
-                        Some(MotionDirection::Backward)
-                    }
-                    (MotionKey::Forward, MotionDirection::Left) => {
-                        Some(MotionDirection::LeftBackward)
-                    }
-                    (MotionKey::Forward, MotionDirection::LeftForward) => {
-                        Some(MotionDirection::Left)
-                    }
-                    (MotionKey::Forward, MotionDirection::Forward) => None,
-                    (MotionKey::Forward, MotionDirection::RightForward) => {
-                        Some(MotionDirection::Right)
-                    }
-                    (MotionKey::Forward, MotionDirection::Right) => {
-                        Some(MotionDirection::RightBackward)
-                    }
-                    (MotionKey::Right, MotionDirection::Forward) => {
-                        Some(MotionDirection::LeftForward)
-                    }
-                    (MotionKey::Right, MotionDirection::RightForward) => {
-                        Some(MotionDirection::Forward)
-                    }
-                    (MotionKey::Right, MotionDirection::Right) => None,
-                    (MotionKey::Right, MotionDirection::RightBackward) => {
-                        Some(MotionDirection::Backward)
-                    }
-                    (MotionKey::Right, MotionDirection::Backward) => {
-                        Some(MotionDirection::LeftBackward)
-                    }
-                    (MotionKey::Backward, MotionDirection::Left) => {
-                        Some(MotionDirection::LeftForward)
-                    }
-                    (MotionKey::Backward, MotionDirection::Right) => {
-                        Some(MotionDirection::RightForward)
-                    }
-                    (MotionKey::Backward, MotionDirection::RightBackward) => {
-                        Some(MotionDirection::Right)
-                    }
-                    (MotionKey::Backward, MotionDirection::Backward) => None,
-                    (MotionKey::Backward, MotionDirection::LeftBackward) => {
-                        Some(MotionDirection::Left)
-                    }
-                    _ => unreachable!("cannot release"),
-                };
-                Self(direction_opt)
-            }
-        }
-    }
-
-    pub fn press(self, key: MotionKey) -> Self {
-        match self.0 {
-            Some(some) => {
-                let direction_opt = match (key, some) {
-                    (MotionKey::Left, MotionDirection::Forward) => {
-                        Some(MotionDirection::LeftForward)
-                    }
-                    (MotionKey::Left, MotionDirection::RightForward) => {
-                        Some(MotionDirection::Forward)
-                    }
-                    (MotionKey::Left, MotionDirection::Right) => None,
-                    (MotionKey::Left, MotionDirection::RightBackward) => {
-                        Some(MotionDirection::Backward)
-                    }
-                    (MotionKey::Left, MotionDirection::Backward) => {
-                        Some(MotionDirection::LeftBackward)
-                    }
-                    (MotionKey::Forward, MotionDirection::Left) => {
-                        Some(MotionDirection::LeftForward)
-                    }
-                    (MotionKey::Forward, MotionDirection::Right) => {
-                        Some(MotionDirection::RightForward)
-                    }
-                    (MotionKey::Forward, MotionDirection::RightBackward) => {
-                        Some(MotionDirection::Right)
-                    }
-                    (MotionKey::Forward, MotionDirection::Backward) => None,
-                    (MotionKey::Forward, MotionDirection::LeftBackward) => {
-                        Some(MotionDirection::Left)
-                    }
-                    (MotionKey::Right, MotionDirection::Left) => None,
-                    (MotionKey::Right, MotionDirection::LeftForward) => {
-                        Some(MotionDirection::Forward)
-                    }
-                    (MotionKey::Right, MotionDirection::Forward) => {
-                        Some(MotionDirection::RightForward)
-                    }
-                    (MotionKey::Right, MotionDirection::Backward) => {
-                        Some(MotionDirection::RightBackward)
-                    }
-                    (MotionKey::Right, MotionDirection::LeftBackward) => {
-                        Some(MotionDirection::Backward)
-                    }
-                    (MotionKey::Backward, MotionDirection::Left) => {
-                        Some(MotionDirection::LeftBackward)
-                    }
-                    (MotionKey::Backward, MotionDirection::LeftForward) => {
-                        Some(MotionDirection::Left)
-                    }
-                    (MotionKey::Backward, MotionDirection::Forward) => None,
-                    (MotionKey::Backward, MotionDirection::RightForward) => {
-                        Some(MotionDirection::Right)
-                    }
-                    (MotionKey::Backward, MotionDirection::Right) => {
-                        Some(MotionDirection::RightBackward)
-                    }
-                    _ => unreachable!("cannot press"),
-                };
-                Self(direction_opt)
-            }
-            None => {
-                let direction = match key {
-                    MotionKey::Left => MotionDirection::Left,
-                    MotionKey::Forward => MotionDirection::Forward,
-                    MotionKey::Right => MotionDirection::Right,
-                    MotionKey::Backward => MotionDirection::Backward,
-                };
-
-                Self(Some(direction))
-            }
-        }
     }
 }
 
@@ -220,7 +59,7 @@ fn input_map(
     for input in pressed_iter {
         trace!(message = "just pressed", ?input);
         match input {
-            BoundKey::Motion(motion_key) => *current_motion = current_motion.press(motion_key),
+            BoundKey::Motion(motion_key) => *current_motion = motion_key.press(*current_motion),
             _ => (),
         }
     }
@@ -231,7 +70,7 @@ fn input_map(
 
     for input in released_iter {
         match input {
-            BoundKey::Motion(motion_key) => *current_motion = current_motion.release(motion_key),
+            BoundKey::Motion(motion_key) => *current_motion = motion_key.release(*current_motion),
             BoundKey::Action(action_key) => actions.send(action_key),
         }
     }

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::{ActionKey, BoundKey, Motion, MotionKey};
+use super::{ActionKey, BoundKey, MotionKey};
 
 pub struct MovementBindings {
     pub move_left: KeyCode,

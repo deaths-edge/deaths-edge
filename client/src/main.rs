@@ -27,7 +27,7 @@ fn main() {
     // Debug plugin
     const FPS_COLLECTION_INTERVAL: Duration = Duration::from_secs(1);
     const RENDER_UPDATE_INTERVAL: Duration = Duration::from_millis(1_000);
-    const ENV_FILTER: &str = concat!(env!("CARGO_PKG_NAME"), "=trace");
+    const ENV_FILTER: &str = concat!(env!("CARGO_PKG_NAME"), "=trace,common=trace");
     let debug_plugin = debug::DebugTerminalPlugin::new(
         ENV_FILTER,
         FPS_COLLECTION_INTERVAL,
@@ -73,7 +73,7 @@ fn state_transition(
     }
 
     if *app_state.current() != ClientState::Arena {
-        let server: SocketAddr = "127.0.0.1:8001".parse().expect("invalid socket");
+        let server: SocketAddr = "127.0.0.1:8000".parse().expect("invalid socket");
 
         transition_writer.send(StateTransitionEvent::ToArena { server });
     }

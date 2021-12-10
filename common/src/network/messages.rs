@@ -1,4 +1,8 @@
+use std::net::SocketAddr;
+
 use serde::{Deserialize, Serialize};
+
+use crate::character::CharacterClass;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PositionMessage {

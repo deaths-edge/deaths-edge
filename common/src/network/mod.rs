@@ -5,7 +5,8 @@ pub mod server;
 use std::{fmt::Debug, net::SocketAddr, time::Duration};
 
 use bevy::{core::FixedTimestep, prelude::*, utils::Instant};
-use laminar::{Packet, Socket, SocketEvent};
+pub use laminar::SocketEvent;
+use laminar::{Packet, Socket};
 use serde::Serialize;
 use thiserror::Error;
 
@@ -29,10 +30,9 @@ impl NetworkServer {
         Ok(())
     }
 
-    pub fn receiver(&self) -> Result<impl IntoIterator<Item = SocketEvent>, NoSocket> {
-        let socket = self.socket.as_ref().ok_or(NoSocket)?;
-        let receiver = socket.get_event_receiver();
-        Ok(receiver)
+    pub fn recv(&mut self) -> Result<Option<SocketEvent>, NoSocket> {
+        let socket = self.socket.as_mut().ok_or(NoSocket)?;
+        Ok(socket.recv())
     }
 
     pub fn send_message<Message, F>(
@@ -42,9 +42,10 @@ impl NetworkServer {
         packeter: F,
     ) -> Result<(), NoSocket>
     where
-        Message: Serialize,
+        Message: Serialize + Debug,
         F: FnOnce(SocketAddr, Vec<u8>) -> Packet,
     {
+        info!(message = "sending message", payload = ?message, %address);
         let socket = self.socket.as_ref().ok_or(NoSocket)?;
         let sender = socket.get_packet_sender();
         let message_payload = postcard::to_stdvec(message).expect("serialization failed");
@@ -71,9 +72,9 @@ impl Packetting {
 }
 
 pub struct NetworkSendEvent<Message> {
-    message: Message,
-    address: SocketAddr,
-    packetting: Packetting,
+    pub message: Message,
+    pub address: SocketAddr,
+    pub packetting: Packetting,
 }
 
 pub fn message_broadcast<Message>(
