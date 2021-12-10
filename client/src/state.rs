@@ -28,8 +28,11 @@ pub struct StateTransitionPlugin;
 
 impl Plugin for StateTransitionPlugin {
     fn build(&self, app: &mut AppBuilder) {
+        let state_transitions = SystemSet::new()
+            .label("state-transitions")
+            .with_system(state_transitions.system());
         app.add_event::<StateTransitionEvent>()
-            .add_system(state_transitions.system());
+            .add_system_set(state_transitions);
     }
 }
 

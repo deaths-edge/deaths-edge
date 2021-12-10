@@ -38,6 +38,10 @@ fn main() {
     let socket: SocketAddr = "127.0.0.1:8001".parse().expect("invalid socket");
     let network_plugin = NetworkPlugin::new(socket, NETWORK_POLL_INTERVAL);
 
+    let state_transitions = SystemSet::new()
+        .before("state-transitions")
+        .with_system(state_transition.system());
+
     ////
     // App construction
     App::build()
@@ -51,7 +55,7 @@ fn main() {
         .add_plugin(StateTransitionPlugin)
         .add_plugin(SplashPlugin)
         .add_plugin(ArenaPlugin)
-        .add_system(state_transition.system())
+        .add_system_set(state_transitions)
         // Network plugin
         .add_plugin(network_plugin)
         .run();
@@ -59,7 +63,7 @@ fn main() {
 
 fn state_transition(
     time: Res<Time>,
-    app_state: ResMut<State<ClientState>>,
+    app_state: Res<State<ClientState>>,
     mut transition_writer: EventWriter<StateTransitionEvent>,
 ) {
     let duration = time.time_since_startup();

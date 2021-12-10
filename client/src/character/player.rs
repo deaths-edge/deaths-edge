@@ -3,7 +3,7 @@ use std::{fmt::Debug, hash::Hash};
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 
 use super::*;
-use crate::input_mapping::{ActionKey, FocalHold, MotionKey, SelectClick};
+use crate::input_mapping::{ActionKey, FocalHold, Motion, MotionDirection, MotionKey, SelectClick};
 
 use common::{
     character::{
@@ -160,9 +160,9 @@ impl MovementInterruptBundle {
     }
 }
 
-/// Receives [`MotionKey`] input and accelerates character in said direction.
+/// Receives [`Motion`] input and accelerates character in said direction.
 pub fn player_movement(
-    motion_input: Res<Input<MotionKey>>,
+    mut motion_events: EventReader<Motion>,
 
     // CharacterIndex query
     mut character_query: Query<
@@ -185,37 +185,35 @@ pub fn player_movement(
     const BACKPEDDLE_SPEED: f32 = 0.6;
 
     // Construct direction
-    let mut direction = Vec2::ZERO;
-    if motion_input.pressed(MotionKey::Left) {
-        direction.x -= STRAFE_SPEED;
+    if let Some(motion) = motion_events.iter().last() {
+        let mut direction = match motion.0 {
+            None => Vec2::ZERO,
+            Some(MotionDirection::Left) => Vec2::new(-STRAFE_SPEED, 0.),
+            Some(MotionDirection::LeftForward) => Vec2::new(-STRAFE_SPEED, FORWARD_SPEED),
+            Some(MotionDirection::Forward) => Vec2::new(0., FORWARD_SPEED),
+            Some(MotionDirection::RightForward) => Vec2::new(STRAFE_SPEED, FORWARD_SPEED),
+            Some(MotionDirection::Right) => Vec2::new(STRAFE_SPEED, 0.),
+            Some(MotionDirection::RightBackward) => Vec2::new(STRAFE_SPEED, -BACKPEDDLE_SPEED),
+            Some(MotionDirection::Backward) => Vec2::new(0., -BACKPEDDLE_SPEED),
+            Some(MotionDirection::LeftBackward) => Vec2::new(-STRAFE_SPEED, -FORWARD_SPEED),
+        };
+
+        // TODO: Constify this
+        if direction != Vec2::ZERO {
+            // Normalize
+            let mag = direction.length().max(1.);
+            direction /= mag;
+
+            commands
+                .spawn()
+                .insert_bundle(MovementInterruptBundle::new(character_entity));
+        }
+
+        let direction = transform.rotation * (direction.extend(0.));
+
+        // Assign velocity
+        *velocity = Velocity::from(direction * speed_multiplier.speed());
     }
-
-    if motion_input.pressed(MotionKey::Forward) {
-        direction.y += FORWARD_SPEED;
-    }
-
-    if motion_input.pressed(MotionKey::Right) {
-        direction.x += STRAFE_SPEED;
-    }
-
-    if motion_input.pressed(MotionKey::Backward) {
-        direction.y -= BACKPEDDLE_SPEED;
-    }
-
-    if direction != Vec2::ZERO {
-        // Normalize
-        let mag = direction.length().max(1.);
-        direction /= mag;
-
-        commands
-            .spawn()
-            .insert_bundle(MovementInterruptBundle::new(character_entity));
-    }
-
-    let direction = transform.rotation * (direction.extend(0.));
-
-    // Assign velocity
-    *velocity = Velocity::from(direction * speed_multiplier.speed());
 }
 
 /// Receives an [`ActionKey`] and performs the associated action.
