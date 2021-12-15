@@ -1,3 +1,7 @@
+mod motion;
+
+pub use motion::*;
+
 use std::time::Duration;
 
 use bevy::prelude::*;

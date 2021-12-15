@@ -13,7 +13,10 @@ use crate::{
 };
 
 use common::{
-    effects::EffectPlugin, environment::EnvironmentPlugin, heron::PhysicsPlugin,
+    effects::EffectPlugin,
+    environment::EnvironmentPlugin,
+    heron::PhysicsPlugin,
+    network::{client::ClientMessage, NetworkServer, Packet},
     spells::SpellPlugin,
 };
 

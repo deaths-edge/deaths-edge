@@ -1,6 +1,6 @@
 mod damage;
 mod heal;
-mod interrupt;
+mod interrupts;
 mod target;
 
 use std::{fmt::Debug, hash::Hash};
@@ -9,7 +9,7 @@ use bevy::prelude::*;
 
 pub use damage::*;
 pub use heal::*;
-pub use interrupt::*;
+pub use interrupts::*;
 pub use target::*;
 pub use target::*;
 

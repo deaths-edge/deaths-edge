@@ -6,10 +6,7 @@ use bevy::prelude::*;
 pub use materials::*;
 pub use player::*;
 
-use common::character::{
-    CharacterBundle as CommonCharacterBundle, CharacterClass,
-    CharacterPlugins as CommonCharacterPlugins,
-};
+use common::character::{CastingPlugin, CharacterBundle as CommonCharacterBundle, CharacterClass};
 
 use crate::{state::ClientState, ui::selected::Selected};
 // input_mapping::{FocalHold, MotionKey, SelectClick},
@@ -50,6 +47,6 @@ impl Plugin for CharacterPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_plugin(CharacterMaterialPlugin)
             .add_plugin(PlayerPlugin::new(ClientState::Arena))
-            .add_plugins(CommonCharacterPlugins::new(ClientState::Arena));
+            .add_plugin(CastingPlugin::new(ClientState::Arena));
     }
 }

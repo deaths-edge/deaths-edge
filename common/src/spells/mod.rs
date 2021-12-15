@@ -47,7 +47,7 @@ where
             .with_system(spell_tracking.system())
             .with_system(spell_projectile_motion.system())
             .with_system(spell_projectile_collision.system())
-            .with_system(spell_impact_system.exclusive_system());
+            .with_system(spell_impact.exclusive_system());
 
         app.init_resource::<SpellMaterials>()
             .add_event::<SpellImpactEvent>()

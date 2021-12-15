@@ -1,4 +1,4 @@
-use common::actions::{Motion, MotionDirection};
+use common::character::{Motion, MotionDirection};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum MotionKey {

@@ -33,7 +33,7 @@ impl SpellImpactEvent {
     }
 }
 
-pub fn spell_impact_system(world: &mut World) {
+pub fn spell_impact(world: &mut World) {
     // Drain all spell impact events
     let mut spell_impact_events = world
         .get_resource_mut::<Events<SpellImpactEvent>>()

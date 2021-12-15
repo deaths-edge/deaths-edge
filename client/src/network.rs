@@ -3,10 +3,10 @@ use std::{net::SocketAddr, time::Duration};
 use bevy::{app::Events, prelude::*};
 
 use common::{
-    actions::Motion,
+    character::Motion,
     network::{
         client::ClientMessage, message_broadcast, NetworkPlugin as BaseNetworkPlugin,
-        NetworkSendEvent, Packetting,
+        NetworkSendEvent, NetworkServer, Packet, Packetting,
     },
 };
 
@@ -19,6 +19,10 @@ pub struct GameServer {
 impl GameServer {
     pub fn new(address: SocketAddr) -> Self {
         Self { address }
+    }
+
+    pub fn address(&self) -> SocketAddr {
+        self.address
     }
 }
 
@@ -34,15 +38,25 @@ impl NetworkPlugin {
     }
 }
 
+fn send_passcode(network_server: Res<NetworkServer>, game_server: Res<GameServer>) {
+    network_server.send_message(
+        game_server.address(),
+        &ClientMessage::Passcode(1234),
+        Packet::unreliable,
+    );
+}
+
 impl Plugin for NetworkPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        // let connect = SystemSet::on_exit(ClientState::Arena).with_system(connect_server.system());
+        let send_passcode =
+            SystemSet::on_enter(ClientState::Arena).with_system(send_passcode.system());
         let broadcast_movement =
             SystemSet::on_update(ClientState::Arena).with_system(broadcast_movement.system());
 
         app.add_plugin(self.inner.clone())
             .add_event::<NetworkSendEvent<ClientMessage>>()
             .add_system(message_broadcast::<ClientMessage>.system())
+            .add_system_set(send_passcode)
             .add_system_set(broadcast_movement);
     }
 }

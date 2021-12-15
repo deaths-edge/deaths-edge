@@ -2,15 +2,14 @@ mod bindings;
 mod keys;
 mod mouse;
 
+use crate::{state::ClientState, ui::mouse::WorldMousePosition};
 use bevy::{
     input::{mouse::MouseButtonInput, ElementState},
     prelude::*,
 };
-use common::actions::{Motion, MotionDirection};
-
-use crate::{state::ClientState, ui::mouse::WorldMousePosition};
 
 pub use bindings::*;
+use common::character::Motion;
 pub use keys::*;
 pub use mouse::*;
 

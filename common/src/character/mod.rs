@@ -1,5 +1,6 @@
 mod casting;
 mod classes;
+mod commands;
 mod control;
 mod cooldowns;
 mod health;
@@ -9,8 +10,6 @@ mod power;
 mod speed_multiplier;
 mod target;
 
-use std::{fmt::Debug, hash::Hash};
-
 use bevy::prelude::*;
 use heron::prelude::*;
 
@@ -18,6 +17,7 @@ use crate::physics::WorldLayer;
 
 pub use casting::*;
 pub use classes::*;
+pub use commands::*;
 pub use control::*;
 pub use cooldowns::*;
 pub use health::*;
@@ -93,24 +93,5 @@ impl CharacterBundle {
 
     pub fn class(&self) -> CharacterClass {
         self.class
-    }
-}
-
-pub struct CharacterPlugins<T> {
-    state: T,
-}
-
-impl<T> CharacterPlugins<T> {
-    pub fn new(state: T) -> Self {
-        Self { state }
-    }
-}
-
-impl<T> PluginGroup for CharacterPlugins<T>
-where
-    T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
-{
-    fn build(&mut self, group: &mut bevy::app::PluginGroupBuilder) {
-        group.add(CastingPlugin::new(self.state));
     }
 }

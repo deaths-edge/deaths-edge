@@ -1,12 +1,13 @@
 use serde::{Deserialize, Serialize};
 
-use crate::actions::Motion;
+use crate::character::Motion;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum ClientMessage {
     // Position(PositionMessage),
     // Velocity(VelocityMessage),
     Motion(Motion),
+    Passcode(u64),
 }
 
 impl ClientMessage {

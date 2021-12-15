@@ -5,8 +5,8 @@ pub mod server;
 use std::{fmt::Debug, net::SocketAddr, time::Duration};
 
 use bevy::{core::FixedTimestep, prelude::*, utils::Instant};
-pub use laminar::SocketEvent;
-use laminar::{Packet, Socket};
+use laminar::Socket;
+pub use laminar::{Packet, SocketEvent};
 use serde::Serialize;
 use thiserror::Error;
 

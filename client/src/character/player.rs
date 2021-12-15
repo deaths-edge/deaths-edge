@@ -6,13 +6,9 @@ use super::*;
 use crate::input_mapping::{ActionKey, FocalHold, SelectClick};
 
 use common::{
-    actions::{Motion, MotionDirection},
-    character::{
-        CharacterCastState, CharacterMarker, CharacterSpeedMultiplier, CharacterTarget,
-        LastCastInstant,
-    },
+    character::{CharacterCastState, CharacterMarker, CharacterTarget, LastCastInstant},
     effects::{EffectMarker, EffectTarget, InterruptEffect},
-    heron::{rapier_plugin::PhysicsWorld, Velocity},
+    heron::rapier_plugin::PhysicsWorld,
     spells::instances::fireball_action,
 };
 
@@ -33,8 +29,7 @@ where
     fn build(&self, app: &mut AppBuilder) {
         let character_motion = SystemSet::on_update(self.state)
             .label("character-motion")
-            .with_system(player_focal_rotate.system())
-            .with_system(player_movement.system());
+            .with_system(player_focal_rotate.system());
         let character_actions = SystemSet::on_update(self.state)
             .label("character-actions")
             .with_system(player_action.system())
@@ -141,79 +136,6 @@ pub fn player_focal_rotate(
 
         let angle = Vec2::new(0., 1.).angle_between(new_diff);
         transform.rotation = Quat::from_rotation_z(angle);
-    }
-}
-
-#[derive(Bundle)]
-pub struct MovementInterruptBundle {
-    effect_marker: EffectMarker,
-    interrupt: InterruptEffect,
-    target: EffectTarget,
-}
-
-impl MovementInterruptBundle {
-    pub fn new<T: Into<EffectTarget>>(target: T) -> Self {
-        Self {
-            effect_marker: EffectMarker,
-            interrupt: InterruptEffect::default(),
-            target: target.into(),
-        }
-    }
-}
-
-/// Receives [`Motion`] input and accelerates character in said direction.
-pub fn player_movement(
-    mut motion_events: EventReader<Motion>,
-
-    // CharacterIndex query
-    mut character_query: Query<
-        (
-            Entity,
-            &CharacterSpeedMultiplier,
-            &mut Transform,
-            &mut Velocity,
-        ),
-        With<PlayerMarker>,
-    >,
-
-    mut commands: Commands,
-) {
-    let (character_entity, speed_multiplier, transform, mut velocity) =
-        character_query.single_mut().expect("player not found");
-
-    const FORWARD_SPEED: f32 = 1.0;
-    const STRAFE_SPEED: f32 = 0.8;
-    const BACKPEDDLE_SPEED: f32 = 0.6;
-
-    // Construct direction
-    if let Some(motion) = motion_events.iter().last() {
-        let mut direction = match motion.0 {
-            None => Vec2::ZERO,
-            Some(MotionDirection::Left) => Vec2::new(-STRAFE_SPEED, 0.),
-            Some(MotionDirection::LeftForward) => Vec2::new(-STRAFE_SPEED, FORWARD_SPEED),
-            Some(MotionDirection::Forward) => Vec2::new(0., FORWARD_SPEED),
-            Some(MotionDirection::RightForward) => Vec2::new(STRAFE_SPEED, FORWARD_SPEED),
-            Some(MotionDirection::Right) => Vec2::new(STRAFE_SPEED, 0.),
-            Some(MotionDirection::RightBackward) => Vec2::new(STRAFE_SPEED, -BACKPEDDLE_SPEED),
-            Some(MotionDirection::Backward) => Vec2::new(0., -BACKPEDDLE_SPEED),
-            Some(MotionDirection::LeftBackward) => Vec2::new(-STRAFE_SPEED, -FORWARD_SPEED),
-        };
-
-        // TODO: Constify this
-        if direction != Vec2::ZERO {
-            // Normalize
-            let mag = direction.length().max(1.);
-            direction /= mag;
-
-            commands
-                .spawn()
-                .insert_bundle(MovementInterruptBundle::new(character_entity));
-        }
-
-        let direction = transform.rotation * (direction.extend(0.));
-
-        // Assign velocity
-        *velocity = Velocity::from(direction * speed_multiplier.speed());
     }
 }
 
