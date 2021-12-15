@@ -1,13 +1,24 @@
 use serde::{Deserialize, Serialize};
 
-use crate::character::Motion;
+use crate::character::{Action, Motion};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum ClientMessage {
-    // Position(PositionMessage),
-    // Velocity(VelocityMessage),
     Motion(Motion),
+    Action(Action),
     Passcode(u64),
+}
+
+impl From<Action> for ClientMessage {
+    fn from(action: Action) -> Self {
+        Self::Action(action)
+    }
+}
+
+impl From<Motion> for ClientMessage {
+    fn from(motion: Motion) -> Self {
+        Self::Motion(motion)
+    }
 }
 
 impl ClientMessage {

@@ -27,7 +27,7 @@ pub enum MotionDirection {
 #[derive(Debug, Default, PartialEq, Clone, Copy, Deserialize, Serialize)]
 pub struct Motion(pub Option<MotionDirection>);
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum Action {
     Action1,
     Action2,

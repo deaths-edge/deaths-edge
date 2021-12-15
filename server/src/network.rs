@@ -3,7 +3,7 @@ use std::{net::SocketAddr, time::Duration};
 use bevy::prelude::*;
 
 use common::{
-    character::{CharacterCommand, Motion},
+    character::{Action, CharacterCommand, Motion},
     network::{
         client::ClientMessage, server::ServerMessage, NetworkPlugin, NetworkServer, NoSocket,
         Packet, SocketEvent,
@@ -63,11 +63,21 @@ fn process_motion(
     }
 }
 
+fn process_action(
+    address: &SocketAddr,
+    action: Action,
+    network_server: &NetworkServer,
+    game_state: &GameState,
+    action_commands: &mut EventWriter<CharacterCommand<Action>>,
+) {
+}
+
 fn process_packet(
     packet: Packet,
     network_server: &NetworkServer,
     game_state: &mut GameState,
     motion_commands: &mut EventWriter<CharacterCommand<Motion>>,
+    action_commands: &mut EventWriter<CharacterCommand<Action>>,
 ) {
     let address = packet.addr();
 
@@ -85,6 +95,13 @@ fn process_packet(
                     game_state,
                     motion_commands,
                 ),
+                ClientMessage::Action(action) => process_action(
+                    &address,
+                    action,
+                    network_server,
+                    game_state,
+                    action_commands,
+                ),
                 _ => (),
             }
             info!(?message);
@@ -99,6 +116,7 @@ fn handle_client_messages(
     mut network_server: ResMut<NetworkServer>,
     mut game_state: ResMut<GameState>,
     mut motion_commands: EventWriter<CharacterCommand<Motion>>,
+    mut action_commands: EventWriter<CharacterCommand<Action>>,
 ) {
     while let Ok(Some(event)) = network_server.recv() {
         match event {
@@ -110,6 +128,7 @@ fn handle_client_messages(
                 &network_server,
                 &mut game_state,
                 &mut motion_commands,
+                &mut action_commands,
             ),
             SocketEvent::Connect(address) => {
                 info!(message = "connect", %address);

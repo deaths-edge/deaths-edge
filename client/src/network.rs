@@ -3,7 +3,7 @@ use std::{net::SocketAddr, time::Duration};
 use bevy::prelude::*;
 
 use common::{
-    character::Motion,
+    character::{Action, Motion},
     network::{
         client::ClientMessage, message_broadcast, NetworkPlugin as BaseNetworkPlugin,
         NetworkSendEvent, NetworkServer, Packet, Packetting,
@@ -51,15 +51,42 @@ impl Plugin for NetworkPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let send_passcode =
             SystemSet::on_enter(ClientState::Arena).with_system(send_passcode.system());
-        let broadcast_movement =
-            SystemSet::on_update(ClientState::Arena).with_system(broadcast_movement.system());
+        let broadcast = SystemSet::on_update(ClientState::Arena)
+            .with_system(broadcast_message::<Motion>.system())
+            .with_system(broadcast_message::<Action>.system());
 
         app.add_plugin(self.inner.clone())
             .add_event::<NetworkSendEvent<ClientMessage>>()
             .add_system(message_broadcast::<ClientMessage>.system())
             .add_system_set(send_passcode)
-            .add_system_set(broadcast_movement);
+            .add_system_set(broadcast);
     }
+}
+
+/// Takes a `Value` and broadcasts it to the server
+fn broadcast_message<Value>(
+    mut input_commands: EventReader<InputCommand<Value>>,
+    mut send_events: EventWriter<NetworkSendEvent<ClientMessage>>,
+    game_server: Res<GameServer>,
+) where
+    Value: Clone + Send + Sync + 'static,
+    Value: Into<ClientMessage>,
+{
+    send_events.send_batch(
+        input_commands
+            .iter()
+            .cloned()
+            .map(InputCommand::into_inner)
+            .map(Into::into)
+            .map(|message| {
+                info!(message = "sending", ?message, address = %game_server.address);
+                NetworkSendEvent {
+                    message,
+                    address: game_server.address,
+                    packetting: Packetting::Unreliable,
+                }
+            }),
+    )
 }
 
 fn broadcast_movement(
@@ -83,3 +110,5 @@ fn broadcast_movement(
             }),
     )
 }
+
+// fn broadcast_action(mut action_events: EventReader<InputCommand<)
