@@ -9,7 +9,7 @@ use bevy::{
 };
 
 pub use bindings::*;
-use common::character::Motion;
+use common::character::{Action, Motion};
 pub use keys::*;
 pub use mouse::*;
 
@@ -21,11 +21,36 @@ impl Plugin for InputMapPlugin {
             .label("input-mapping")
             .with_system(input_map.system());
         app.init_resource::<Bindings>()
-            .add_event::<Motion>()
-            .add_event::<ActionKey>()
+            .add_event::<InputCommand<Motion>>()
+            .add_event::<InputCommand<Action>>()
             .add_event::<FocalHold>()
             .add_event::<SelectClick>()
             .add_system_set(system_set);
+    }
+}
+
+#[derive(Clone)]
+pub struct InputCommand<Action> {
+    action: Action,
+}
+
+impl<Action> InputCommand<Action> {
+    pub fn into_inner(self) -> Action {
+        self.action
+    }
+
+    pub fn inner(&self) -> &Action {
+        &self.action
+    }
+
+    pub fn action(&self) -> &Action {
+        &self.action
+    }
+}
+
+impl<Action> From<Action> for InputCommand<Action> {
+    fn from(action: Action) -> Self {
+        InputCommand { action }
     }
 }
 
@@ -44,8 +69,8 @@ fn input_map(
 
     // Outputs
     mut current_motion: Local<Motion>,
-    mut motion_events: EventWriter<Motion>,
-    mut actions: EventWriter<ActionKey>,
+    mut motion_events: EventWriter<InputCommand<Motion>>,
+    mut actions: EventWriter<InputCommand<Action>>,
     mut select_clicks: EventWriter<SelectClick>,
     mut focal_holds: EventWriter<FocalHold>,
 ) {
@@ -70,12 +95,14 @@ fn input_map(
     for input in released_iter {
         match input {
             BoundKey::Motion(motion_key) => *current_motion = motion_key.release(*current_motion),
-            BoundKey::Action(action_key) => actions.send(action_key),
+            BoundKey::Action(action_key) => {
+                actions.send(InputCommand::from(action_key.into_action()))
+            }
         }
     }
 
     if previous_motion != *current_motion {
-        motion_events.send(*current_motion);
+        motion_events.send(InputCommand::from(*current_motion));
     }
 
     let mouse_input_last = mouse_click_events.iter().last();

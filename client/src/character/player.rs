@@ -3,11 +3,10 @@ use std::{fmt::Debug, hash::Hash};
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 
 use super::*;
-use crate::input_mapping::{ActionKey, FocalHold, SelectClick};
+use crate::input_mapping::{ActionKey, FocalHold, InputCommand, SelectClick};
 
 use common::{
     character::{CharacterCastState, CharacterMarker, CharacterTarget, LastCastInstant},
-    effects::{EffectMarker, EffectTarget, InterruptEffect},
     heron::rapier_plugin::PhysicsWorld,
     spells::instances::fireball_action,
 };
@@ -32,7 +31,6 @@ where
             .with_system(player_focal_rotate.system());
         let character_actions = SystemSet::on_update(self.state)
             .label("character-actions")
-            .with_system(player_action.system())
             .with_system(player_char_select.system());
         app.add_system_set(character_motion)
             .add_system_set(character_actions);
@@ -136,71 +134,5 @@ pub fn player_focal_rotate(
 
         let angle = Vec2::new(0., 1.).angle_between(new_diff);
         transform.rotation = Quat::from_rotation_z(angle);
-    }
-}
-
-/// Receives an [`ActionKey`] and performs the associated action.
-pub fn player_action(
-    time: Res<Time>,
-    physics_world: PhysicsWorld,
-
-    // ActionKey events
-    mut events: EventReader<ActionKey>,
-
-    mut character_query: Query<
-        (
-            Entity,
-            &Transform,
-            &CharacterClass,
-            &LastCastInstant,
-            &mut CharacterCastState,
-            &CharacterTarget,
-        ),
-        With<PlayerMarker>,
-    >,
-
-    target_query: Query<&Transform, With<CharacterMarker>>,
-) {
-    let (
-        character_entity,
-        character_transform,
-        character_class,
-        last_cast_instant,
-        mut character_cast_state,
-        character_target,
-    ) = character_query.single_mut().expect("player not found");
-
-    for action_key in events.iter() {
-        match character_class {
-            CharacterClass::Mars => {}
-            CharacterClass::Medea => match action_key {
-                ActionKey::Action1 => {
-                    let result = fireball_action(
-                        &time,
-                        &physics_world,
-                        last_cast_instant,
-                        character_entity,
-                        character_transform,
-                        character_target,
-                        &mut character_cast_state,
-                        &target_query,
-                    );
-
-                    if let Err(error) = result {
-                        warn!(message = "failed to cast fireball", %error)
-                    }
-                }
-                ActionKey::Action2 => todo!(),
-                ActionKey::Action3 => todo!(),
-                ActionKey::Action4 => todo!(),
-                ActionKey::Action5 => todo!(),
-                ActionKey::Action6 => todo!(),
-                ActionKey::Action7 => todo!(),
-                ActionKey::Action8 => todo!(),
-            },
-            CharacterClass::Heka => {}
-            CharacterClass::Pluto => {}
-            CharacterClass::Mammon => {}
-        }
     }
 }

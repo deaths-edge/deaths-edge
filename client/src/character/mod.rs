@@ -6,10 +6,12 @@ use bevy::prelude::*;
 pub use materials::*;
 pub use player::*;
 
-use common::character::{CastingPlugin, CharacterBundle as CommonCharacterBundle, CharacterClass};
+use common::character::{
+    Action, CastingPlugin, CharacterBundle as CommonCharacterBundle, CharacterCommand,
+    CharacterCommandPlugin, Motion,
+};
 
-use crate::{state::ClientState, ui::selected::Selected};
-// input_mapping::{FocalHold, MotionKey, SelectClick},
+use crate::{input_mapping::InputCommand, state::ClientState, ui::selected::Selected};
 
 #[derive(Bundle)]
 pub struct CharacterBundle {
@@ -41,11 +43,32 @@ impl CharacterBundle {
     }
 }
 
+fn input_to_character<Value>(
+    mut input_motion: EventReader<InputCommand<Value>>,
+    mut command_motion: EventWriter<CharacterCommand<Value>>,
+    player_query: Query<Entity, With<PlayerMarker>>,
+) where
+    Value: Clone + Send + Sync + 'static,
+{
+    let entity = player_query.single().expect("missing playeer");
+    command_motion.send_batch(
+        input_motion
+            .iter()
+            .map(|input| CharacterCommand::new(entity, input.action().clone())),
+    )
+}
+
 pub struct CharacterPlugin;
 
 impl Plugin for CharacterPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_plugin(CharacterMaterialPlugin)
+        let input_to_character = SystemSet::on_update(ClientState::Arena)
+            .label("input-to-character")
+            .with_system(input_to_character::<Motion>.system())
+            .with_system(input_to_character::<Action>.system());
+        app.add_system_set(input_to_character)
+            .add_plugin(CharacterCommandPlugin::new(ClientState::Arena))
+            .add_plugin(CharacterMaterialPlugin)
             .add_plugin(PlayerPlugin::new(ClientState::Arena))
             .add_plugin(CastingPlugin::new(ClientState::Arena));
     }

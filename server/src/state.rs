@@ -50,6 +50,10 @@ impl GameState {
     pub fn passcode(&self) -> u64 {
         self.passcode
     }
+
+    pub fn id(&self, socket: &SocketAddr) -> Option<Entity> {
+        self.characters.get(socket).map(|client| client.id)
+    }
 }
 
 fn state_transitions(

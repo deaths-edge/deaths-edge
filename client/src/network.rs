@@ -1,6 +1,6 @@
 use std::{net::SocketAddr, time::Duration};
 
-use bevy::{app::Events, prelude::*};
+use bevy::prelude::*;
 
 use common::{
     character::Motion,
@@ -10,7 +10,7 @@ use common::{
     },
 };
 
-use crate::state::ClientState;
+use crate::{input_mapping::InputCommand, state::ClientState};
 
 pub struct GameServer {
     address: SocketAddr,
@@ -39,7 +39,8 @@ impl NetworkPlugin {
 }
 
 fn send_passcode(network_server: Res<NetworkServer>, game_server: Res<GameServer>) {
-    network_server.send_message(
+    // TODO: Handle
+    let _ = network_server.send_message(
         game_server.address(),
         &ClientMessage::Passcode(1234),
         Packet::unreliable,
@@ -62,7 +63,7 @@ impl Plugin for NetworkPlugin {
 }
 
 fn broadcast_movement(
-    mut motion_events: EventReader<Motion>,
+    mut motion_events: EventReader<InputCommand<Motion>>,
     mut send_events: EventWriter<NetworkSendEvent<ClientMessage>>,
     game_server: Res<GameServer>,
 ) {
@@ -70,6 +71,7 @@ fn broadcast_movement(
         motion_events
             .iter()
             .cloned()
+            .map(InputCommand::into_inner)
             .map(ClientMessage::Motion)
             .map(|message| {
                 info!(message = "sending", ?message, address = %game_server.address);

@@ -69,21 +69,21 @@ impl ActionBindings {
         use ActionKey::*;
 
         if key == self.action_1 {
-            Ok(Action1)
+            Ok(Key1)
         } else if key == self.action_2 {
-            Ok(Action2)
+            Ok(Key2)
         } else if key == self.action_3 {
-            Ok(Action3)
+            Ok(Key3)
         } else if key == self.action_4 {
-            Ok(Action4)
+            Ok(Key4)
         } else if key == self.action_5 {
-            Ok(Action5)
+            Ok(Key5)
         } else if key == self.action_6 {
-            Ok(Action6)
+            Ok(Key6)
         } else if key == self.action_7 {
-            Ok(Action7)
+            Ok(Key7)
         } else if key == self.action_8 {
-            Ok(Action8)
+            Ok(Key8)
         } else {
             Err(key)
         }

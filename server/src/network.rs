@@ -3,7 +3,7 @@ use std::{net::SocketAddr, time::Duration};
 use bevy::prelude::*;
 
 use common::{
-    actions::Motion,
+    character::{CharacterCommand, Motion},
     network::{
         client::ClientMessage, server::ServerMessage, NetworkPlugin, NetworkServer, NoSocket,
         Packet, SocketEvent,
@@ -49,22 +49,42 @@ fn process_passcode(
 }
 
 fn process_motion(
+    address: &SocketAddr,
     motion: Motion,
     network_server: &NetworkServer,
-    motion_action: EventReader<CharacterCommand<Motion>>,
+    game_state: &GameState,
+    motion_commands: &mut EventWriter<CharacterCommand<Motion>>,
 ) {
+    if let Some(id) = game_state.id(address) {
+        let motion_action = CharacterCommand::new(id, motion);
+        motion_commands.send(motion_action);
+    } else {
+        // TODO: Handle
+    }
 }
 
-fn process_packet(packet: Packet, network_server: &NetworkServer, game_state: &mut GameState) {
+fn process_packet(
+    packet: Packet,
+    network_server: &NetworkServer,
+    game_state: &mut GameState,
+    motion_commands: &mut EventWriter<CharacterCommand<Motion>>,
+) {
+    let address = packet.addr();
+
     match ClientMessage::from_bytes(packet.payload()) {
         Ok(message) => {
             match message {
                 ClientMessage::Passcode(client_code) => {
-                    let address = packet.addr();
                     // TODO: Handle error
                     let _ = process_passcode(address, client_code, network_server, game_state);
                 }
-                ClientMessage::Motion(motion) => {}
+                ClientMessage::Motion(motion) => process_motion(
+                    &address,
+                    motion,
+                    network_server,
+                    game_state,
+                    motion_commands,
+                ),
                 _ => (),
             }
             info!(?message);
@@ -78,13 +98,19 @@ fn process_packet(packet: Packet, network_server: &NetworkServer, game_state: &m
 fn handle_client_messages(
     mut network_server: ResMut<NetworkServer>,
     mut game_state: ResMut<GameState>,
+    mut motion_commands: EventWriter<CharacterCommand<Motion>>,
 ) {
     while let Ok(Some(event)) = network_server.recv() {
         match event {
             SocketEvent::Timeout(address) => {
                 error!(message = "timeout", %address);
             }
-            SocketEvent::Packet(packet) => process_packet(packet, &network_server, &mut game_state),
+            SocketEvent::Packet(packet) => process_packet(
+                packet,
+                &network_server,
+                &mut game_state,
+                &mut motion_commands,
+            ),
             SocketEvent::Connect(address) => {
                 info!(message = "connect", %address);
             }

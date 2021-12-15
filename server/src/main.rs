@@ -4,12 +4,9 @@ mod state;
 
 use std::{net::SocketAddr, time::Duration};
 
-use bevy::{
-    asset::AssetPlugin, core::CorePlugin, diagnostic::DiagnosticsPlugin, input::InputPlugin,
-    log::LogPlugin, prelude::*, render::RenderPlugin, scene::ScenePlugin, window::WindowPlugin,
-};
+use bevy::prelude::*;
 
-use common::heron::PhysicsPlugin;
+use common::{character::CharacterCommandPlugin, heron::PhysicsPlugin};
 use network::NetworkServerPlugin;
 use state::{ServerState, StateTransitionEvent, StateTransitionPlugin};
 
@@ -25,6 +22,7 @@ fn main() {
     // App construction
     App::build()
         .add_plugins(DefaultPlugins)
+        .add_plugin(CharacterCommandPlugin::new(ServerState::Running))
         // .add_plugin(LogPlugin)
         // .add_plugin(CorePlugin)
         // .add_plugin(TransformPlugin)
