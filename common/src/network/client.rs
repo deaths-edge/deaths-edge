@@ -23,6 +23,6 @@ impl From<Motion> for ClientMessage {
 
 impl ClientMessage {
     pub fn from_bytes(payload: &[u8]) -> Result<Self, postcard::Error> {
-        postcard::from_bytes::<ClientMessage>(payload)
+        postcard::from_bytes(payload)
     }
 }

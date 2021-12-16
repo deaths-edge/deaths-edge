@@ -42,6 +42,7 @@ pub fn send_message<Message>(
     }
 }
 
+/// Sets up a [`NetworkSendEvent`] for a specific message type.
 pub struct NetworkSendPlugin<T, Message> {
     state: T,
     _message: PhantomData<Message>,

@@ -3,10 +3,12 @@ use std::{net::SocketAddr, time::Duration};
 use bevy::prelude::*;
 
 use common::{
-    character::{Action, CharacterCommand, Motion},
+    character::{Action, CharacterClass, CharacterCommand, CharacterIndex, Motion},
     network::{
-        client::ClientMessage, send_message, server::ServerMessage, NetworkPlugin,
-        NetworkSendEvent, NetworkSendPlugin, NetworkServer, Packet, Packetting, SocketEvent,
+        client::ClientMessage,
+        server::{ServerMessage, SpawnCharacter},
+        NetworkPlugin, NetworkSendEvent, NetworkSendPlugin, NetworkServer, Packet, Packetting,
+        SocketEvent,
     },
 };
 
@@ -19,8 +21,22 @@ fn process_passcode(
     game_state: &mut GameState,
 ) {
     if game_state.passcode() == client_code {
+        // Send passcode acknowledgement
         network_writer.send(NetworkSendEvent::new(
             ServerMessage::PasscodeAck,
+            client_address,
+            Packetting::Unreliable,
+        ));
+
+        // Send spawn
+        let spawn_char = SpawnCharacter::new(
+            CharacterIndex::from(0),
+            CharacterClass::Medea,
+            true,
+            Vec2::new(0., 0.),
+        );
+        network_writer.send(NetworkSendEvent::new(
+            ServerMessage::SpawnCharacter(spawn_char),
             client_address,
             Packetting::Unreliable,
         ));
@@ -82,9 +98,7 @@ fn process_packet(
             }
             info!(message = "received message", ?message);
         }
-        Err(error) => {
-            error!(%error)
-        }
+        Err(error) => error!(message = "failed to parse packet", %error),
     }
 }
 

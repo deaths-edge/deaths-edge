@@ -9,6 +9,12 @@ pub enum ServerMessage {
     SpawnCharacter(SpawnCharacter),
 }
 
+impl ServerMessage {
+    pub fn from_bytes(payload: &[u8]) -> Result<Self, postcard::Error> {
+        postcard::from_bytes(payload)
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SpawnCharacter {
     index: CharacterIndex,
@@ -18,6 +24,15 @@ pub struct SpawnCharacter {
 }
 
 impl SpawnCharacter {
+    pub fn new(index: CharacterIndex, class: CharacterClass, player: bool, position: Vec2) -> Self {
+        Self {
+            index,
+            class,
+            player,
+            position,
+        }
+    }
+
     pub fn index(&self) -> CharacterIndex {
         self.index
     }

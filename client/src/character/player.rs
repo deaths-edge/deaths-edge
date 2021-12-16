@@ -5,7 +5,7 @@ use bevy::{prelude::*, sprite::collide_aabb::collide};
 use super::*;
 use crate::input_mapping::{FocalHold, SelectClick};
 
-use common::character::CharacterTarget;
+use common::{character::CharacterTarget, network::server::SpawnCharacter};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum PlayerState {
@@ -14,10 +14,26 @@ pub enum PlayerState {
     Dead,
 }
 
+/// Switch from waiting to spawned
+pub fn spawn_state(
+    mut spawn_reader: EventReader<SpawnCharacter>,
+    mut player_state: ResMut<State<PlayerState>>,
+) {
+    for spawn in spawn_reader.iter() {
+        if spawn.player() {
+            player_state
+                .set(PlayerState::Spawned)
+                .expect("this can't happen twice")
+        }
+    }
+}
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut AppBuilder) {
+        let player_state_transition =
+            SystemSet::on_update(PlayerState::Waiting).with_system(spawn_state.system());
         let character_motion = SystemSet::on_update(PlayerState::Spawned)
             .label("character-motion")
             .with_system(player_focal_rotate.system());
@@ -25,6 +41,7 @@ impl Plugin for PlayerPlugin {
             .label("character-actions")
             .with_system(player_char_select.system());
         app.add_state(PlayerState::Waiting)
+            .add_system_set(player_state_transition)
             .add_system_set(character_motion)
             .add_system_set(character_actions);
     }

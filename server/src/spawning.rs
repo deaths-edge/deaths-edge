@@ -16,12 +16,13 @@ impl Plugin for SpawnPlugin {
     }
 }
 
+/// Spawn characters local to the server
 pub fn spawn_characters(
     time: Res<Time>,
-    mut spawn_events: EventReader<SpawnCharacter>,
+    mut spawn_reader: EventReader<SpawnCharacter>,
     mut commands: Commands,
 ) {
-    spawn_character_base(&time, &mut spawn_events, |common_bundle, spawn_event| {
+    spawn_character_base(&time, &mut spawn_reader, |common_bundle, spawn_event| {
         let position = spawn_event.position();
         let transform = Transform::from_xyz(position.x, position.y, 0.);
 
@@ -29,3 +30,5 @@ pub fn spawn_characters(
         commands.spawn_bundle(character_bundle);
     });
 }
+
+pub fn spawn_characters_server(mut spawn_reader: EventReader<SpawnCharacter>) {}

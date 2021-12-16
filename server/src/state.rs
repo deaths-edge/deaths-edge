@@ -30,7 +30,7 @@ pub enum StateTransitionEvent {
     Setup { team_size: usize, passcode: u64 },
 }
 
-enum Team {
+pub enum Team {
     Red,
     Blue,
 }
@@ -38,6 +38,12 @@ enum Team {
 pub struct Client {
     id: Entity,
     team: Team,
+}
+
+impl Client {
+    pub fn new(id: Entity, team: Team) -> Self {
+        Self { id, team }
+    }
 }
 
 pub struct GameState {
@@ -53,6 +59,10 @@ impl GameState {
 
     pub fn id(&self, socket: &SocketAddr) -> Option<Entity> {
         self.characters.get(socket).map(|client| client.id)
+    }
+
+    pub fn insert_client(&mut self, address: SocketAddr, client: Client) {
+        self.characters.insert(address, client);
     }
 }
 
