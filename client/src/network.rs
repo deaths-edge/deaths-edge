@@ -5,12 +5,12 @@ use bevy::prelude::*;
 use common::{
     character::{Action, Motion},
     network::{
-        client::ClientMessage, message_broadcast, NetworkPlugin as BaseNetworkPlugin,
-        NetworkSendEvent, NetworkServer, Packet, Packetting,
+        client::ClientMessage, NetworkPlugin as BaseNetworkPlugin, NetworkSendEvent,
+        NetworkSendPlugin, NetworkServer, Packet, Packetting,
     },
 };
 
-use crate::{input_mapping::InputCommand, state::ClientState};
+use crate::{character::PlayerState, input_mapping::InputCommand, state::ClientState};
 
 pub struct GameServer {
     address: SocketAddr,
@@ -51,15 +51,16 @@ impl Plugin for NetworkPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let send_passcode =
             SystemSet::on_enter(ClientState::Arena).with_system(send_passcode.system());
-        let broadcast = SystemSet::on_update(ClientState::Arena)
+        let broadcast = SystemSet::on_update(PlayerState::Spawned)
             .with_system(send_input::<Motion>.system())
             .with_system(send_input::<Action>.system());
 
-        app.add_plugin(self.inner.clone())
-            .add_event::<NetworkSendEvent<ClientMessage>>()
-            .add_system(message_broadcast::<ClientMessage>.system())
-            .add_system_set(send_passcode)
-            .add_system_set(broadcast);
+        app.add_plugin(NetworkSendPlugin::<_, ClientMessage>::new(
+            ClientState::Arena,
+        ))
+        .add_plugin(self.inner.clone())
+        .add_system_set(send_passcode)
+        .add_system_set(broadcast);
     }
 }
 
@@ -80,11 +81,7 @@ fn send_input<Value>(
             .map(Into::into)
             .map(|message| {
                 info!(message = "sending", ?message, address = %game_server.address);
-                NetworkSendEvent {
-                    message,
-                    address: game_server.address,
-                    packetting: Packetting::Unreliable,
-                }
+                NetworkSendEvent::new(message, game_server.address, Packetting::Unreliable)
             }),
     )
 }

@@ -1,6 +1,9 @@
 pub mod client;
 pub mod messages;
+mod send;
 pub mod server;
+
+pub use send::*;
 
 use std::{fmt::Debug, net::SocketAddr, time::Duration};
 
@@ -67,32 +70,6 @@ impl Packetting {
             Self::UnreliableOrdered => {
                 |addr, payload| Packet::unreliable_sequenced(addr, payload, None)
             }
-        }
-    }
-}
-
-pub struct NetworkSendEvent<Message> {
-    pub message: Message,
-    pub address: SocketAddr,
-    pub packetting: Packetting,
-}
-
-pub fn message_broadcast<Message>(
-    mut message_packet: EventReader<NetworkSendEvent<Message>>,
-    network_server: Res<NetworkServer>,
-) where
-    Message: Serialize + Debug + Sync + Send + 'static,
-{
-    // TODO: Actually drain this and reduce clones
-    for NetworkSendEvent {
-        message,
-        address,
-        packetting,
-    } in message_packet.iter()
-    {
-        let res = network_server.send_message(address.clone(), message, packetting.to_fn());
-        if let Err(error) = res {
-            error!(message = "failed to broadcast message", %address, ?message, %error);
         }
     }
 }
