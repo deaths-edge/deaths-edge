@@ -1,44 +1,54 @@
+use std::{fmt::Debug, hash::Hash};
+
 use bevy::prelude::*;
 
-use common::character::{CharacterBundle as CommonCharacterBundle, CharacterClass};
+use common::{network::server::SpawnCharacter, spawning::spawn_character_base};
 
 use crate::{
     character::{CharacterBundle, CharacterMaterials, PlayerBundle},
-    state::ClientState,
-    ui::nameplate::setup_nameplate,
+    ui::nameplate::{setup_nameplate, NameplateMaterials},
 };
 
-pub struct SpawnPlugin;
+// TODO: Add waiting state
+pub struct SpawnPlugin<T> {
+    state: T,
+}
 
-impl Plugin for SpawnPlugin {
-    fn build(&self, app: &mut AppBuilder) {
-        let char_spawn = SystemSet::on_enter(ClientState::Arena)
-            .with_system(spawn_player.system().chain(setup_nameplate.system()))
-            .with_system(spawn_char_1.system().chain(setup_nameplate.system()));
-
-        app.add_system_set(char_spawn);
+impl<T> SpawnPlugin<T> {
+    pub fn new(state: T) -> Self {
+        Self { state }
     }
 }
 
-pub fn spawn_player(
-    time: Res<Time>,
-    materials: Res<CharacterMaterials>,
-    mut commands: Commands,
-) -> Entity {
-    let common = CommonCharacterBundle::new(0.into(), CharacterClass::Medea, &time);
-    let character_bundle =
-        CharacterBundle::new(Transform::from_xyz(50., 50., 0.), common, &materials);
-    let player_bundle = PlayerBundle::new(character_bundle);
-    commands.spawn_bundle(player_bundle).id()
+impl<T> Plugin for SpawnPlugin<T>
+where
+    T: Send + Sync + Clone + Eq + Debug + Hash + Copy + 'static,
+{
+    fn build(&self, app: &mut AppBuilder) {
+        let spawner = SystemSet::on_update(self.state).with_system(spawn_characters.system());
+
+        app.add_system_set(spawner);
+    }
 }
 
-pub fn spawn_char_1(
+pub fn spawn_characters(
     time: Res<Time>,
-    materials: Res<CharacterMaterials>,
+    character_materials: Res<CharacterMaterials>,
+    nameplate_materials: Res<NameplateMaterials>,
+    mut spawn_events: EventReader<SpawnCharacter>,
     mut commands: Commands,
-) -> Entity {
-    let common = CommonCharacterBundle::new(1.into(), CharacterClass::Heka, &time);
-    let character_bundle =
-        CharacterBundle::new(Transform::from_xyz(-50., -50., 0.), common, &materials);
-    commands.spawn_bundle(character_bundle).id()
+) {
+    spawn_character_base(&time, &mut spawn_events, |common_bundle, spawn_event| {
+        let position = spawn_event.position();
+        let transform = Transform::from_xyz(position.x, position.y, 0.);
+
+        let character_bundle = CharacterBundle::new(transform, common_bundle, &character_materials);
+        let id = if spawn_event.player() {
+            let player_bundle = PlayerBundle::new(character_bundle);
+            commands.spawn_bundle(player_bundle).id()
+        } else {
+            commands.spawn_bundle(character_bundle).id()
+        };
+        setup_nameplate(id, &nameplate_materials, &mut commands);
+    });
 }

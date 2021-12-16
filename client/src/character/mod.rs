@@ -50,7 +50,7 @@ fn input_to_character<Value>(
 ) where
     Value: Clone + Send + Sync + 'static,
 {
-    let entity = player_query.single().expect("missing playeer");
+    let entity = player_query.single().expect("missing player");
     command_motion.send_batch(
         input_motion
             .iter()

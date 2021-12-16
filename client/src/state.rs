@@ -74,7 +74,7 @@ impl Plugin for ArenaPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_plugin(CharacterPlugin)
             .add_plugins(UIPlugins)
-            .add_plugin(SpawnPlugin)
+            .add_plugin(SpawnPlugin::new(ClientState::Arena))
             .add_plugin(InputMapPlugin)
             .add_plugin(SpellPlugin::new(ClientState::Arena))
             .add_plugin(EffectPlugin::new(ClientState::Arena))
