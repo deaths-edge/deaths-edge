@@ -7,21 +7,29 @@ mod network;
 mod spawning;
 mod state;
 mod ui;
+mod window;
 
 use std::{net::SocketAddr, time::Duration};
 
 use bevy::{log::LogPlugin, prelude::*};
+use structopt::StructOpt;
 
 use network::NetworkPlugin;
 use state::*;
+use window::window_description;
+
+#[derive(StructOpt, Debug)]
+pub struct Opt {
+    #[structopt(short, long, default_value = "127.0.0.1:8000")]
+    server: SocketAddr,
+    #[structopt(short, long, default_value = "127.0.0.1:8001")]
+    bind: SocketAddr,
+}
 
 fn main() {
-    let window_description = WindowDescriptor {
-        title: "Death's Edge".to_string(),
-        width: 800.,
-        height: 600.,
-        ..Default::default()
-    };
+    let window_description = window_description();
+
+    let opt = Opt::from_args();
 
     ////
     // Debug plugin
@@ -35,8 +43,7 @@ fn main() {
     );
 
     const NETWORK_POLL_INTERVAL: Duration = Duration::from_millis(500);
-    let socket: SocketAddr = "127.0.0.1:8001".parse().expect("invalid socket");
-    let network_plugin = NetworkPlugin::new(socket, NETWORK_POLL_INTERVAL);
+    let network_plugin = NetworkPlugin::new(opt.bind, NETWORK_POLL_INTERVAL);
 
     let state_transitions = SystemSet::new()
         .before("state-transitions")
@@ -45,6 +52,8 @@ fn main() {
     ////
     // App construction
     App::build()
+        // Settings
+        .insert_resource(opt)
         // Window description
         .insert_resource(window_description)
         // Default plugins
@@ -65,6 +74,7 @@ fn state_transition(
     time: Res<Time>,
     app_state: Res<State<ClientState>>,
     mut transition_writer: EventWriter<StateTransitionEvent>,
+    settings: Res<Opt>,
 ) {
     let duration = time.time_since_startup();
 
@@ -73,8 +83,8 @@ fn state_transition(
     }
 
     if *app_state.current() != ClientState::Arena {
-        let server: SocketAddr = "127.0.0.1:8000".parse().expect("invalid socket");
-
-        transition_writer.send(StateTransitionEvent::ToArena { server });
+        transition_writer.send(StateTransitionEvent::ToArena {
+            server: settings.server,
+        });
     }
 }
