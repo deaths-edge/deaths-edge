@@ -1,5 +1,6 @@
 mod character;
 mod network;
+mod spawning;
 mod state;
 
 use std::{net::SocketAddr, time::Duration};

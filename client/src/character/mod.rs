@@ -62,14 +62,14 @@ pub struct CharacterPlugin;
 
 impl Plugin for CharacterPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let input_to_character = SystemSet::on_update(ClientState::Arena)
+        let input_to_character = SystemSet::on_update(PlayerState::Spawned)
             .label("input-to-character")
             .with_system(input_to_character::<Motion>.system())
             .with_system(input_to_character::<Action>.system());
         app.add_system_set(input_to_character)
-            .add_plugin(CharacterCommandPlugin::new(ClientState::Arena))
+            .add_plugin(CharacterCommandPlugin::new(PlayerState::Spawned))
             .add_plugin(CharacterMaterialPlugin)
-            .add_plugin(PlayerPlugin::new(ClientState::Arena))
-            .add_plugin(CastingPlugin::new(ClientState::Arena));
+            .add_plugin(PlayerPlugin)
+            .add_plugin(CastingPlugin::new(PlayerState::Spawned));
     }
 }

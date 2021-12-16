@@ -24,6 +24,13 @@ impl NetworkServerPlugin {
     }
 }
 
+pub struct BroadcastMessage<Message> {
+    /// Do not broadcast to this client
+    ignore: SocketAddr,
+    /// Message to be broadcast
+    message: Message,
+}
+
 impl Plugin for NetworkServerPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let system_set =
@@ -33,14 +40,26 @@ impl Plugin for NetworkServerPlugin {
     }
 }
 
+fn broadcast_message<Message>(
+    broadcast_events: EventReader<BroadcastMessage<Message>>,
+    game_state: Res<GameState>,
+) where
+    Message: Send + Sync + 'static,
+{
+}
+
 fn process_passcode(
-    address: SocketAddr,
+    client_address: SocketAddr,
     client_code: u64,
     network_server: &NetworkServer,
     game_state: &mut GameState,
 ) -> Result<(), NoSocket> {
     if game_state.passcode() == client_code {
-        network_server.send_message(address, &ServerMessage::PasscodeAck, Packet::unreliable)?;
+        network_server.send_message(
+            client_address,
+            &ServerMessage::PasscodeAck,
+            Packet::unreliable,
+        )?;
     } else {
         // TODO: Send error
     }

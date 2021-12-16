@@ -14,13 +14,16 @@ use crate::{
 
 use common::{
     effects::EffectPlugin, environment::EnvironmentPlugin, heron::PhysicsPlugin,
-    spells::SpellPlugin,
+    spells::SpellPlugin, state::ArenaState,
 };
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum ClientState {
+    /// Splash screen
     Splash,
-    Lobby,
+    /// Main lobby
+    MainLobby,
+    /// In arena
     Arena,
 }
 
@@ -41,12 +44,13 @@ pub enum StateTransitionEvent {
     ToArena { server: SocketAddr },
 }
 
+/// Listen for [`StateTransitionEvent`]s and perform actions.
 fn state_transitions(
     mut commands: Commands,
     mut transition_events: EventReader<StateTransitionEvent>,
     mut app_state: ResMut<State<ClientState>>,
+    mut arena_state: ResMut<State<ArenaState>>,
 ) {
-    // TODO: Oneshot
     if let Some(event) = transition_events.iter().next() {
         info!(state_transition = ?event);
         match event {
@@ -72,9 +76,10 @@ pub struct ArenaPlugin;
 
 impl Plugin for ArenaPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_plugin(CharacterPlugin)
+        app.add_state(ArenaState::Waiting)
+            .add_plugin(CharacterPlugin)
             .add_plugins(UIPlugins)
-            .add_plugin(SpawnPlugin::new(ClientState::Arena))
+            .add_plugin(SpawnPlugin)
             .add_plugin(InputMapPlugin)
             .add_plugin(SpellPlugin::new(ClientState::Arena))
             .add_plugin(EffectPlugin::new(ClientState::Arena))

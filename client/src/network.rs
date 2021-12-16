@@ -52,8 +52,8 @@ impl Plugin for NetworkPlugin {
         let send_passcode =
             SystemSet::on_enter(ClientState::Arena).with_system(send_passcode.system());
         let broadcast = SystemSet::on_update(ClientState::Arena)
-            .with_system(broadcast_message::<Motion>.system())
-            .with_system(broadcast_message::<Action>.system());
+            .with_system(send_input::<Motion>.system())
+            .with_system(send_input::<Action>.system());
 
         app.add_plugin(self.inner.clone())
             .add_event::<NetworkSendEvent<ClientMessage>>()
@@ -63,8 +63,8 @@ impl Plugin for NetworkPlugin {
     }
 }
 
-/// Takes a `Value` and broadcasts it to the server
-fn broadcast_message<Value>(
+/// Listens to [`InputCommand`] and sends the internal value to the server.
+fn send_input<Value>(
     mut input_commands: EventReader<InputCommand<Value>>,
     mut send_events: EventWriter<NetworkSendEvent<ClientMessage>>,
     game_server: Res<GameServer>,
@@ -88,27 +88,3 @@ fn broadcast_message<Value>(
             }),
     )
 }
-
-fn broadcast_movement(
-    mut motion_events: EventReader<InputCommand<Motion>>,
-    mut send_events: EventWriter<NetworkSendEvent<ClientMessage>>,
-    game_server: Res<GameServer>,
-) {
-    send_events.send_batch(
-        motion_events
-            .iter()
-            .cloned()
-            .map(InputCommand::into_inner)
-            .map(ClientMessage::Motion)
-            .map(|message| {
-                info!(message = "sending", ?message, address = %game_server.address);
-                NetworkSendEvent {
-                    message,
-                    address: game_server.address,
-                    packetting: Packetting::Unreliable,
-                }
-            }),
-    )
-}
-
-// fn broadcast_action(mut action_events: EventReader<InputCommand<)

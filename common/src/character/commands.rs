@@ -73,7 +73,7 @@ pub fn character_action(
             .get_mut(command.id())
             .expect("character not found");
 
-        let action = command.action();
+        let action = command.command();
         match character_class {
             CharacterClass::Mars => {}
             CharacterClass::Medea => match action {
@@ -135,7 +135,7 @@ pub fn character_movement(
             .expect("failed to find character");
 
         // Construct direction
-        let mut direction = match command.action().0 {
+        let mut direction = match command.command().0 {
             None => Vec2::ZERO,
             Some(MotionDirection::Left) => Vec2::new(-STRAFE_SPEED, 0.),
             Some(MotionDirection::LeftForward) => Vec2::new(-STRAFE_SPEED, FORWARD_SPEED),
@@ -165,23 +165,27 @@ pub fn character_movement(
     }
 }
 
-pub struct CharacterCommand<Action> {
+pub struct CharacterCommand<Command> {
     id: Entity,
-    action: Action,
+    command: Command,
 }
 
-impl<Action> CharacterCommand<Action> {
-    pub fn new(id: Entity, action: Action) -> Self {
-        Self { id, action }
+impl<Command> CharacterCommand<Command> {
+    pub fn new(id: Entity, command: Command) -> Self {
+        Self { id, command }
     }
 
     pub fn id(&self) -> Entity {
         self.id
     }
 
-    pub fn action(&self) -> &Action {
-        &self.action
+    pub fn command(&self) -> &Command {
+        &self.command
     }
+}
+
+pub struct GameCommand<Command> {
+    command: Command,
 }
 
 pub struct CharacterCommandPlugin<T> {

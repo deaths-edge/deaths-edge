@@ -1,4 +1,4 @@
-use bevy::prelude::Bundle;
+use bevy::prelude::*;
 
 use common::character::CharacterBundle as CommonCharacterBundle;
 
@@ -6,4 +6,11 @@ use common::character::CharacterBundle as CommonCharacterBundle;
 pub struct CharacterBundle {
     #[bundle]
     common: CommonCharacterBundle,
+    transform: Transform,
+}
+
+impl CharacterBundle {
+    pub fn new(transform: Transform, common: CommonCharacterBundle) -> Self {
+        Self { common, transform }
+    }
 }

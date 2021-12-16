@@ -7,28 +7,25 @@ use crate::input_mapping::{FocalHold, SelectClick};
 
 use common::character::CharacterTarget;
 
-pub struct PlayerPlugin<T> {
-    state: T,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PlayerState {
+    Waiting,
+    Spawned,
+    Dead,
 }
 
-impl<T> PlayerPlugin<T> {
-    pub fn new(state: T) -> Self {
-        Self { state }
-    }
-}
+pub struct PlayerPlugin;
 
-impl<T> Plugin for PlayerPlugin<T>
-where
-    T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
-{
+impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let character_motion = SystemSet::on_update(self.state)
+        let character_motion = SystemSet::on_update(PlayerState::Spawned)
             .label("character-motion")
             .with_system(player_focal_rotate.system());
-        let character_actions = SystemSet::on_update(self.state)
+        let character_actions = SystemSet::on_update(PlayerState::Spawned)
             .label("character-actions")
             .with_system(player_char_select.system());
-        app.add_system_set(character_motion)
+        app.add_state(PlayerState::Waiting)
+            .add_system_set(character_motion)
             .add_system_set(character_actions);
     }
 }

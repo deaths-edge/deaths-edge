@@ -2,35 +2,26 @@ use std::{fmt::Debug, hash::Hash};
 
 use bevy::prelude::*;
 
-use common::{network::server::SpawnCharacter, spawning::spawn_character_base};
+use common::{network::server::SpawnCharacter, spawning::spawn_character_base, state::ArenaState};
 
 use crate::{
     character::{CharacterBundle, CharacterMaterials, PlayerBundle},
     ui::nameplate::{setup_nameplate, NameplateMaterials},
 };
 
-// TODO: Add waiting state
-pub struct SpawnPlugin<T> {
-    state: T,
-}
+/// While [`ArenaState::Waiting`] run [`spawn_characters`].
+pub struct SpawnPlugin;
 
-impl<T> SpawnPlugin<T> {
-    pub fn new(state: T) -> Self {
-        Self { state }
-    }
-}
-
-impl<T> Plugin for SpawnPlugin<T>
-where
-    T: Send + Sync + Clone + Eq + Debug + Hash + Copy + 'static,
-{
+impl Plugin for SpawnPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let spawner = SystemSet::on_update(self.state).with_system(spawn_characters.system());
+        let spawner =
+            SystemSet::on_update(ArenaState::Waiting).with_system(spawn_characters.system());
 
-        app.add_system_set(spawner);
+        app.add_event::<SpawnCharacter>().add_system_set(spawner);
     }
 }
 
+/// Listen for [`SpawnCharacter`] event, adding characters
 pub fn spawn_characters(
     time: Res<Time>,
     character_materials: Res<CharacterMaterials>,
