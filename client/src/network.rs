@@ -13,7 +13,10 @@ use common::{
     },
 };
 
-use crate::{character::PlayerState, input_mapping::InputCommand, state::ClientState};
+use crate::{character::PlayerState, input_mapping::InputCommand, state::ClientState, Opt};
+
+pub const NETWORK_HANDLE_LABEL: &str = "network-handle";
+pub const NETWORK_SEND_LABEL: &str = "network-send";
 
 pub struct GameServer {
     address: SocketAddr,
@@ -41,12 +44,16 @@ impl NetworkPlugin {
     }
 }
 
-fn request_arena_entry(network_server: Res<NetworkServer>, game_server: Res<GameServer>) {
+fn request_arena_entry(
+    network_server: Res<NetworkServer>,
+    game_server: Res<GameServer>,
+    opts: Res<Opt>,
+) {
     // TODO: Handle
     let _ = network_server.send_message(
         game_server.address(),
         &ClientMessage::Permit(ArenaPermit::new(
-            ArenaPasscode(1234),
+            ArenaPasscode(opts.passcode),
             CharacterClass::Medea,
             CharacterTeam::Red,
         )),
@@ -57,6 +64,7 @@ fn request_arena_entry(network_server: Res<NetworkServer>, game_server: Res<Game
 impl Plugin for NetworkPlugin {
     fn build(&self, app: &mut AppBuilder) {
         // Request entry to arena
+        // TODO: Do this in lobby
         let send_passcode =
             SystemSet::on_enter(ClientState::Arena).with_system(request_arena_entry.system());
 
@@ -64,11 +72,13 @@ impl Plugin for NetworkPlugin {
             .with_system(send_input::<Motion>.system())
             .with_system(send_input::<Action>.system());
 
-        let handle_server_message =
-            SystemSet::on_update(ClientState::Arena).with_system(handle_server_messages.system());
+        let handle_server_message = SystemSet::on_update(ClientState::Arena)
+            .label(NETWORK_HANDLE_LABEL)
+            .with_system(handle_server_messages.system());
 
         app.add_plugin(NetworkSendPlugin::<_, ClientMessage>::new(
             ClientState::Arena,
+            NETWORK_SEND_LABEL,
         ))
         .add_plugin(self.inner.clone())
         .add_system_set(send_passcode)

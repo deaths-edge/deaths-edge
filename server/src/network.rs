@@ -13,6 +13,9 @@ use common::{
 
 use crate::state::ServerState;
 
+pub const NETWORK_HANDLE_LABEL: &str = "network-handle";
+pub const NETWORK_SEND_LABEL: &str = "network-send";
+
 fn process_permit(
     client_address: SocketAddr,
     client_permit: &ArenaPermit,
@@ -32,25 +35,6 @@ fn process_permit(
     } else {
         error!("fraudulent permit");
     }
-
-    // if game_state.passcode() == client_code {
-    //     // Send spawn
-    //     for address in game_state.addresses() {
-    //         let spawn_char = SpawnCharacter::new(
-    //             CharacterIndex::from(0),
-    //             CharacterClass::Medea,
-    //             true,
-    //             Vec2::new(0., 0.),
-    //         );
-    //         network_writer.send(NetworkSendEvent::new(
-    //             ServerMessage::SpawnCharacter(spawn_char),
-    //             *address,
-    //             Packetting::Unreliable,
-    //         ));
-    //     }
-    // } else {
-    //     // TODO: Send error
-    // }
 }
 
 fn process_motion(
@@ -156,10 +140,13 @@ impl NetworkServerPlugin {
 
 impl Plugin for NetworkServerPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let system_set =
-            SystemSet::on_update(ServerState::Running).with_system(handle_client_messages.system());
+        let system_set = SystemSet::on_update(ServerState::Running)
+            .label(NETWORK_HANDLE_LABEL)
+            .before(NETWORK_SEND_LABEL)
+            .with_system(handle_client_messages.system());
         app.add_plugin(NetworkSendPlugin::<_, ServerMessage>::new(
             ServerState::Running,
+            NETWORK_SEND_LABEL,
         ))
         .add_plugin(self.inner.clone())
         .add_system_set(system_set);

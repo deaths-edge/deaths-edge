@@ -24,6 +24,8 @@ pub struct Opt {
     server: SocketAddr,
     #[structopt(short, long, default_value = "127.0.0.1:8001")]
     bind: SocketAddr,
+    #[structopt(short, long, default_value = "1234")]
+    passcode: u64,
 }
 
 fn main() {

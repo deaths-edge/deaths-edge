@@ -15,12 +15,14 @@ use common::{
 use network::NetworkServerPlugin;
 use state::{ServerState, StateTransitionEvent, StateTransitionPlugin};
 
+use crate::{spawning::SpawnPlugin, state::STATE_TRANSITION_LABEL};
+
 fn main() {
     const NETWORK_POLL_INTERVAL: Duration = Duration::from_millis(500);
     let socket: SocketAddr = "127.0.0.1:8000".parse().expect("invalid socket");
 
     let initial_set = SystemSet::new()
-        .before("state-transitions")
+        .before(STATE_TRANSITION_LABEL)
         .with_system(initial.system());
 
     ////
@@ -35,6 +37,7 @@ fn main() {
         .add_plugin(NetworkServerPlugin::new(socket, NETWORK_POLL_INTERVAL))
         .add_plugin(StateTransitionPlugin)
         .add_plugin(PhysicsPlugin::default())
+        .add_plugin(SpawnPlugin)
         .add_system_set(initial_set)
         .run();
 }
@@ -51,11 +54,18 @@ fn initial(
     }
 
     if *app_state.current() == ServerState::Idle {
-        let permits = [ArenaPermit::new(
-            ArenaPasscode(1234),
-            CharacterClass::Medea,
-            CharacterTeam::Red,
-        )]
+        let permits = [
+            ArenaPermit::new(
+                ArenaPasscode(1234),
+                CharacterClass::Medea,
+                CharacterTeam::Red,
+            ),
+            ArenaPermit::new(
+                ArenaPasscode(4321),
+                CharacterClass::Medea,
+                CharacterTeam::Red,
+            ),
+        ]
         .into_iter()
         .collect();
         transition_writer.send(StateTransitionEvent::Setup {

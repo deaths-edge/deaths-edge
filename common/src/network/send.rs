@@ -46,13 +46,15 @@ pub fn send_message<Message>(
 pub struct NetworkSendPlugin<T, Message> {
     state: T,
     _message: PhantomData<Message>,
+    send_label: &'static str,
 }
 
 impl<T, Message> NetworkSendPlugin<T, Message> {
-    pub fn new(state: T) -> Self {
+    pub fn new(state: T, send_label: &'static str) -> Self {
         Self {
             state,
             _message: PhantomData,
+            send_label,
         }
     }
 }
@@ -64,8 +66,9 @@ where
     T: Send + Sync + Copy + Hash + Debug + Eq + 'static,
 {
     fn build(&self, app: &mut AppBuilder) {
-        let send_network =
-            SystemSet::on_update(self.state).with_system(send_message::<Message>.system());
+        let send_network = SystemSet::on_update(self.state)
+            .label(self.send_label)
+            .with_system(send_message::<Message>.system());
         app.add_event::<NetworkSendEvent<Message>>()
             .add_system_set(send_network);
     }
