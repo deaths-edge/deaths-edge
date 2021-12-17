@@ -1,12 +1,15 @@
 use serde::{Deserialize, Serialize};
 
-use crate::character::{Action, Motion};
+use crate::{
+    character::{Action, Motion},
+    game::ArenaPermit,
+};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum ClientMessage {
     Motion(Motion),
     Action(Action),
-    Passcode(u64),
+    Permit(ArenaPermit),
 }
 
 impl From<Action> for ClientMessage {

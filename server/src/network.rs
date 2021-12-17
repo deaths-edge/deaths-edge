@@ -4,67 +4,74 @@ use bevy::prelude::*;
 
 use common::{
     character::{Action, CharacterClass, CharacterCommand, CharacterIndex, Motion},
+    game::{ArenaPermit, GameRoster},
     network::{
-        client::ClientMessage,
-        server::{ServerMessage, SpawnCharacter},
-        NetworkPlugin, NetworkSendEvent, NetworkSendPlugin, NetworkServer, Packet, Packetting,
-        SocketEvent,
+        client::ClientMessage, server::ServerMessage, NetworkPlugin, NetworkSendEvent,
+        NetworkSendPlugin, NetworkServer, Packet, Packetting, SocketEvent,
     },
 };
 
-use crate::state::{GameState, ServerState};
+use crate::state::ServerState;
 
-fn process_passcode(
+fn process_permit(
     client_address: SocketAddr,
-    client_code: u64,
+    client_permit: &ArenaPermit,
     network_writer: &mut EventWriter<NetworkSendEvent<ServerMessage>>,
-    game_state: &mut GameState,
+    game_roster: &mut GameRoster,
 ) {
-    if game_state.passcode() == client_code {
+    let result = game_roster.apply_permit(client_address, client_permit);
+
+    if result.is_ok() {
+        info!("permit passed");
         // Send passcode acknowledgement
         network_writer.send(NetworkSendEvent::new(
-            ServerMessage::PasscodeAck,
-            client_address,
-            Packetting::Unreliable,
-        ));
-
-        // Send spawn
-        let spawn_char = SpawnCharacter::new(
-            CharacterIndex::from(0),
-            CharacterClass::Medea,
-            true,
-            Vec2::new(0., 0.),
-        );
-        network_writer.send(NetworkSendEvent::new(
-            ServerMessage::SpawnCharacter(spawn_char),
+            ServerMessage::ArenaPasscodeAck,
             client_address,
             Packetting::Unreliable,
         ));
     } else {
-        // TODO: Send error
+        error!("fraudulent permit");
     }
+
+    // if game_state.passcode() == client_code {
+    //     // Send spawn
+    //     for address in game_state.addresses() {
+    //         let spawn_char = SpawnCharacter::new(
+    //             CharacterIndex::from(0),
+    //             CharacterClass::Medea,
+    //             true,
+    //             Vec2::new(0., 0.),
+    //         );
+    //         network_writer.send(NetworkSendEvent::new(
+    //             ServerMessage::SpawnCharacter(spawn_char),
+    //             *address,
+    //             Packetting::Unreliable,
+    //         ));
+    //     }
+    // } else {
+    //     // TODO: Send error
+    // }
 }
 
 fn process_motion(
     address: &SocketAddr,
     motion: Motion,
     network_writer: &mut EventWriter<NetworkSendEvent<ServerMessage>>,
-    game_state: &GameState,
+    game_roster: &GameRoster,
     motion_writer: &mut EventWriter<CharacterCommand<Motion>>,
 ) {
-    if let Some(id) = game_state.id(address) {
-        let motion_action = CharacterCommand::new(id, motion);
-        motion_writer.send(motion_action);
-    } else {
-        // TODO: Handle
-    }
+    // if let Some(id) = game_state.id(address) {
+    //     let motion_action = CharacterCommand::new(id, motion);
+    //     motion_writer.send(motion_action);
+    // } else {
+    //     // TODO: Handle
+    // }
 }
 
 fn process_action(
     address: &SocketAddr,
     action: Action,
     network_writer: &mut EventWriter<NetworkSendEvent<ServerMessage>>,
-    game_state: &GameState,
     action_commands: &mut EventWriter<CharacterCommand<Action>>,
 ) {
 }
@@ -72,7 +79,7 @@ fn process_action(
 fn process_packet(
     packet: Packet,
     network_writer: &mut EventWriter<NetworkSendEvent<ServerMessage>>,
-    game_state: &mut GameState,
+    game_roster: &mut GameRoster,
     motion_writer: &mut EventWriter<CharacterCommand<Motion>>,
     action_commands: &mut EventWriter<CharacterCommand<Action>>,
 ) {
@@ -80,23 +87,27 @@ fn process_packet(
 
     match ClientMessage::from_bytes(packet.payload()) {
         Ok(message) => {
+            info!(message = "received message", ?message, %address);
+
             match message {
-                ClientMessage::Passcode(client_code) => {
-                    process_passcode(address, client_code, network_writer, game_state)
+                ClientMessage::Permit(permit) => {
+                    process_permit(address, &permit, network_writer, game_roster)
                 }
                 ClientMessage::Motion(motion) => {
-                    process_motion(&address, motion, network_writer, game_state, motion_writer)
+                    // process_motion(&address, motion, network_writer, game_state, motion_writer)
                 }
-                ClientMessage::Action(action) => process_action(
-                    &address,
-                    action,
-                    network_writer,
-                    game_state,
-                    action_commands,
-                ),
+                ClientMessage::Action(action) => {
+                    //     process_action(
+                    //     &address,
+                    //     action,
+                    //     network_writer,
+                    //     game_state,
+                    //     action_commands,
+                    // )
+                }
                 _ => (),
             }
-            info!(message = "received message", ?message);
+            // info!(message = "received message", ?message);
         }
         Err(error) => error!(message = "failed to parse packet", %error),
     }
@@ -105,7 +116,7 @@ fn process_packet(
 fn handle_client_messages(
     mut network_server: ResMut<NetworkServer>,
     mut network_writer: EventWriter<NetworkSendEvent<ServerMessage>>,
-    mut game_state: ResMut<GameState>,
+    mut game_roster: ResMut<GameRoster>,
     mut motion_writer: EventWriter<CharacterCommand<Motion>>,
     mut action_commands: EventWriter<CharacterCommand<Action>>,
 ) {
@@ -117,7 +128,7 @@ fn handle_client_messages(
             SocketEvent::Packet(packet) => process_packet(
                 packet,
                 &mut network_writer,
-                &mut game_state,
+                &mut game_roster,
                 &mut motion_writer,
                 &mut action_commands,
             ),

@@ -1,7 +1,7 @@
 use bevy::math::Size;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub enum CharacterClass {
     /// Warrior class
     // Roman

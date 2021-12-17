@@ -13,9 +13,9 @@ pub fn setup_nameplate(
     commands
         .spawn_bundle(nameplate_bundle)
         .with_children(|commands| {
-            let health_bar_bundle = HealthBarBundle::new(&nameplate_materials);
-            let power_bar_bundle = PowerBarBundle::new(&nameplate_materials);
-            let cast_bar_bundle = CastBarBundle::new(&nameplate_materials);
+            let health_bar_bundle = HealthBarBundle::new(nameplate_materials);
+            let power_bar_bundle = PowerBarBundle::new(nameplate_materials);
+            let cast_bar_bundle = CastBarBundle::new(nameplate_materials);
 
             commands.spawn_bundle(cast_bar_bundle);
             commands.spawn_bundle(power_bar_bundle);

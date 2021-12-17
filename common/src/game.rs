@@ -1,22 +1,66 @@
-use std::net::SocketAddr;
+use std::{
+    collections::{HashMap, HashSet},
+    net::SocketAddr,
+};
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct GameId(u64);
+use crate::character::{CharacterClass, CharacterTeam};
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct CharacterDetails {
-    id: PlayerId,
-    address: SocketAddr,
+#[derive(Debug, Deserialize, Serialize, Hash, PartialEq, Eq, Clone, Copy)]
+pub struct ArenaPasscode(pub u64);
+
+#[derive(Debug, Deserialize, Serialize, Hash, PartialEq, Eq, Clone)]
+pub struct ArenaPermit {
+    pub passcode: ArenaPasscode,
+    pub class: CharacterClass,
+    pub team: CharacterTeam,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct PlayerId(u64);
+impl ArenaPermit {
+    pub fn new(passcode: ArenaPasscode, class: CharacterClass, team: CharacterTeam) -> Self {
+        Self {
+            passcode,
+            class,
+            team,
+        }
+    }
+}
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct GameDetails {
-    game_id: GameId,
-    team_a: Vec<CharacterDetails>,
-    team_b: Vec<CharacterDetails>,
+pub struct ArenaEntry {
+    address: SocketAddr,
+    permit: ArenaPermit,
+}
+
+/// Sent by matchmaking server.
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct GameRoster {
+    permits: HashSet<ArenaPermit>,
+    success: HashMap<SocketAddr, ArenaPermit>,
+}
+
+pub struct FraudulentPermit;
+
+impl GameRoster {
+    pub fn new(permits: HashSet<ArenaPermit>) -> Self {
+        let permit_len = permits.len();
+        Self {
+            permits,
+            success: HashMap::with_capacity(permit_len),
+        }
+    }
+
+    pub fn drain(&mut self) -> impl Iterator<Item = (SocketAddr, ArenaPermit)> + '_ {
+        self.success.drain()
+    }
+
+    pub fn apply_permit(
+        &mut self,
+        socket_address: SocketAddr,
+        permit: &ArenaPermit,
+    ) -> Result<(), FraudulentPermit> {
+        let permit = self.permits.take(permit).ok_or(FraudulentPermit)?;
+        self.success.insert(socket_address, permit);
+        Ok(())
+    }
 }

@@ -1,8 +1,9 @@
-use std::{fmt::Debug, hash::Hash};
-
 use bevy::prelude::*;
 
-use common::{network::server::SpawnCharacter, spawning::spawn_character_base, state::ArenaState};
+use common::{
+    character::CharacterBundle as CommonCharacterBundle, network::server::SpawnCharacter,
+    state::ArenaState,
+};
 
 use crate::{
     character::{CharacterBundle, CharacterMaterials, PlayerBundle},
@@ -26,10 +27,12 @@ pub fn spawn_characters(
     time: Res<Time>,
     character_materials: Res<CharacterMaterials>,
     nameplate_materials: Res<NameplateMaterials>,
-    mut spawn_events: EventReader<SpawnCharacter>,
+    mut spawn_reader: EventReader<SpawnCharacter>,
     mut commands: Commands,
 ) {
-    spawn_character_base(&time, &mut spawn_events, |common_bundle, spawn_event| {
+    for spawn_event in spawn_reader.iter() {
+        let common_bundle =
+            CommonCharacterBundle::new(spawn_event.index(), spawn_event.class(), &time);
         let position = spawn_event.position();
         let transform = Transform::from_xyz(position.x, position.y, 0.);
 
@@ -41,5 +44,5 @@ pub fn spawn_characters(
             commands.spawn_bundle(character_bundle).id()
         };
         setup_nameplate(id, &nameplate_materials, &mut commands);
-    });
+    }
 }

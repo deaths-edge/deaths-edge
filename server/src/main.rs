@@ -7,7 +7,11 @@ use std::{net::SocketAddr, time::Duration};
 
 use bevy::prelude::*;
 
-use common::{character::CharacterCommandPlugin, heron::PhysicsPlugin};
+use common::{
+    character::{CharacterClass, CharacterCommandPlugin, CharacterTeam},
+    game::{ArenaPasscode, ArenaPermit, GameRoster},
+    heron::PhysicsPlugin,
+};
 use network::NetworkServerPlugin;
 use state::{ServerState, StateTransitionEvent, StateTransitionPlugin};
 
@@ -47,9 +51,15 @@ fn initial(
     }
 
     if *app_state.current() == ServerState::Idle {
+        let permits = [ArenaPermit::new(
+            ArenaPasscode(1234),
+            CharacterClass::Medea,
+            CharacterTeam::Red,
+        )]
+        .into_iter()
+        .collect();
         transition_writer.send(StateTransitionEvent::Setup {
-            passcode: 1234,
-            team_size: 2,
+            roster: GameRoster::new(permits),
         });
     }
 }

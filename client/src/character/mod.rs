@@ -11,7 +11,7 @@ use common::character::{
     CharacterCommandPlugin, Motion,
 };
 
-use crate::{input_mapping::InputCommand, state::ClientState, ui::selected::Selected};
+use crate::{input_mapping::InputCommand, ui::selected::Selected};
 
 #[derive(Bundle)]
 pub struct CharacterBundle {

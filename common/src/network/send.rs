@@ -35,7 +35,7 @@ pub fn send_message<Message>(
         packetting,
     } in message_packet.iter()
     {
-        let res = network_server.send_message(address.clone(), message, packetting.to_fn());
+        let res = network_server.send_message(*address, message, packetting.to_fn());
         if let Err(error) = res {
             error!(message = "failed to broadcast message", %address, ?message, %error);
         }

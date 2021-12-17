@@ -3,7 +3,8 @@ use std::{net::SocketAddr, time::Duration};
 use bevy::prelude::*;
 
 use common::{
-    character::{Action, Motion},
+    character::{Action, CharacterClass, CharacterTeam, Motion},
+    game::{ArenaPasscode, ArenaPermit},
     network::{
         client::ClientMessage,
         server::{ServerMessage, SpawnCharacter},
@@ -40,20 +41,24 @@ impl NetworkPlugin {
     }
 }
 
-fn send_passcode(network_server: Res<NetworkServer>, game_server: Res<GameServer>) {
+fn request_arena_entry(network_server: Res<NetworkServer>, game_server: Res<GameServer>) {
     // TODO: Handle
     let _ = network_server.send_message(
         game_server.address(),
-        &ClientMessage::Passcode(1234),
+        &ClientMessage::Permit(ArenaPermit::new(
+            ArenaPasscode(1234),
+            CharacterClass::Medea,
+            CharacterTeam::Red,
+        )),
         Packet::unreliable,
     );
 }
 
 impl Plugin for NetworkPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        // Send passcode to server on arena enter
+        // Request entry to arena
         let send_passcode =
-            SystemSet::on_enter(ClientState::Arena).with_system(send_passcode.system());
+            SystemSet::on_enter(ClientState::Arena).with_system(request_arena_entry.system());
 
         let broadcast_inputs = SystemSet::on_update(PlayerState::Spawned)
             .with_system(send_input::<Motion>.system())
@@ -83,11 +88,15 @@ pub fn handle_server_messages(
             }
             SocketEvent::Packet(packet) => {
                 let payload = packet.payload();
+                let address = packet.addr();
                 match ServerMessage::from_bytes(payload) {
-                    Ok(message) => match message {
-                        ServerMessage::PasscodeAck => {}
-                        ServerMessage::SpawnCharacter(spawn) => spawn_writer.send(spawn),
-                    },
+                    Ok(message) => {
+                        info!(message = "received message", ?message, %address);
+                        match message {
+                            ServerMessage::ArenaPasscodeAck => {}
+                            ServerMessage::SpawnCharacter(spawn) => spawn_writer.send(spawn),
+                        }
+                    }
                     Err(error) => error!(message = "failed to parse packet", %error),
                 }
                 // match

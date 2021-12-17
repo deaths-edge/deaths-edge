@@ -8,3 +8,9 @@ impl From<usize> for CharacterIndex {
         Self(val)
     }
 }
+
+impl CharacterIndex {
+    pub fn increment(&mut self) {
+        self.0 += 1;
+    }
+}

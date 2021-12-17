@@ -1,5 +1,4 @@
 pub mod client;
-pub mod messages;
 mod send;
 pub mod server;
 
@@ -107,7 +106,7 @@ impl Plugin for NetworkPlugin {
         let polling = SystemSet::new()
             .with_run_criteria(FixedTimestep::step(self.poll_interval))
             .with_system(poll.system());
-        app.insert_resource(NetworkServer::new(self.address.clone()))
+        app.insert_resource(NetworkServer::new(self.address))
             .add_startup_system(setup_server.system())
             .add_system_set(polling);
     }

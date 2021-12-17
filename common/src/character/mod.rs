@@ -9,6 +9,7 @@ mod interrupt;
 mod power;
 mod speed_multiplier;
 mod target;
+mod team;
 
 use bevy::prelude::*;
 use heron::prelude::*;
@@ -26,6 +27,7 @@ pub use interrupt::*;
 pub use power::*;
 pub use speed_multiplier::*;
 pub use target::*;
+pub use team::*;
 
 pub struct CharacterMarker;
 

@@ -5,7 +5,7 @@ use crate::character::{CharacterClass, CharacterIndex};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum ServerMessage {
-    PasscodeAck,
+    ArenaPasscodeAck,
     SpawnCharacter(SpawnCharacter),
 }
 
