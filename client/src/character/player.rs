@@ -3,7 +3,7 @@ use std::{fmt::Debug, hash::Hash};
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 
 use super::*;
-use crate::input_mapping::{FocalHold, SelectClick};
+use crate::input_mapping::SelectClick;
 
 use common::{character::CharacterTarget, network::server::SpawnCharacter};
 
@@ -34,15 +34,11 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let player_state_transition =
             SystemSet::on_update(PlayerState::Waiting).with_system(spawn_state.system());
-        let character_motion = SystemSet::on_update(PlayerState::Spawned)
-            .label("character-motion")
-            .with_system(player_focal_rotate.system());
         let character_actions = SystemSet::on_update(PlayerState::Spawned)
             .label("character-actions")
             .with_system(player_char_select.system());
         app.add_state(PlayerState::Waiting)
             .add_system_set(player_state_transition)
-            .add_system_set(character_motion)
             .add_system_set(character_actions);
     }
 }
@@ -121,28 +117,5 @@ pub fn player_char_select(
         .filter(|(entity, _)| Some(*entity) != selected_entity_opt)
     {
         *selected = Selected::Unselected;
-    }
-}
-
-/// Receives [`FocalHold`] event and rotates character in that direction.
-pub fn player_focal_rotate(
-    mut character_query: Query<&mut Transform, With<PlayerMarker>>,
-    mut events: EventReader<FocalHold>,
-) {
-    let mut transform = character_query.single_mut().expect("player not found");
-
-    const MINIMUM_FOCAL_LENGTH: f32 = 200.;
-
-    if let Some(event) = events.iter().last() {
-        let translation = Vec2::from(transform.translation);
-
-        let diff = event.mouse_position - translation;
-        let distance = diff.length();
-        let adjustment = distance.min(MINIMUM_FOCAL_LENGTH);
-        let new_diff = diff * adjustment / distance;
-        // let new_diff = diff;
-
-        let angle = Vec2::new(0., 1.).angle_between(new_diff);
-        transform.rotation = Quat::from_rotation_z(angle);
     }
 }

@@ -34,7 +34,7 @@ fn print_positions(
     mut query: Query<(&CharacterIndex, &Transform, With<PlayerMarker>), With<CharacterMarker>>,
 ) {
     for (index, transform, player) in query.iter_mut() {
-        info!(?index, position = ?transform.translation, %player);
+        // info!(?index, position = ?transform.translation, %player);
     }
 }
 

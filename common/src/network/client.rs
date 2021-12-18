@@ -1,27 +1,45 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    character::{Action, Motion},
+    character::{Action, FocalAngle, Motion},
     game::ArenaPermit,
 };
 
 /// Primary message sent from client to server.
 #[derive(Debug, Deserialize, Serialize)]
 pub enum ClientMessage {
-    Motion(Motion),
-    Action(Action),
     Permit(ArenaPermit),
+    Command(ClientCommand),
 }
 
-impl From<Action> for ClientMessage {
+impl<T: Into<ClientCommand>> From<T> for ClientMessage {
+    fn from(value: T) -> Self {
+        Self::Command(value.into())
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ClientCommand {
+    Motion(Motion),
+    Action(Action),
+    Rotate(FocalAngle),
+}
+
+impl From<Action> for ClientCommand {
     fn from(action: Action) -> Self {
         Self::Action(action)
     }
 }
 
-impl From<Motion> for ClientMessage {
+impl From<Motion> for ClientCommand {
     fn from(motion: Motion) -> Self {
         Self::Motion(motion)
+    }
+}
+
+impl From<FocalAngle> for ClientCommand {
+    fn from(angle: FocalAngle) -> Self {
+        Self::Rotate(angle)
     }
 }
 

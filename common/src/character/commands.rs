@@ -39,6 +39,9 @@ pub enum Action {
     Action8,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct FocalAngle(pub f32);
+
 /// Receives an [`Action`] and performs the associated action.
 pub fn character_action(
     time: Res<Time>,
@@ -167,6 +170,21 @@ pub fn character_movement(
     }
 }
 
+/// Receives [`FocalAngle`] event and rotates character in that direction.
+pub fn character_focal_rotate(
+    mut character_query: Query<&mut Transform, With<CharacterMarker>>,
+    mut events: EventReader<CharacterEntityCommand<FocalAngle>>,
+) {
+    if let Some(command) = events.iter().last() {
+        info!(message = "rotating", angle = %command.command.0);
+        let mut transform = character_query
+            .get_mut(command.id)
+            .expect("player not found");
+
+        transform.rotation = Quat::from_rotation_z(command.command.0);
+    }
+}
+
 /// A character command, addressed by [`Entity`].
 pub struct CharacterEntityCommand<Command> {
     id: Entity,
@@ -204,9 +222,11 @@ where
     fn build(&self, app: &mut AppBuilder) {
         let movement = SystemSet::on_update(self.state)
             .with_system(character_movement.system())
-            .with_system(character_action.system());
+            .with_system(character_action.system())
+            .with_system(character_focal_rotate.system());
         app.add_event::<CharacterEntityCommand<Motion>>()
             .add_event::<CharacterEntityCommand<Action>>()
+            .add_event::<CharacterEntityCommand<FocalAngle>>()
             .add_system_set(movement);
     }
 }

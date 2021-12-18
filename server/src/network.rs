@@ -3,10 +3,12 @@ use std::net::SocketAddr;
 use bevy::{core::FixedTimestep, prelude::*};
 
 use common::{
-    character::{Action, CharacterEntityCommand, CharacterIndex, CharacterMarker, Motion},
+    character::{
+        Action, CharacterEntityCommand, CharacterIndex, CharacterMarker, FocalAngle, Motion,
+    },
     game::{ArenaPermit, GameRoster},
     network::{
-        client::ClientMessage,
+        client::{ClientCommand, ClientMessage},
         server::{CharacterCommand, Reconcile, ServerMessage},
         CharacterNetworkCommand, NetworkPlugin, NetworkSendEvent, NetworkSendPlugin, NetworkServer,
         Packet, Packetting, SocketEvent, NETWORK_POLL_LABEL,
@@ -68,6 +70,7 @@ fn process_packet<'a>(
 
     motion_writer: &mut EventWriter<CharacterEntityCommand<Motion>>,
     action_writer: &mut EventWriter<CharacterEntityCommand<Action>>,
+    focal_writer: &mut EventWriter<CharacterEntityCommand<FocalAngle>>,
 
     char_query_iter: impl Iterator<Item = (Entity, &'a ClientAddress)>,
 ) {
@@ -81,18 +84,21 @@ fn process_packet<'a>(
                 ClientMessage::Permit(permit) => {
                     process_permit(address, &permit, network_writer, game_roster)
                 }
-                ClientMessage::Motion(motion) => {
-                    if let Err(_) =
-                        process_command(packet.addr(), char_query_iter, motion, motion_writer)
-                    {
-                        error!("received motion from an unknown character");
-                    }
-                }
-                ClientMessage::Action(action) => {
-                    if let Err(_) =
-                        process_command(packet.addr(), char_query_iter, action, action_writer)
-                    {
-                        error!("received action from an unknown character");
+                ClientMessage::Command(command) => {
+                    let address = packet.addr();
+                    let result = match command {
+                        ClientCommand::Motion(motion) => {
+                            process_command(address, char_query_iter, motion, motion_writer)
+                        }
+                        ClientCommand::Action(action) => {
+                            process_command(address, char_query_iter, action, action_writer)
+                        }
+                        ClientCommand::Rotate(rotate) => {
+                            process_command(address, char_query_iter, rotate, focal_writer)
+                        }
+                    };
+                    if let Err(_) = result {
+                        error!("not found");
                     }
                 }
             }
@@ -110,6 +116,7 @@ fn handle_client_messages(
 
     mut motion_writer: EventWriter<CharacterEntityCommand<Motion>>,
     mut action_commands: EventWriter<CharacterEntityCommand<Action>>,
+    mut focal_commands: EventWriter<CharacterEntityCommand<FocalAngle>>,
 ) {
     while let Ok(Some(event)) = network_server.recv() {
         match event {
@@ -122,6 +129,7 @@ fn handle_client_messages(
                 &mut game_roster,
                 &mut motion_writer,
                 &mut action_commands,
+                &mut focal_commands,
                 char_query.iter(),
             ),
             SocketEvent::Connect(address) => {
@@ -218,7 +226,8 @@ impl Plugin for NetworkServerPlugin {
             .after(NETWORK_HANDLE_LABEL)
             .before(NETWORK_SEND_LABEL)
             .before(NETWORK_POLL_LABEL)
-            .with_system(relay_character_commands::<Motion>.system());
+            .with_system(relay_character_commands::<Motion>.system())
+            .with_system(relay_character_commands::<FocalAngle>.system());
 
         let broadcast_reconciles = SystemSet::on_update(ServerState::Running)
             .with_run_criteria(FixedTimestep::step(2.0))

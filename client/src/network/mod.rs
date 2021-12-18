@@ -1,11 +1,11 @@
 mod character_command;
 
-use std::net::SocketAddr;
+use std::{marker::PhantomData, net::SocketAddr};
 
 use bevy::prelude::*;
 
 use common::{
-    character::{Action, CharacterClass, CharacterTeam, Motion},
+    character::{Action, CharacterClass, CharacterTeam, FocalAngle, Motion},
     game::{ArenaPasscode, ArenaPermit},
     network::{
         client::ClientMessage,
@@ -57,6 +57,7 @@ pub fn handle_server_messages(
     mut network_server: ResMut<NetworkServer>,
     mut spawn_writer: EventWriter<SpawnCharacter>,
     mut motion_writer: EventWriter<CharacterNetworkCommand<Motion>>,
+    mut focal_angle_writer: EventWriter<CharacterNetworkCommand<FocalAngle>>,
     mut reconcile_writer: EventWriter<Reconcile>,
 ) {
     while let Ok(Some(event)) = network_server.recv() {
@@ -78,6 +79,9 @@ pub fn handle_server_messages(
                             ServerMessage::CharacterCommand(command) => match command {
                                 CharacterCommand::Motion(motion) => motion_writer.send(motion),
                                 CharacterCommand::Action(_) => todo!(),
+                                CharacterCommand::FocalAngle(angle) => {
+                                    focal_angle_writer.send(angle)
+                                }
                             },
                             ServerMessage::Reconcile(reconcile) => reconcile_writer.send(reconcile),
                         }
@@ -110,7 +114,7 @@ fn send_input<Value>(
         input_commands
             .iter()
             .cloned()
-            .map(PlayerInputCommand::into_inner)
+            .map(|command| command.0)
             .map(Into::into)
             .map(|message| {
                 info!(message = "sending", ?message, address = %game_server.address);
@@ -131,6 +135,41 @@ impl NetworkPlugin {
     }
 }
 
+pub const CHARACTER_NETWORK_COMMAND_LABEL: &str = "broadcast-inputs";
+
+pub struct CharacterNetworkCommandPlugin<T> {
+    _command: PhantomData<T>,
+}
+
+impl<T> CharacterNetworkCommandPlugin<T> {
+    pub fn new() -> Self {
+        Self {
+            _command: PhantomData,
+        }
+    }
+}
+
+impl<T> Plugin for CharacterNetworkCommandPlugin<T>
+where
+    T: Send + Sync + 'static,
+    T: Clone,
+    T: Into<ClientMessage>,
+{
+    fn build(&self, app: &mut AppBuilder) {
+        let broadcast_inputs = SystemSet::on_update(PlayerState::Spawned)
+            .label(CHARACTER_NETWORK_COMMAND_LABEL)
+            .with_system(send_input::<T>.system());
+
+        let network_to_entity = SystemSet::on_update(ClientState::Arena)
+            .after(NETWORK_HANDLE_LABEL)
+            .with_system(network_to_entity_command::<T>.system());
+
+        app.add_event::<CharacterNetworkCommand<T>>()
+            .add_system_set(broadcast_inputs)
+            .add_system_set(network_to_entity);
+    }
+}
+
 impl Plugin for NetworkPlugin {
     fn build(&self, app: &mut AppBuilder) {
         // Request entry to arena
@@ -142,23 +181,15 @@ impl Plugin for NetworkPlugin {
             .label(NETWORK_HANDLE_LABEL)
             .with_system(handle_server_messages.system());
 
-        let broadcast_inputs = SystemSet::on_update(PlayerState::Spawned)
-            .with_system(send_input::<Motion>.system())
-            .with_system(send_input::<Action>.system());
-
-        let network_to_entity = SystemSet::on_update(ClientState::Arena)
-            .after(NETWORK_HANDLE_LABEL)
-            .with_system(network_to_entity_command::<Motion>.system());
-
         app.add_plugin(NetworkSendPlugin::<_, ClientMessage>::new(
             ClientState::Arena,
             NETWORK_SEND_LABEL,
         ))
-        .add_event::<CharacterNetworkCommand<Motion>>()
+        .add_plugin(CharacterNetworkCommandPlugin::<Motion>::new())
+        .add_plugin(CharacterNetworkCommandPlugin::<Action>::new())
+        .add_plugin(CharacterNetworkCommandPlugin::<FocalAngle>::new())
         .add_plugin(self.inner.clone())
         .add_system_set(send_passcode)
-        .add_system_set(broadcast_inputs)
-        .add_system_set(network_to_entity)
         .add_system_set(handle_server_message);
     }
 }

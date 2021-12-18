@@ -21,7 +21,6 @@ use crate::{
 
 pub const SPAWNER_LABEL: &str = "spawner";
 
-// TODO: Add waiting state
 pub struct SpawnPlugin;
 
 impl Plugin for SpawnPlugin {

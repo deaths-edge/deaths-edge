@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::character::{Action, CharacterClass, CharacterIndex, Motion};
+use crate::character::{Action, CharacterClass, CharacterIndex, FocalAngle, Motion};
 
 use super::CharacterNetworkCommand;
 
@@ -17,6 +17,7 @@ pub enum ServerMessage {
 pub enum CharacterCommand {
     Motion(CharacterNetworkCommand<Motion>),
     Action(CharacterNetworkCommand<Action>),
+    FocalAngle(CharacterNetworkCommand<FocalAngle>),
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -34,6 +35,12 @@ impl From<CharacterNetworkCommand<Motion>> for CharacterCommand {
 impl From<CharacterNetworkCommand<Action>> for CharacterCommand {
     fn from(value: CharacterNetworkCommand<Action>) -> Self {
         Self::Action(value)
+    }
+}
+
+impl From<CharacterNetworkCommand<FocalAngle>> for CharacterCommand {
+    fn from(value: CharacterNetworkCommand<FocalAngle>) -> Self {
+        Self::FocalAngle(value)
     }
 }
 
