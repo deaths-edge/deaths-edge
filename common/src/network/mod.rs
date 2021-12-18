@@ -4,9 +4,9 @@ pub mod server;
 
 pub use send::*;
 
-use std::{fmt::Debug, net::SocketAddr, time::Duration};
+use std::{fmt::Debug, net::SocketAddr};
 
-use bevy::{core::FixedTimestep, prelude::*, utils::Instant};
+use bevy::{prelude::*, utils::Instant};
 use laminar::Socket;
 pub use laminar::{Packet, SocketEvent};
 use serde::{Deserialize, Serialize};
