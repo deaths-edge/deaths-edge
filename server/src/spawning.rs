@@ -59,12 +59,8 @@ pub fn spawn_characters(
 
             let common_bundle = CommonCharacterBundle::new(*next_index, permit.class, &time);
             let transform = Transform::from_xyz(position.x, position.y, 0.);
-
             let character_bundle =
                 CharacterBundle::new(transform, common_bundle, ClientAddress(new_address));
-
-            commands.spawn_bundle(character_bundle);
-            next_index.increment();
 
             // Send all existing characters to new character
             let network_spawn_events =
@@ -84,6 +80,8 @@ pub fn spawn_characters(
                     });
             network_writer.send_batch(network_spawn_events);
 
+            commands.spawn_bundle(character_bundle);
+
             // Send spawn to all existing characters and new character
             let network_spawn_events = character_address_query
                 .iter()
@@ -98,6 +96,7 @@ pub fn spawn_characters(
                     NetworkSendEvent::new(message, address, Packetting::ReliableUnordered)
                 });
             network_writer.send_batch(network_spawn_events);
+            next_index.increment();
         }
     }
 }

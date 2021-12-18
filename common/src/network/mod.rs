@@ -115,7 +115,7 @@ impl Plugin for NetworkPlugin {
 }
 
 /// A character command, addressed by [`CharacterIndex`].
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct CharacterNetworkCommand<T> {
     pub index: CharacterIndex,
     pub command: T,

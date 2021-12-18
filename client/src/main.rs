@@ -12,6 +12,8 @@ mod window;
 use std::{net::SocketAddr, time::Duration};
 
 use bevy::{log::LogPlugin, prelude::*};
+use character::PlayerMarker;
+use common::character::{CharacterIndex, CharacterMarker};
 use structopt::StructOpt;
 
 use network::NetworkPlugin;
@@ -26,6 +28,14 @@ pub struct Opt {
     bind: SocketAddr,
     #[structopt(short, long, default_value = "1234")]
     passcode: u64,
+}
+
+fn print_positions(
+    mut query: Query<(&CharacterIndex, &Transform, With<PlayerMarker>), With<CharacterMarker>>,
+) {
+    for (index, transform, player) in query.iter_mut() {
+        info!(?index, position = ?transform.translation, %player);
+    }
 }
 
 fn main() {
@@ -68,6 +78,7 @@ fn main() {
         .add_system_set(state_transitions)
         // Network plugin
         .add_plugin(network_plugin)
+        .add_system(print_positions.system())
         .run();
 }
 

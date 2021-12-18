@@ -1,6 +1,6 @@
 mod character_command;
 
-use std::{net::SocketAddr, time::Duration};
+use std::net::SocketAddr;
 
 use bevy::prelude::*;
 
@@ -9,7 +9,7 @@ use common::{
     game::{ArenaPasscode, ArenaPermit},
     network::{
         client::ClientMessage,
-        server::{CharacterCommand, GameCommand, ServerMessage, SpawnCharacter},
+        server::{CharacterCommand, GameCommand, Reconcile, ServerMessage, SpawnCharacter},
         CharacterNetworkCommand, NetworkPlugin as BaseNetworkPlugin, NetworkSendEvent,
         NetworkSendPlugin, NetworkServer, Packet, Packetting, SocketEvent,
     },
@@ -57,6 +57,7 @@ pub fn handle_server_messages(
     mut network_server: ResMut<NetworkServer>,
     mut spawn_writer: EventWriter<SpawnCharacter>,
     mut motion_writer: EventWriter<CharacterNetworkCommand<Motion>>,
+    mut reconcile_writer: EventWriter<Reconcile>,
 ) {
     while let Ok(Some(event)) = network_server.recv() {
         match event {
@@ -78,6 +79,7 @@ pub fn handle_server_messages(
                                 CharacterCommand::Motion(motion) => motion_writer.send(motion),
                                 CharacterCommand::Action(_) => todo!(),
                             },
+                            ServerMessage::Reconcile(reconcile) => reconcile_writer.send(reconcile),
                         }
                     }
                     Err(error) => error!(message = "failed to parse packet", %error),

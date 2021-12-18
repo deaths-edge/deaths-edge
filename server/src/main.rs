@@ -7,6 +7,7 @@ use std::{net::SocketAddr, time::Duration};
 
 use bevy::{core::FixedTimestep, prelude::*};
 
+use character::ClientAddress;
 use common::{
     character::{
         CharacterClass, CharacterEntityCommandPlugin, CharacterIndex, CharacterMarker,
@@ -49,9 +50,11 @@ fn main() {
         .run();
 }
 
-fn print_positions(query: Query<(&CharacterIndex, &Transform), With<CharacterMarker>>) {
-    for (index, transform) in query.iter() {
-        info!(?index, position = ?transform.translation);
+fn print_positions(
+    query: Query<(&CharacterIndex, &ClientAddress, &Transform), With<CharacterMarker>>,
+) {
+    for (index, address, transform) in query.iter() {
+        info!(?index, position = ?transform.translation, address = %address.0);
     }
 }
 

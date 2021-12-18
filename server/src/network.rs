@@ -1,13 +1,13 @@
 use std::net::SocketAddr;
 
-use bevy::prelude::*;
+use bevy::{core::FixedTimestep, prelude::*};
 
 use common::{
     character::{Action, CharacterEntityCommand, CharacterIndex, CharacterMarker, Motion},
     game::{ArenaPermit, GameRoster},
     network::{
         client::ClientMessage,
-        server::{CharacterCommand, ServerMessage},
+        server::{CharacterCommand, Reconcile, ServerMessage},
         CharacterNetworkCommand, NetworkPlugin, NetworkSendEvent, NetworkSendPlugin, NetworkServer,
         Packet, Packetting, SocketEvent, NETWORK_POLL_LABEL,
     },
@@ -171,6 +171,29 @@ pub fn relay_character_commands<T>(
     network_writer.send_batch(events)
 }
 
+pub fn reconcile_broadcast(
+    mut network_writer: EventWriter<NetworkSendEvent<ServerMessage>>,
+    character_query: Query<(&CharacterIndex, &Transform), With<CharacterMarker>>,
+    character_address_query: Query<&ClientAddress, With<CharacterMarker>>,
+) {
+    let events = character_query
+        .iter()
+        .map(|(index, transform)| {
+            let reconcile = Reconcile {
+                index: *index,
+                position: transform.translation.truncate(),
+            };
+            let message = ServerMessage::Reconcile(reconcile);
+
+            character_address_query.iter().map(move |address| {
+                NetworkSendEvent::new(message.clone(), **address, Packetting::ReliableUnordered)
+            })
+        })
+        .flatten();
+
+    network_writer.send_batch(events);
+}
+
 pub struct NetworkServerPlugin {
     inner: NetworkPlugin,
 }
@@ -193,8 +216,15 @@ impl Plugin for NetworkServerPlugin {
 
         let relay_commands = SystemSet::on_update(ServerState::Running)
             .after(NETWORK_HANDLE_LABEL)
+            .before(NETWORK_SEND_LABEL)
             .before(NETWORK_POLL_LABEL)
             .with_system(relay_character_commands::<Motion>.system());
+
+        let broadcast_reconciles = SystemSet::on_update(ServerState::Running)
+            .with_run_criteria(FixedTimestep::step(2.0))
+            .before(NETWORK_POLL_LABEL)
+            .before(NETWORK_SEND_LABEL)
+            .with_system(reconcile_broadcast.system());
 
         app.add_plugin(NetworkSendPlugin::<_, ServerMessage>::new(
             ServerState::Running,
@@ -202,6 +232,7 @@ impl Plugin for NetworkServerPlugin {
         ))
         .add_plugin(self.inner.clone())
         .add_system_set(system_set)
-        .add_system_set(relay_commands);
+        .add_system_set(relay_commands)
+        .add_system_set(broadcast_reconciles);
     }
 }

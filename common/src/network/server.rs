@@ -5,17 +5,24 @@ use crate::character::{Action, CharacterClass, CharacterIndex, Motion};
 
 use super::CharacterNetworkCommand;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum ServerMessage {
     ArenaPasscodeAck,
     GameCommand(GameCommand),
     CharacterCommand(CharacterCommand),
+    Reconcile(Reconcile),
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum CharacterCommand {
     Motion(CharacterNetworkCommand<Motion>),
     Action(CharacterNetworkCommand<Action>),
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct Reconcile {
+    pub index: CharacterIndex,
+    pub position: Vec2,
 }
 
 impl From<CharacterNetworkCommand<Motion>> for CharacterCommand {
@@ -30,7 +37,7 @@ impl From<CharacterNetworkCommand<Action>> for CharacterCommand {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum GameCommand {
     SpawnCharacter(SpawnCharacter),
 }
@@ -41,7 +48,7 @@ impl ServerMessage {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SpawnCharacter {
     index: CharacterIndex,
     class: CharacterClass,
