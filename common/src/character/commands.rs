@@ -45,7 +45,7 @@ pub fn character_action(
     physics_world: PhysicsWorld,
 
     // Action events
-    mut events: EventReader<CharacterCommand<Action>>,
+    mut events: EventReader<CharacterEntityCommand<Action>>,
 
     mut character_query: Query<
         (
@@ -110,7 +110,7 @@ pub fn character_action(
 
 /// Receives [`Motion`] input and accelerates character in said direction.
 pub fn character_movement(
-    mut motion_events: EventReader<CharacterCommand<Motion>>,
+    mut motion_events: EventReader<CharacterEntityCommand<Motion>>,
 
     // CharacterIndex query
     mut character_query: Query<
@@ -162,15 +162,18 @@ pub fn character_movement(
 
         // Assign velocity
         *velocity = Velocity::from(direction * speed_multiplier.speed());
+
+        info!(message = "motion", ?velocity);
     }
 }
 
-pub struct CharacterCommand<Command> {
+/// A character command, addressed by [`Entity`].
+pub struct CharacterEntityCommand<Command> {
     id: Entity,
     command: Command,
 }
 
-impl<Command> CharacterCommand<Command> {
+impl<Command> CharacterEntityCommand<Command> {
     pub fn new(id: Entity, command: Command) -> Self {
         Self { id, command }
     }
@@ -184,21 +187,17 @@ impl<Command> CharacterCommand<Command> {
     }
 }
 
-pub struct GameCommand<Command> {
-    command: Command,
-}
-
-pub struct CharacterCommandPlugin<T> {
+pub struct CharacterEntityCommandPlugin<T> {
     state: T,
 }
 
-impl<T> CharacterCommandPlugin<T> {
+impl<T> CharacterEntityCommandPlugin<T> {
     pub fn new(state: T) -> Self {
         Self { state }
     }
 }
 
-impl<T> Plugin for CharacterCommandPlugin<T>
+impl<T> Plugin for CharacterEntityCommandPlugin<T>
 where
     T: Send + Sync + 'static + Debug + Eq + Hash + Clone + Copy,
 {
@@ -206,8 +205,8 @@ where
         let movement = SystemSet::on_update(self.state)
             .with_system(character_movement.system())
             .with_system(character_action.system());
-        app.add_event::<CharacterCommand<Motion>>()
-            .add_event::<CharacterCommand<Action>>()
+        app.add_event::<CharacterEntityCommand<Motion>>()
+            .add_event::<CharacterEntityCommand<Action>>()
             .add_system_set(movement);
     }
 }

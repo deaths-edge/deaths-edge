@@ -1,3 +1,5 @@
+mod character_command;
+
 use std::{net::SocketAddr, time::Duration};
 
 use bevy::prelude::*;
@@ -7,13 +9,15 @@ use common::{
     game::{ArenaPasscode, ArenaPermit},
     network::{
         client::ClientMessage,
-        server::{ServerMessage, SpawnCharacter},
-        NetworkPlugin as BaseNetworkPlugin, NetworkSendEvent, NetworkSendPlugin, NetworkServer,
-        Packet, Packetting, SocketEvent,
+        server::{CharacterCommand, GameCommand, ServerMessage, SpawnCharacter},
+        CharacterNetworkCommand, NetworkPlugin as BaseNetworkPlugin, NetworkSendEvent,
+        NetworkSendPlugin, NetworkServer, Packet, Packetting, SocketEvent,
     },
 };
 
-use crate::{character::PlayerState, input_mapping::InputCommand, state::ClientState, Opt};
+use crate::{character::PlayerState, input_mapping::PlayerInputCommand, state::ClientState, Opt};
+
+use character_command::*;
 
 pub const NETWORK_HANDLE_LABEL: &str = "network-handle";
 pub const NETWORK_SEND_LABEL: &str = "network-send";
@@ -29,18 +33,6 @@ impl GameServer {
 
     pub fn address(&self) -> SocketAddr {
         self.address
-    }
-}
-
-pub struct NetworkPlugin {
-    inner: BaseNetworkPlugin,
-}
-
-impl NetworkPlugin {
-    pub fn new(address: SocketAddr, poll_interval: Duration) -> Self {
-        Self {
-            inner: BaseNetworkPlugin::new(address, poll_interval),
-        }
     }
 }
 
@@ -61,35 +53,10 @@ fn request_arena_entry(
     );
 }
 
-impl Plugin for NetworkPlugin {
-    fn build(&self, app: &mut AppBuilder) {
-        // Request entry to arena
-        // TODO: Do this in lobby
-        let send_passcode =
-            SystemSet::on_enter(ClientState::Arena).with_system(request_arena_entry.system());
-
-        let broadcast_inputs = SystemSet::on_update(PlayerState::Spawned)
-            .with_system(send_input::<Motion>.system())
-            .with_system(send_input::<Action>.system());
-
-        let handle_server_message = SystemSet::on_update(ClientState::Arena)
-            .label(NETWORK_HANDLE_LABEL)
-            .with_system(handle_server_messages.system());
-
-        app.add_plugin(NetworkSendPlugin::<_, ClientMessage>::new(
-            ClientState::Arena,
-            NETWORK_SEND_LABEL,
-        ))
-        .add_plugin(self.inner.clone())
-        .add_system_set(send_passcode)
-        .add_system_set(broadcast_inputs)
-        .add_system_set(handle_server_message);
-    }
-}
-
 pub fn handle_server_messages(
     mut network_server: ResMut<NetworkServer>,
     mut spawn_writer: EventWriter<SpawnCharacter>,
+    mut motion_writer: EventWriter<CharacterNetworkCommand<Motion>>,
 ) {
     while let Ok(Some(event)) = network_server.recv() {
         match event {
@@ -104,7 +71,13 @@ pub fn handle_server_messages(
                         info!(message = "received message", ?message, %address);
                         match message {
                             ServerMessage::ArenaPasscodeAck => {}
-                            ServerMessage::SpawnCharacter(spawn) => spawn_writer.send(spawn),
+                            ServerMessage::GameCommand(command) => match command {
+                                GameCommand::SpawnCharacter(spawn) => spawn_writer.send(spawn),
+                            },
+                            ServerMessage::CharacterCommand(command) => match command {
+                                CharacterCommand::Motion(motion) => motion_writer.send(motion),
+                                CharacterCommand::Action(_) => todo!(),
+                            },
                         }
                     }
                     Err(error) => error!(message = "failed to parse packet", %error),
@@ -122,9 +95,9 @@ pub fn handle_server_messages(
     }
 }
 
-/// Listens to [`InputCommand`] and sends the internal value to the server.
+/// Listens to [`PlayerInputCommand`] and sends the internal value to the server.
 fn send_input<Value>(
-    mut input_commands: EventReader<InputCommand<Value>>,
+    mut input_commands: EventReader<PlayerInputCommand<Value>>,
     mut send_events: EventWriter<NetworkSendEvent<ClientMessage>>,
     game_server: Res<GameServer>,
 ) where
@@ -135,11 +108,55 @@ fn send_input<Value>(
         input_commands
             .iter()
             .cloned()
-            .map(InputCommand::into_inner)
+            .map(PlayerInputCommand::into_inner)
             .map(Into::into)
             .map(|message| {
                 info!(message = "sending", ?message, address = %game_server.address);
                 NetworkSendEvent::new(message, game_server.address, Packetting::Unreliable)
             }),
     )
+}
+
+pub struct NetworkPlugin {
+    inner: BaseNetworkPlugin,
+}
+
+impl NetworkPlugin {
+    pub fn new(address: SocketAddr, poll_interval: Duration) -> Self {
+        Self {
+            inner: BaseNetworkPlugin::new(address, poll_interval),
+        }
+    }
+}
+
+impl Plugin for NetworkPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        // Request entry to arena
+        // TODO: Do this in lobby
+        let send_passcode =
+            SystemSet::on_enter(ClientState::Arena).with_system(request_arena_entry.system());
+
+        let handle_server_message = SystemSet::on_update(ClientState::Arena)
+            .label(NETWORK_HANDLE_LABEL)
+            .with_system(handle_server_messages.system());
+
+        let broadcast_inputs = SystemSet::on_update(PlayerState::Spawned)
+            .with_system(send_input::<Motion>.system())
+            .with_system(send_input::<Action>.system());
+
+        let network_to_entity = SystemSet::on_update(ClientState::Arena)
+            .after(NETWORK_HANDLE_LABEL)
+            .with_system(network_to_entity_command::<Motion>.system());
+
+        app.add_plugin(NetworkSendPlugin::<_, ClientMessage>::new(
+            ClientState::Arena,
+            NETWORK_SEND_LABEL,
+        ))
+        .add_event::<CharacterNetworkCommand<Motion>>()
+        .add_plugin(self.inner.clone())
+        .add_system_set(send_passcode)
+        .add_system_set(broadcast_inputs)
+        .add_system_set(network_to_entity)
+        .add_system_set(handle_server_message);
+    }
 }

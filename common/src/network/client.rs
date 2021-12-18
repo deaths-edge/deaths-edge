@@ -5,6 +5,7 @@ use crate::{
     game::ArenaPermit,
 };
 
+/// Primary message sent from client to server.
 #[derive(Debug, Deserialize, Serialize)]
 pub enum ClientMessage {
     Motion(Motion),

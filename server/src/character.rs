@@ -25,6 +25,7 @@ pub struct CharacterBundle {
     #[bundle]
     common: CommonCharacterBundle,
     transform: Transform,
+    global_transform: GlobalTransform,
     address: ClientAddress,
 }
 
@@ -37,6 +38,7 @@ impl CharacterBundle {
         Self {
             common,
             transform,
+            global_transform: GlobalTransform::default(),
             address,
         }
     }

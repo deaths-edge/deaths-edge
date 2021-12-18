@@ -21,20 +21,21 @@ impl Plugin for InputMapPlugin {
             .label("input-mapping")
             .with_system(input_map.system());
         app.init_resource::<Bindings>()
-            .add_event::<InputCommand<Motion>>()
-            .add_event::<InputCommand<Action>>()
+            .add_event::<PlayerInputCommand<Motion>>()
+            .add_event::<PlayerInputCommand<Action>>()
             .add_event::<FocalHold>()
             .add_event::<SelectClick>()
             .add_system_set(system_set);
     }
 }
 
+/// A player input command.
 #[derive(Clone)]
-pub struct InputCommand<Action> {
+pub struct PlayerInputCommand<Action> {
     action: Action,
 }
 
-impl<Action> InputCommand<Action> {
+impl<Action> PlayerInputCommand<Action> {
     pub fn into_inner(self) -> Action {
         self.action
     }
@@ -48,9 +49,9 @@ impl<Action> InputCommand<Action> {
     }
 }
 
-impl<Action> From<Action> for InputCommand<Action> {
+impl<Action> From<Action> for PlayerInputCommand<Action> {
     fn from(action: Action) -> Self {
-        InputCommand { action }
+        PlayerInputCommand { action }
     }
 }
 
@@ -69,8 +70,8 @@ fn input_map(
 
     // Outputs
     mut current_motion: Local<Motion>,
-    mut motion_events: EventWriter<InputCommand<Motion>>,
-    mut actions: EventWriter<InputCommand<Action>>,
+    mut motion_events: EventWriter<PlayerInputCommand<Motion>>,
+    mut actions: EventWriter<PlayerInputCommand<Action>>,
     mut select_clicks: EventWriter<SelectClick>,
     mut focal_holds: EventWriter<FocalHold>,
 ) {
@@ -96,13 +97,13 @@ fn input_map(
         match input {
             BoundKey::Motion(motion_key) => *current_motion = motion_key.release(*current_motion),
             BoundKey::Action(action_key) => {
-                actions.send(InputCommand::from(action_key.into_action()))
+                actions.send(PlayerInputCommand::from(action_key.into_action()))
             }
         }
     }
 
     if previous_motion != *current_motion {
-        motion_events.send(InputCommand::from(*current_motion));
+        motion_events.send(PlayerInputCommand::from(*current_motion));
     }
 
     let mouse_input_last = mouse_click_events.iter().last();

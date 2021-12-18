@@ -44,7 +44,7 @@ fn main() {
         RENDER_UPDATE_INTERVAL,
     );
 
-    const NETWORK_POLL_INTERVAL: Duration = Duration::from_millis(500);
+    const NETWORK_POLL_INTERVAL: Duration = Duration::from_millis(15);
     let network_plugin = NetworkPlugin::new(opt.bind, NETWORK_POLL_INTERVAL);
 
     let state_transitions = SystemSet::new()

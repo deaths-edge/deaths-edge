@@ -5,10 +5,13 @@ mod state;
 
 use std::{net::SocketAddr, time::Duration};
 
-use bevy::prelude::*;
+use bevy::{core::FixedTimestep, prelude::*};
 
 use common::{
-    character::{CharacterClass, CharacterCommandPlugin, CharacterTeam},
+    character::{
+        CharacterClass, CharacterEntityCommandPlugin, CharacterIndex, CharacterMarker,
+        CharacterTeam,
+    },
     game::{ArenaPasscode, ArenaPermit, GameRoster},
     heron::PhysicsPlugin,
 };
@@ -25,11 +28,15 @@ fn main() {
         .before(STATE_TRANSITION_LABEL)
         .with_system(initial.system());
 
+    let print_positions = SystemSet::new()
+        .with_run_criteria(FixedTimestep::step(1.0))
+        .with_system(print_positions.system());
+
     ////
     // App construction
     App::build()
         .add_plugins(DefaultPlugins)
-        .add_plugin(CharacterCommandPlugin::new(ServerState::Running))
+        .add_plugin(CharacterEntityCommandPlugin::new(ServerState::Running))
         // .add_plugin(LogPlugin)
         // .add_plugin(CorePlugin)
         // .add_plugin(TransformPlugin)
@@ -38,8 +45,15 @@ fn main() {
         .add_plugin(StateTransitionPlugin)
         .add_plugin(PhysicsPlugin::default())
         .add_plugin(SpawnPlugin)
+        .add_system_set(print_positions)
         .add_system_set(initial_set)
         .run();
+}
+
+fn print_positions(query: Query<(&CharacterIndex, &Transform), With<CharacterMarker>>) {
+    for (index, transform) in query.iter() {
+        info!(?index, position = ?transform.translation);
+    }
 }
 
 fn initial(

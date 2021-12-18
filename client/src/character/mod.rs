@@ -7,11 +7,11 @@ pub use materials::*;
 pub use player::*;
 
 use common::character::{
-    Action, CastingPlugin, CharacterBundle as CommonCharacterBundle, CharacterCommand,
-    CharacterCommandPlugin, Motion,
+    Action, CastingPlugin, CharacterBundle as CommonCharacterBundle, CharacterEntityCommand,
+    CharacterEntityCommandPlugin, Motion,
 };
 
-use crate::{input_mapping::InputCommand, ui::selected::Selected};
+use crate::{input_mapping::PlayerInputCommand, ui::selected::Selected};
 
 #[derive(Bundle)]
 pub struct CharacterBundle {
@@ -44,8 +44,8 @@ impl CharacterBundle {
 }
 
 fn input_to_character<Value>(
-    mut input_motion: EventReader<InputCommand<Value>>,
-    mut command_motion: EventWriter<CharacterCommand<Value>>,
+    mut input_motion: EventReader<PlayerInputCommand<Value>>,
+    mut command_motion: EventWriter<CharacterEntityCommand<Value>>,
     player_query: Query<Entity, With<PlayerMarker>>,
 ) where
     Value: Clone + Send + Sync + 'static,
@@ -54,7 +54,7 @@ fn input_to_character<Value>(
     command_motion.send_batch(
         input_motion
             .iter()
-            .map(|input| CharacterCommand::new(entity, input.action().clone())),
+            .map(|input| CharacterEntityCommand::new(entity, input.action().clone())),
     )
 }
 
@@ -67,7 +67,7 @@ impl Plugin for CharacterPlugin {
             .with_system(input_to_character::<Motion>.system())
             .with_system(input_to_character::<Action>.system());
         app.add_system_set(input_to_character)
-            .add_plugin(CharacterCommandPlugin::new(PlayerState::Spawned))
+            .add_plugin(CharacterEntityCommandPlugin::new(PlayerState::Spawned))
             .add_plugin(CharacterMaterialPlugin)
             .add_plugin(PlayerPlugin)
             .add_plugin(CastingPlugin::new(PlayerState::Spawned));

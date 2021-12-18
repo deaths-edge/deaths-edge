@@ -27,11 +27,6 @@ impl ArenaPermit {
     }
 }
 
-pub struct ArenaEntry {
-    address: SocketAddr,
-    permit: ArenaPermit,
-}
-
 /// Sent by matchmaking server.
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct GameRoster {

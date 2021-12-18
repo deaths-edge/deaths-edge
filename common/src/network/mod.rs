@@ -9,8 +9,10 @@ use std::{fmt::Debug, net::SocketAddr, time::Duration};
 use bevy::{core::FixedTimestep, prelude::*, utils::Instant};
 use laminar::Socket;
 pub use laminar::{Packet, SocketEvent};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
+
+use crate::character::CharacterIndex;
 
 pub struct NetworkServer {
     addr: SocketAddr,
@@ -110,4 +112,11 @@ impl Plugin for NetworkPlugin {
             .add_startup_system(setup_server.system())
             .add_system_set(polling);
     }
+}
+
+/// A character command, addressed by [`CharacterIndex`].
+#[derive(Debug, Deserialize, Serialize)]
+pub struct CharacterNetworkCommand<T> {
+    pub index: CharacterIndex,
+    pub command: T,
 }

@@ -3,10 +3,12 @@ use std::iter::once;
 use bevy::prelude::*;
 
 use common::{
-    character::{CharacterBundle as CommonCharacterBundle, CharacterIndex, CharacterMarker},
+    character::{
+        CharacterBundle as CommonCharacterBundle, CharacterClass, CharacterIndex, CharacterMarker,
+    },
     game::GameRoster,
     network::{
-        server::{ServerMessage, SpawnCharacter},
+        server::{GameCommand, ServerMessage, SpawnCharacter},
         NetworkSendEvent, Packetting,
     },
     state::SpawningState,
@@ -43,7 +45,10 @@ pub fn spawn_characters(
     mut game_roster: ResMut<GameRoster>,
 
     character_address_query: Query<&ClientAddress, With<CharacterMarker>>,
-    // character_query: Query<&ClientAddress, With<CharacterMarker>>,
+    character_existing_query: Query<
+        (&CharacterIndex, &CharacterClass, &Transform),
+        With<CharacterMarker>,
+    >,
     mut network_writer: EventWriter<NetworkSendEvent<ServerMessage>>,
 
     mut commands: Commands,
@@ -61,22 +66,35 @@ pub fn spawn_characters(
             commands.spawn_bundle(character_bundle);
             next_index.increment();
 
-            // TODO: Send all existing characters to new character
+            // Send all existing characters to new character
+            let network_spawn_events =
+                character_existing_query
+                    .iter()
+                    .map(|(index, class, transform)| {
+                        let message = SpawnCharacter::new(
+                            *index,
+                            *class,
+                            false,
+                            transform.translation.truncate(),
+                            transform.rotation.z,
+                        );
+                        let message =
+                            ServerMessage::GameCommand(GameCommand::SpawnCharacter(message));
+                        NetworkSendEvent::new(message, new_address, Packetting::Unreliable)
+                    });
+            network_writer.send_batch(network_spawn_events);
 
-            // Send spawn to all existing characters and this
-            info!(address_number = %character_address_query.iter().count());
+            // Send spawn to all existing characters and new character
             let network_spawn_events = character_address_query
                 .iter()
                 .map(|address| **address)
                 .chain(once(new_address))
                 .map(|address| {
                     let player = address == new_address;
-                    let message = ServerMessage::SpawnCharacter(SpawnCharacter::new(
-                        *next_index,
-                        permit.class,
-                        player,
-                        position,
-                    ));
+                    let message =
+                        SpawnCharacter::new(*next_index, permit.class, player, position, 0.);
+                    let message = ServerMessage::GameCommand(GameCommand::SpawnCharacter(message));
+
                     NetworkSendEvent::new(message, address, Packetting::Unreliable)
                 });
             network_writer.send_batch(network_spawn_events);
