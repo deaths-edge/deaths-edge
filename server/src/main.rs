@@ -21,7 +21,6 @@ use state::{ServerState, StateTransitionEvent, StateTransitionPlugin};
 use crate::{spawning::SpawnPlugin, state::STATE_TRANSITION_LABEL};
 
 fn main() {
-    const NETWORK_POLL_INTERVAL: Duration = Duration::from_millis(500);
     let socket: SocketAddr = "127.0.0.1:8000".parse().expect("invalid socket");
 
     let initial_set = SystemSet::new()
@@ -41,7 +40,7 @@ fn main() {
         // .add_plugin(CorePlugin)
         // .add_plugin(TransformPlugin)
         .add_state(ServerState::Idle)
-        .add_plugin(NetworkServerPlugin::new(socket, NETWORK_POLL_INTERVAL))
+        .add_plugin(NetworkServerPlugin::new(socket))
         .add_plugin(StateTransitionPlugin)
         .add_plugin(PhysicsPlugin::default())
         .add_plugin(SpawnPlugin)

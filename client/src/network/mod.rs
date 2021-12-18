@@ -112,7 +112,7 @@ fn send_input<Value>(
             .map(Into::into)
             .map(|message| {
                 info!(message = "sending", ?message, address = %game_server.address);
-                NetworkSendEvent::new(message, game_server.address, Packetting::Unreliable)
+                NetworkSendEvent::new(message, game_server.address, Packetting::ReliableUnordered)
             }),
     )
 }
@@ -122,9 +122,9 @@ pub struct NetworkPlugin {
 }
 
 impl NetworkPlugin {
-    pub fn new(address: SocketAddr, poll_interval: Duration) -> Self {
+    pub fn new(address: SocketAddr) -> Self {
         Self {
-            inner: BaseNetworkPlugin::new(address, poll_interval),
+            inner: BaseNetworkPlugin::new(address),
         }
     }
 }

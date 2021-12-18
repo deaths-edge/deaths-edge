@@ -14,6 +14,8 @@ use thiserror::Error;
 
 use crate::character::CharacterIndex;
 
+pub const NETWORK_POLL_LABEL: &str = "network-poll";
+
 pub struct NetworkServer {
     addr: SocketAddr,
     socket: Option<Socket>,
@@ -62,12 +64,14 @@ impl NetworkServer {
 pub enum Packetting {
     Unreliable,
     UnreliableOrdered,
+    ReliableUnordered,
 }
 
 impl Packetting {
     pub fn to_fn(&self) -> impl FnOnce(SocketAddr, Vec<u8>) -> Packet {
         match self {
             Self::Unreliable => Packet::unreliable,
+            Self::ReliableUnordered => |addr, payload| Packet::reliable_unordered(addr, payload),
             Self::UnreliableOrdered => {
                 |addr, payload| Packet::unreliable_sequenced(addr, payload, None)
             }
@@ -91,22 +95,18 @@ fn poll(time: Res<Time>, mut network_server: ResMut<NetworkServer>) {
 #[derive(Debug, Clone)]
 pub struct NetworkPlugin {
     address: SocketAddr,
-    poll_interval: f64,
 }
 
 impl NetworkPlugin {
-    pub fn new(address: SocketAddr, poll_interval: Duration) -> Self {
-        Self {
-            address,
-            poll_interval: poll_interval.as_secs_f64(),
-        }
+    pub fn new(address: SocketAddr) -> Self {
+        Self { address }
     }
 }
 
 impl Plugin for NetworkPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let polling = SystemSet::new()
-            .with_run_criteria(FixedTimestep::step(self.poll_interval))
+            .label(NETWORK_POLL_LABEL)
             .with_system(poll.system());
         app.insert_resource(NetworkServer::new(self.address))
             .add_startup_system(setup_server.system())

@@ -3,7 +3,7 @@ use std::{fmt::Debug, hash::Hash, marker::PhantomData, net::SocketAddr};
 use bevy::prelude::*;
 use serde::Serialize;
 
-use super::{NetworkServer, Packetting};
+use super::{NetworkServer, Packetting, NETWORK_POLL_LABEL};
 
 pub struct NetworkSendEvent<Message> {
     message: Message,
@@ -68,6 +68,7 @@ where
     fn build(&self, app: &mut AppBuilder) {
         let send_network = SystemSet::on_update(self.state)
             .label(self.send_label)
+            .before(NETWORK_POLL_LABEL)
             .with_system(send_message::<Message>.system());
         app.add_event::<NetworkSendEvent<Message>>()
             .add_system_set(send_network);

@@ -80,7 +80,7 @@ pub fn spawn_characters(
                         );
                         let message =
                             ServerMessage::GameCommand(GameCommand::SpawnCharacter(message));
-                        NetworkSendEvent::new(message, new_address, Packetting::Unreliable)
+                        NetworkSendEvent::new(message, new_address, Packetting::ReliableUnordered)
                     });
             network_writer.send_batch(network_spawn_events);
 
@@ -95,7 +95,7 @@ pub fn spawn_characters(
                         SpawnCharacter::new(*next_index, permit.class, player, position, 0.);
                     let message = ServerMessage::GameCommand(GameCommand::SpawnCharacter(message));
 
-                    NetworkSendEvent::new(message, address, Packetting::Unreliable)
+                    NetworkSendEvent::new(message, address, Packetting::ReliableUnordered)
                 });
             network_writer.send_batch(network_spawn_events);
         }

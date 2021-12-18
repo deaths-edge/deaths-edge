@@ -9,7 +9,7 @@ use common::{
         client::ClientMessage,
         server::{CharacterCommand, ServerMessage},
         CharacterNetworkCommand, NetworkPlugin, NetworkSendEvent, NetworkSendPlugin, NetworkServer,
-        Packet, Packetting, SocketEvent,
+        Packet, Packetting, SocketEvent, NETWORK_POLL_LABEL,
     },
 };
 
@@ -32,7 +32,7 @@ fn process_permit(
         network_writer.send(NetworkSendEvent::new(
             ServerMessage::ArenaPasscodeAck,
             client_address,
-            Packetting::Unreliable,
+            Packetting::ReliableUnordered,
         ));
     } else {
         error!("fraudulent permit");
@@ -164,7 +164,7 @@ pub fn relay_character_commands<T>(
                         command: command.command().clone(),
                     };
                     let message = ServerMessage::CharacterCommand(network_command.into());
-                    NetworkSendEvent::new(message, addr.0, Packetting::Unreliable)
+                    NetworkSendEvent::new(message, addr.0, Packetting::ReliableUnordered)
                 })
         })
         .flatten();
@@ -176,9 +176,9 @@ pub struct NetworkServerPlugin {
 }
 
 impl NetworkServerPlugin {
-    pub fn new(address: SocketAddr, poll_interval: Duration) -> Self {
+    pub fn new(address: SocketAddr) -> Self {
         Self {
-            inner: NetworkPlugin::new(address, poll_interval),
+            inner: NetworkPlugin::new(address),
         }
     }
 }
@@ -188,10 +188,12 @@ impl Plugin for NetworkServerPlugin {
         let system_set = SystemSet::on_update(ServerState::Running)
             .label(NETWORK_HANDLE_LABEL)
             .before(NETWORK_SEND_LABEL)
+            .before(NETWORK_POLL_LABEL)
             .with_system(handle_client_messages.system());
 
         let relay_commands = SystemSet::on_update(ServerState::Running)
             .after(NETWORK_HANDLE_LABEL)
+            .before(NETWORK_POLL_LABEL)
             .with_system(relay_character_commands::<Motion>.system());
 
         app.add_plugin(NetworkSendPlugin::<_, ServerMessage>::new(
