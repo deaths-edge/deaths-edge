@@ -68,7 +68,7 @@ where
     fn build(&self, app: &mut AppBuilder) {
         let send_network = SystemSet::on_update(self.state)
             .label(self.send_label)
-            .before(NETWORK_POLL_LABEL)
+            .after(NETWORK_POLL_LABEL)
             .with_system(send_message::<Message>.system());
         app.add_event::<NetworkSendEvent<Message>>()
             .add_system_set(send_network);

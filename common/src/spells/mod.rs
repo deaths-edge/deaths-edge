@@ -37,13 +37,15 @@ impl<T> SpellPlugin<T> {
     }
 }
 
+pub const SPELLS_LABEL: &str = "spells";
+
 impl<T> Plugin for SpellPlugin<T>
 where
     T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
 {
     fn build(&self, app: &mut AppBuilder) {
         let spells = SystemSet::on_update(self.state)
-            .label("spells")
+            .label(SPELLS_LABEL)
             .with_system(spell_tracking.system())
             .with_system(spell_projectile_motion.system())
             .with_system(spell_projectile_collision.system())

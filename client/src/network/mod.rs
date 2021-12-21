@@ -11,11 +11,16 @@ use common::{
         client::ClientMessage,
         server::{CharacterCommand, GameCommand, Reconcile, ServerMessage, SpawnCharacter},
         CharacterNetworkCommand, NetworkPlugin as BaseNetworkPlugin, NetworkSendEvent,
-        NetworkSendPlugin, NetworkServer, Packet, Packetting, SocketEvent,
+        NetworkSendPlugin, NetworkServer, Packet, Packetting, SocketEvent, NETWORK_POLL_LABEL,
     },
 };
 
-use crate::{character::PlayerState, input_mapping::PlayerInputCommand, state::ClientState, Opt};
+use crate::{
+    character::PlayerState,
+    input_mapping::{PlayerInputCommand, INPUT_TO_CHARACTER_LABEL},
+    state::ClientState,
+    Opt,
+};
 
 use character_command::*;
 
@@ -102,7 +107,7 @@ pub fn handle_server_messages(
 }
 
 /// Listens to [`PlayerInputCommand`] and sends the internal value to the server.
-fn send_input<Value>(
+fn player_input_to_network<Value>(
     mut input_commands: EventReader<PlayerInputCommand<Value>>,
     mut send_events: EventWriter<NetworkSendEvent<ClientMessage>>,
     game_server: Res<GameServer>,
@@ -118,7 +123,7 @@ fn send_input<Value>(
             .map(Into::into)
             .map(|message| {
                 info!(message = "sending", ?message, address = %game_server.address);
-                NetworkSendEvent::new(message, game_server.address, Packetting::ReliableUnordered)
+                NetworkSendEvent::new(message, game_server.address, Packetting::ReliableOrdered)
             }),
     )
 }
@@ -158,7 +163,9 @@ where
     fn build(&self, app: &mut AppBuilder) {
         let broadcast_inputs = SystemSet::on_update(PlayerState::Spawned)
             .label(CHARACTER_NETWORK_COMMAND_LABEL)
-            .with_system(send_input::<T>.system());
+            .after(INPUT_TO_CHARACTER_LABEL)
+            .before(NETWORK_SEND_LABEL)
+            .with_system(player_input_to_network::<T>.system());
 
         let network_to_entity = SystemSet::on_update(ClientState::Arena)
             .after(NETWORK_HANDLE_LABEL)
@@ -179,6 +186,7 @@ impl Plugin for NetworkPlugin {
 
         let handle_server_message = SystemSet::on_update(ClientState::Arena)
             .label(NETWORK_HANDLE_LABEL)
+            .after(NETWORK_POLL_LABEL)
             .with_system(handle_server_messages.system());
 
         app.add_plugin(NetworkSendPlugin::<_, ClientMessage>::new(

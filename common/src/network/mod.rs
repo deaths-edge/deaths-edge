@@ -65,6 +65,7 @@ pub enum Packetting {
     Unreliable,
     UnreliableOrdered,
     ReliableUnordered,
+    ReliableOrdered,
 }
 
 impl Packetting {
@@ -75,6 +76,7 @@ impl Packetting {
             Self::UnreliableOrdered => {
                 |addr, payload| Packet::unreliable_sequenced(addr, payload, None)
             }
+            Self::ReliableOrdered => |addr, payload| Packet::reliable_ordered(addr, payload, None),
         }
     }
 }

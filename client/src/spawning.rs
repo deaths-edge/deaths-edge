@@ -7,20 +7,11 @@ use common::{
 
 use crate::{
     character::{CharacterBundle, CharacterMaterials, PlayerBundle},
+    network::NETWORK_HANDLE_LABEL,
     ui::nameplate::{setup_nameplate, NameplateMaterials},
 };
 
-/// While [`ArenaState::Waiting`] run [`spawn_characters`].
-pub struct SpawnPlugin;
-
-impl Plugin for SpawnPlugin {
-    fn build(&self, app: &mut AppBuilder) {
-        let spawner =
-            SystemSet::on_update(ArenaState::Waiting).with_system(spawn_characters.system());
-
-        app.add_event::<SpawnCharacter>().add_system_set(spawner);
-    }
-}
+pub const SPAWN_CHARACTER_LABEL: &str = "spawn-characters";
 
 /// Listen for [`SpawnCharacter`] event, adding characters
 pub fn spawn_characters(
@@ -44,5 +35,19 @@ pub fn spawn_characters(
             commands.spawn_bundle(character_bundle).id()
         };
         setup_nameplate(id, &nameplate_materials, &mut commands);
+    }
+}
+
+/// While [`ArenaState::Waiting`] run [`spawn_characters`].
+pub struct SpawnPlugin;
+
+impl Plugin for SpawnPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        let spawner = SystemSet::on_update(ArenaState::Waiting)
+            .label(SPAWN_CHARACTER_LABEL)
+            .after(NETWORK_HANDLE_LABEL)
+            .with_system(spawn_characters.system());
+
+        app.add_event::<SpawnCharacter>().add_system_set(spawner);
     }
 }

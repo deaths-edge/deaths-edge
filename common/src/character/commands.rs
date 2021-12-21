@@ -5,7 +5,10 @@ use bevy::prelude::*;
 use heron::{rapier_plugin::PhysicsWorld, Velocity};
 use serde::{Deserialize, Serialize};
 
-use crate::{effects::MovementInterruptBundle, spells::instances::fireball_action};
+use crate::{
+    effects::MovementInterruptBundle, network::NETWORK_POLL_LABEL,
+    spells::instances::fireball_action,
+};
 
 use super::{
     CharacterCastState, CharacterClass, CharacterMarker, CharacterSpeedMultiplier, CharacterTarget,
@@ -39,7 +42,7 @@ pub enum Action {
     Action8,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub struct FocalAngle(pub f32);
 
 /// Receives an [`Action`] and performs the associated action.
@@ -185,6 +188,8 @@ pub fn character_focal_rotate(
     }
 }
 
+pub const CHARACTER_COMMANDS: &str = "character-commands";
+
 /// A character command, addressed by [`Entity`].
 pub struct CharacterEntityCommand<Command> {
     id: Entity,
@@ -221,6 +226,8 @@ where
 {
     fn build(&self, app: &mut AppBuilder) {
         let movement = SystemSet::on_update(self.state)
+            .label(CHARACTER_COMMANDS)
+            .after(NETWORK_POLL_LABEL)
             .with_system(character_movement.system())
             .with_system(character_action.system())
             .with_system(character_focal_rotate.system());

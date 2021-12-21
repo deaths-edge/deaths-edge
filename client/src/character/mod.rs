@@ -11,11 +11,12 @@ pub use reconcile::*;
 use common::{
     character::{
         CastingPlugin, CharacterBundle as CommonCharacterBundle, CharacterEntityCommandPlugin,
+        CHARACTER_COMMANDS,
     },
     network::server::Reconcile,
 };
 
-use crate::{state::ClientState, ui::selected::Selected};
+use crate::{network::NETWORK_HANDLE_LABEL, state::ClientState, ui::selected::Selected};
 
 #[derive(Bundle)]
 pub struct CharacterBundle {
@@ -51,7 +52,11 @@ pub struct CharacterPlugin;
 
 impl Plugin for CharacterPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let reconcile = SystemSet::on_update(ClientState::Arena).with_system(reconcile.system());
+        let reconcile = SystemSet::on_update(ClientState::Arena)
+            .label(RECONCILE_LABEL)
+            .after(NETWORK_HANDLE_LABEL)
+            .before(CHARACTER_COMMANDS)
+            .with_system(reconcile.system());
         app.add_system_set(reconcile)
             .add_event::<Reconcile>()
             .add_plugin(CharacterEntityCommandPlugin::new(PlayerState::Spawned))

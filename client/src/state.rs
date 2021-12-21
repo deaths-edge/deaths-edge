@@ -27,12 +27,14 @@ pub enum ClientState {
     Arena,
 }
 
+pub const STATE_TRANSITIONS_LABEL: &str = "state-transitions";
+
 pub struct StateTransitionPlugin;
 
 impl Plugin for StateTransitionPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let state_transitions = SystemSet::new()
-            .label("state-transitions")
+            .label(STATE_TRANSITIONS_LABEL)
             .with_system(state_transitions.system());
         app.add_event::<StateTransitionEvent>()
             .add_system_set(state_transitions);

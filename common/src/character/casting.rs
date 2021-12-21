@@ -14,13 +14,15 @@ impl<T> CastingPlugin<T> {
     }
 }
 
+pub const CASTING_LABEL: &str = "casting";
+
 impl<T> Plugin for CastingPlugin<T>
 where
     T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
 {
     fn build(&self, app: &mut AppBuilder) {
         let casting_system = SystemSet::on_update(self.state)
-            .label("casting")
+            .label(CASTING_LABEL)
             .with_system(complete_casting.system());
         app.add_system_set(casting_system);
     }

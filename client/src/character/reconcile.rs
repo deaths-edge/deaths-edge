@@ -5,6 +5,8 @@ use common::{
     network::server::Reconcile,
 };
 
+pub const RECONCILE_LABEL: &str = "reconcile";
+
 pub fn reconcile(
     mut reconcile_reader: EventReader<Reconcile>,
     mut character_query: Query<(&CharacterIndex, &mut Transform), With<CharacterMarker>>,

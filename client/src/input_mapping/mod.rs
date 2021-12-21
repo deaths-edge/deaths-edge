@@ -6,6 +6,7 @@ use std::marker::PhantomData;
 
 use crate::{
     character::{PlayerMarker, PlayerState},
+    network::CHARACTER_NETWORK_COMMAND_LABEL,
     state::ClientState,
     ui::mouse::WorldMousePosition,
 };
@@ -15,7 +16,7 @@ use bevy::{
 };
 
 pub use bindings::*;
-use common::character::{Action, CharacterEntityCommand, FocalAngle, Motion};
+use common::character::{Action, CharacterEntityCommand, FocalAngle, Motion, CHARACTER_COMMANDS};
 pub use keys::*;
 pub use mouse::*;
 
@@ -37,49 +38,6 @@ fn input_to_character<Value>(
     )
 }
 
-pub struct InputToCharPlugin<T> {
-    _value: PhantomData<T>,
-}
-
-impl<T> InputToCharPlugin<T> {
-    pub fn new() -> Self {
-        Self {
-            _value: PhantomData,
-        }
-    }
-}
-
-impl<T> Plugin for InputToCharPlugin<T>
-where
-    T: Send + Sync + 'static,
-    T: Clone,
-{
-    fn build(&self, app: &mut AppBuilder) {
-        let input_to_character = SystemSet::on_update(PlayerState::Spawned)
-            .label(INPUT_TO_CHARACTER_LABEL)
-            .with_system(input_to_character::<T>.system());
-
-        app.add_event::<PlayerInputCommand<T>>()
-            .add_system_set(input_to_character);
-    }
-}
-
-pub struct InputMapPlugin;
-
-impl Plugin for InputMapPlugin {
-    fn build(&self, app: &mut AppBuilder) {
-        let system_set = SystemSet::on_update(ClientState::Arena)
-            .label(INPUT_MAPPING_LABEL)
-            .with_system(input_map.system());
-        app.init_resource::<Bindings>()
-            .add_plugin(InputToCharPlugin::<Motion>::new())
-            .add_plugin(InputToCharPlugin::<Action>::new())
-            .add_plugin(InputToCharPlugin::<FocalAngle>::new())
-            .add_event::<SelectClick>()
-            .add_system_set(system_set);
-    }
-}
-
 /// A player input command.
 #[derive(Clone)]
 pub struct PlayerInputCommand<Action>(pub Action);
@@ -99,6 +57,8 @@ fn input_map(
 
     // Character
     character_query: Query<&Transform, With<PlayerMarker>>,
+
+    mut last_angle: Local<FocalAngle>,
 
     // Outputs
     mut current_motion: Local<Motion>,
@@ -127,7 +87,9 @@ fn input_map(
 
     for input in released_iter {
         match input {
-            BoundKey::Motion(motion_key) => *current_motion = motion_key.release(*current_motion),
+            BoundKey::Motion(motion_key) => {
+                *current_motion = motion_key.release(*current_motion)
+            }
             BoundKey::Action(action_key) => {
                 actions.send(PlayerInputCommand(action_key.into_action()))
             }
@@ -166,9 +128,58 @@ fn input_map(
 
         let diff = mouse_position.position - translation;
 
-        let angle = Vec2::new(0., 1.).angle_between(diff);
+        let angle = FocalAngle(Vec2::new(0., 1.).angle_between(diff));
 
-        info!(message = "sending focal angle", %angle);
-        focal_holds.send(PlayerInputCommand(FocalAngle(angle)))
+        info!(message = "sending focal angle", angle = %angle.0);
+        if *last_angle != angle {
+            *last_angle = angle;
+            focal_holds.send(PlayerInputCommand(angle));
+        }
+    }
+}
+
+pub struct InputToCharPlugin<T> {
+    _value: PhantomData<T>,
+}
+
+impl<T> InputToCharPlugin<T> {
+    pub fn new() -> Self {
+        Self {
+            _value: PhantomData,
+        }
+    }
+}
+
+impl<T> Plugin for InputToCharPlugin<T>
+where
+    T: Send + Sync + 'static,
+    T: Clone,
+{
+    fn build(&self, app: &mut AppBuilder) {
+        let input_to_character = SystemSet::on_update(PlayerState::Spawned)
+            .label(INPUT_TO_CHARACTER_LABEL)
+            .before(CHARACTER_NETWORK_COMMAND_LABEL)
+            .before(CHARACTER_COMMANDS)
+            .with_system(input_to_character::<T>.system());
+
+        app.add_event::<PlayerInputCommand<T>>()
+            .add_system_set(input_to_character);
+    }
+}
+
+pub struct InputMapPlugin;
+
+impl Plugin for InputMapPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        let system_set = SystemSet::on_update(ClientState::Arena)
+            .label(INPUT_MAPPING_LABEL)
+            .before(INPUT_TO_CHARACTER_LABEL)
+            .with_system(input_map.system());
+        app.init_resource::<Bindings>()
+            .add_plugin(InputToCharPlugin::<Motion>::new())
+            .add_plugin(InputToCharPlugin::<Action>::new())
+            .add_plugin(InputToCharPlugin::<FocalAngle>::new())
+            .add_event::<SelectClick>()
+            .add_system_set(system_set);
     }
 }

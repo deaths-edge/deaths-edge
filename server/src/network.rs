@@ -5,6 +5,7 @@ use bevy::{core::FixedTimestep, prelude::*};
 use common::{
     character::{
         Action, CharacterEntityCommand, CharacterIndex, CharacterMarker, FocalAngle, Motion,
+        CHARACTER_COMMANDS,
     },
     game::{ArenaPermit, GameRoster},
     network::{
@@ -18,6 +19,7 @@ use common::{
 use crate::{character::ClientAddress, state::ServerState};
 
 pub const NETWORK_HANDLE_LABEL: &str = "network-handle";
+pub const NETWORK_RELAY_LABEL: &str = "network-relay";
 pub const NETWORK_SEND_LABEL: &str = "network-send";
 
 fn process_permit(
@@ -34,7 +36,7 @@ fn process_permit(
         network_writer.send(NetworkSendEvent::new(
             ServerMessage::ArenaPasscodeAck,
             client_address,
-            Packetting::ReliableUnordered,
+            Packetting::ReliableOrdered,
         ));
     } else {
         error!("fraudulent permit");
@@ -172,7 +174,7 @@ pub fn relay_character_commands<T>(
                         command: command.command().clone(),
                     };
                     let message = ServerMessage::CharacterCommand(network_command.into());
-                    NetworkSendEvent::new(message, addr.0, Packetting::ReliableUnordered)
+                    NetworkSendEvent::new(message, addr.0, Packetting::ReliableOrdered)
                 })
         })
         .flatten();
@@ -194,7 +196,7 @@ pub fn reconcile_broadcast(
             let message = ServerMessage::Reconcile(reconcile);
 
             character_address_query.iter().map(move |address| {
-                NetworkSendEvent::new(message.clone(), **address, Packetting::ReliableUnordered)
+                NetworkSendEvent::new(message.clone(), **address, Packetting::ReliableOrdered)
             })
         })
         .flatten();
@@ -218,20 +220,23 @@ impl Plugin for NetworkServerPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let system_set = SystemSet::on_update(ServerState::Running)
             .label(NETWORK_HANDLE_LABEL)
+            .after(NETWORK_POLL_LABEL)
+            .before(CHARACTER_COMMANDS)
             .before(NETWORK_SEND_LABEL)
-            .before(NETWORK_POLL_LABEL)
             .with_system(handle_client_messages.system());
 
         let relay_commands = SystemSet::on_update(ServerState::Running)
+            .label(NETWORK_RELAY_LABEL)
             .after(NETWORK_HANDLE_LABEL)
+            .after(CHARACTER_COMMANDS)
+            .after(NETWORK_POLL_LABEL)
             .before(NETWORK_SEND_LABEL)
-            .before(NETWORK_POLL_LABEL)
             .with_system(relay_character_commands::<Motion>.system())
             .with_system(relay_character_commands::<FocalAngle>.system());
 
         let broadcast_reconciles = SystemSet::on_update(ServerState::Running)
             .with_run_criteria(FixedTimestep::step(2.0))
-            .before(NETWORK_POLL_LABEL)
+            .after(NETWORK_POLL_LABEL)
             .before(NETWORK_SEND_LABEL)
             .with_system(reconcile_broadcast.system());
 
