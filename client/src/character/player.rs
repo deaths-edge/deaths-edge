@@ -28,6 +28,8 @@ pub fn spawn_state(
     }
 }
 
+pub const CHARACTER_ACTIONS: &str = "character-actions";
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -35,7 +37,8 @@ impl Plugin for PlayerPlugin {
         let player_state_transition =
             SystemSet::on_update(PlayerState::Waiting).with_system(spawn_state.system());
         let character_actions = SystemSet::on_update(PlayerState::Spawned)
-            .label("character-actions")
+            .label(CHARACTER_ACTIONS)
+            // TODO: Ordering
             .with_system(player_char_select.system());
         app.add_state(PlayerState::Waiting)
             .add_system_set(player_state_transition)

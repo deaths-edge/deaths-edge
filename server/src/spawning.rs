@@ -27,7 +27,9 @@ impl Plugin for SpawnPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let spawner = SystemSet::on_update(SpawningState::Active)
             .label(SPAWNER_LABEL)
+            // NETWORK_HANDLE_LABEL sends [`SpawnCharacter`] events
             .after(NETWORK_HANDLE_LABEL)
+            // NETWORK_SEND_LABEL reads NetworkSendEvent<ServerMessage> events
             .before(NETWORK_SEND_LABEL)
             .with_system(spawn_characters.system());
 
@@ -75,7 +77,11 @@ pub fn spawn_characters(
                         );
                         let message =
                             ServerMessage::GameCommand(GameCommand::SpawnCharacter(message));
-                        NetworkSendEvent::new(message, new_address, Packetting::ReliableOrdered)
+                        NetworkSendEvent::new(
+                            message,
+                            new_address,
+                            Packetting::ReliableOrdered(Some(index.0)),
+                        )
                     });
             network_writer.send_batch(network_spawn_events);
 
@@ -92,7 +98,11 @@ pub fn spawn_characters(
                         SpawnCharacter::new(*next_index, permit.class, player, position, 0.);
                     let message = ServerMessage::GameCommand(GameCommand::SpawnCharacter(message));
 
-                    NetworkSendEvent::new(message, address, Packetting::ReliableOrdered)
+                    NetworkSendEvent::new(
+                        message,
+                        address,
+                        Packetting::ReliableOrdered(Some(next_index.0)),
+                    )
                 });
             network_writer.send_batch(network_spawn_events);
             next_index.increment();

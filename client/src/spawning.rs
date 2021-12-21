@@ -45,6 +45,7 @@ impl Plugin for SpawnPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let spawner = SystemSet::on_update(ArenaState::Waiting)
             .label(SPAWN_CHARACTER_LABEL)
+            // NETWORK_HANDLE_LABEL writes SpawnCharacter events.
             .after(NETWORK_HANDLE_LABEL)
             .with_system(spawn_characters.system());
 

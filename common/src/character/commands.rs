@@ -227,7 +227,6 @@ where
     fn build(&self, app: &mut AppBuilder) {
         let movement = SystemSet::on_update(self.state)
             .label(CHARACTER_COMMANDS)
-            .after(NETWORK_POLL_LABEL)
             .with_system(character_movement.system())
             .with_system(character_action.system())
             .with_system(character_focal_rotate.system());

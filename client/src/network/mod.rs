@@ -5,7 +5,7 @@ use std::{marker::PhantomData, net::SocketAddr};
 use bevy::prelude::*;
 
 use common::{
-    character::{Action, CharacterClass, CharacterTeam, FocalAngle, Motion},
+    character::{Action, CharacterClass, CharacterTeam, FocalAngle, Motion, CHARACTER_COMMANDS},
     game::{ArenaPasscode, ArenaPermit},
     network::{
         client::ClientMessage,
@@ -123,7 +123,11 @@ fn player_input_to_network<Value>(
             .map(Into::into)
             .map(|message| {
                 info!(message = "sending", ?message, address = %game_server.address);
-                NetworkSendEvent::new(message, game_server.address, Packetting::ReliableOrdered)
+                NetworkSendEvent::new(
+                    message,
+                    game_server.address,
+                    Packetting::ReliableOrdered(None),
+                )
             }),
     )
 }
@@ -163,12 +167,17 @@ where
     fn build(&self, app: &mut AppBuilder) {
         let broadcast_inputs = SystemSet::on_update(PlayerState::Spawned)
             .label(CHARACTER_NETWORK_COMMAND_LABEL)
+            // INPUT_TO_CHARACTER_LABEL sends PlayerInputCommand<Value> events
             .after(INPUT_TO_CHARACTER_LABEL)
+            // NETWORK_SEND_LABEL reads NetworkSendEvent<ClientMessage> events
             .before(NETWORK_SEND_LABEL)
             .with_system(player_input_to_network::<T>.system());
 
         let network_to_entity = SystemSet::on_update(ClientState::Arena)
+            // NETWORK_HANDLE_LABEL sends CharacterNetworkCommand<Value> events
             .after(NETWORK_HANDLE_LABEL)
+            // CHARACTER_COMMANDS reads CharacterEntityCommand<Value> events
+            .before(CHARACTER_COMMANDS)
             .with_system(network_to_entity_command::<T>.system());
 
         app.add_event::<CharacterNetworkCommand<T>>()
@@ -186,7 +195,7 @@ impl Plugin for NetworkPlugin {
 
         let handle_server_message = SystemSet::on_update(ClientState::Arena)
             .label(NETWORK_HANDLE_LABEL)
-            .after(NETWORK_POLL_LABEL)
+            // TODO: Ordering?
             .with_system(handle_server_messages.system());
 
         app.add_plugin(NetworkSendPlugin::<_, ClientMessage>::new(

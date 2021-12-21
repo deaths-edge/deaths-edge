@@ -21,12 +21,14 @@ use crate::{state::ClientState, ui::mouse::local_to_window_position};
 
 use common::character::CharacterMarker;
 
+pub const NAMEPLATE_LABEL: &str = "nameplate";
+
 pub struct NameplatePlugin;
 
 impl Plugin for NameplatePlugin {
     fn build(&self, app: &mut AppBuilder) {
         let nameplate_system_set = SystemSet::on_update(ClientState::Arena)
-            .label("nameplate")
+            .label(NAMEPLATE_LABEL)
             .with_system(update_nameplate_position.system())
             .with_system(health_bar_update.system())
             .with_system(cast_bar_update.system());

@@ -35,6 +35,7 @@ impl Plugin for StateTransitionPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let state_transitions = SystemSet::new()
             .label(STATE_TRANSITIONS_LABEL)
+            // TODO: Ordering
             .with_system(state_transitions.system());
         app.add_event::<StateTransitionEvent>()
             .add_system_set(state_transitions);

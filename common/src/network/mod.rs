@@ -65,18 +65,23 @@ pub enum Packetting {
     Unreliable,
     UnreliableOrdered,
     ReliableUnordered,
-    ReliableOrdered,
+    ReliableOrdered(Option<u8>),
 }
 
 impl Packetting {
-    pub fn to_fn(&self) -> impl FnOnce(SocketAddr, Vec<u8>) -> Packet {
+    pub fn to_fn(&self) -> Box<dyn FnOnce(SocketAddr, Vec<u8>) -> Packet> {
         match self {
-            Self::Unreliable => Packet::unreliable,
-            Self::ReliableUnordered => |addr, payload| Packet::reliable_unordered(addr, payload),
-            Self::UnreliableOrdered => {
-                |addr, payload| Packet::unreliable_sequenced(addr, payload, None)
+            Self::ReliableOrdered(stream_id) => {
+                let stream_id = stream_id.clone();
+                Box::new(move |addr, payload| Packet::reliable_ordered(addr, payload, None))
             }
-            Self::ReliableOrdered => |addr, payload| Packet::reliable_ordered(addr, payload, None),
+            Self::Unreliable => Box::new(|addr, payload| Packet::unreliable(addr, payload)),
+            Self::ReliableUnordered => {
+                Box::new(|addr, payload| Packet::reliable_unordered(addr, payload))
+            }
+            Self::UnreliableOrdered => {
+                Box::new(|addr, payload| Packet::unreliable_sequenced(addr, payload, None))
+            }
         }
     }
 }
@@ -109,7 +114,7 @@ impl Plugin for NetworkPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let polling = SystemSet::new()
             .label(NETWORK_POLL_LABEL)
-            .with_system(poll.system());
+            .with_system(poll.exclusive_system());
         app.insert_resource(NetworkServer::new(self.address))
             .add_startup_system(setup_server.system())
             .add_system_set(polling);

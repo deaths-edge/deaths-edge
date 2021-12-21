@@ -4,17 +4,6 @@ use crate::state::ClientState;
 
 use super::camera::UICameraMarker;
 
-pub struct WorldMousePlugin;
-
-impl Plugin for WorldMousePlugin {
-    fn build(&self, app: &mut AppBuilder) {
-        let world_mouse =
-            SystemSet::on_update(ClientState::Arena).with_system(world_mouse.system());
-        app.init_resource::<WorldMousePosition>()
-            .add_system_set(world_mouse);
-    }
-}
-
 #[derive(Debug, Default)]
 pub struct WorldMousePosition {
     pub position: Vec2,
@@ -61,5 +50,19 @@ pub fn world_mouse(
             window_to_local_position(primary_window, camera_transform, mouse_position.position);
 
         *world_mouse_pos = WorldMousePosition { position };
+    }
+}
+
+pub const WORLD_MOUSE_LABEL: &str = "world-mouse";
+
+pub struct WorldMousePlugin;
+
+impl Plugin for WorldMousePlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        let world_mouse = SystemSet::on_update(ClientState::Arena)
+            .label(WORLD_MOUSE_LABEL)
+            .with_system(world_mouse.system());
+        app.init_resource::<WorldMousePosition>()
+            .add_system_set(world_mouse);
     }
 }

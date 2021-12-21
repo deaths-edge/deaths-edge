@@ -23,6 +23,8 @@ impl<T> EffectPlugin<T> {
     }
 }
 
+pub const EFFECTS_LABEL: &str = "effects";
+
 impl<T> Plugin for EffectPlugin<T>
 where
     T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,

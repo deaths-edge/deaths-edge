@@ -6,9 +6,9 @@ use std::marker::PhantomData;
 
 use crate::{
     character::{PlayerMarker, PlayerState},
-    network::CHARACTER_NETWORK_COMMAND_LABEL,
+    network::{CHARACTER_NETWORK_COMMAND_LABEL, NETWORK_HANDLE_LABEL},
     state::ClientState,
-    ui::mouse::WorldMousePosition,
+    ui::mouse::{WorldMousePosition, WORLD_MOUSE_LABEL},
 };
 use bevy::{
     input::{mouse::MouseButtonInput, ElementState},
@@ -87,9 +87,7 @@ fn input_map(
 
     for input in released_iter {
         match input {
-            BoundKey::Motion(motion_key) => {
-                *current_motion = motion_key.release(*current_motion)
-            }
+            BoundKey::Motion(motion_key) => *current_motion = motion_key.release(*current_motion),
             BoundKey::Action(action_key) => {
                 actions.send(PlayerInputCommand(action_key.into_action()))
             }
@@ -158,7 +156,9 @@ where
     fn build(&self, app: &mut AppBuilder) {
         let input_to_character = SystemSet::on_update(PlayerState::Spawned)
             .label(INPUT_TO_CHARACTER_LABEL)
-            .before(CHARACTER_NETWORK_COMMAND_LABEL)
+            // INPUT_MAPPING_LABEL sends PlayerInputCommand<Value> event
+            .after(INPUT_MAPPING_LABEL)
+            // CHARACTER_COMMANDS reads CharacterEntityCommand<Value>
             .before(CHARACTER_COMMANDS)
             .with_system(input_to_character::<T>.system());
 
@@ -173,6 +173,9 @@ impl Plugin for InputMapPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let system_set = SystemSet::on_update(ClientState::Arena)
             .label(INPUT_MAPPING_LABEL)
+            // WORLD_MOUSE_LABEL sets WorldMousePosition
+            .after(WORLD_MOUSE_LABEL)
+            // INPUT_TO_CHARACTER_LABEL reads PlayerInputCommand<Value> events
             .before(INPUT_TO_CHARACTER_LABEL)
             .with_system(input_map.system());
         app.init_resource::<Bindings>()

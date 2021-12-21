@@ -54,8 +54,8 @@ impl Plugin for CharacterPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let reconcile = SystemSet::on_update(ClientState::Arena)
             .label(RECONCILE_LABEL)
+            // NETWORK_HANDLE_LABEL writes Reconcile events
             .after(NETWORK_HANDLE_LABEL)
-            .before(CHARACTER_COMMANDS)
             .with_system(reconcile.system());
         app.add_system_set(reconcile)
             .add_event::<Reconcile>()
