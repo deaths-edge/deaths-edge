@@ -11,12 +11,8 @@ use bevy::{
     prelude::*,
 };
 
-use character::ClientAddress;
 use common::{
-    character::{
-        CharacterClass, CharacterEntityCommandPlugin, CharacterIndex, CharacterMarker,
-        CharacterTeam,
-    },
+    character::{CharacterClass, CharacterEntityCommandPlugin, CharacterTeam},
     game::{ArenaPasscode, ArenaPermit, GameRoster},
     heron::PhysicsPlugin,
 };
@@ -30,25 +26,6 @@ fn main() {
         .before(STATE_TRANSITION_LABEL)
         .with_system(initial.system());
 
-    // let print_positions = SystemSet::new()
-    //     .with_run_criteria(FixedTimestep::step(1.0))
-    //     .with_system(print_positions.system());
-
-    let permits = [
-        ArenaPermit::new(
-            ArenaPasscode(1234),
-            CharacterClass::Medea,
-            CharacterTeam::Red,
-        ),
-        ArenaPermit::new(
-            ArenaPasscode(4321),
-            CharacterClass::Medea,
-            CharacterTeam::Red,
-        ),
-    ]
-    .into_iter()
-    .collect();
-
     ////
     // App construction
     App::build()
@@ -59,16 +36,11 @@ fn main() {
         .add_plugin(LogPlugin)
         .add_plugin(ScheduleRunnerPlugin::default())
         .add_plugin(CharacterEntityCommandPlugin::new(ServerState::Running))
-        // .add_plugin(LogPlugin)
-        // .add_plugin(CorePlugin)
-        // .add_plugin(TransformPlugin)
         .add_state(ServerState::Idle)
         .add_plugin(NetworkServerPlugin)
         .add_plugin(StateTransitionPlugin)
         .add_plugin(PhysicsPlugin::default())
         .add_plugin(SpawnPlugin)
-        .insert_resource(GameRoster::new(permits))
-        // .add_system_set(print_positions)
         .add_system_set(initial_set)
         .run();
 }

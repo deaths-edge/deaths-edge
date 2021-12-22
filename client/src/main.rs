@@ -9,23 +9,14 @@ mod state;
 mod ui;
 mod window;
 
-use std::{
-    fs::File,
-    io::{self, Write},
-    net::SocketAddr,
-    time::Duration,
-};
+use std::{net::SocketAddr, time::Duration};
 
 use bevy::prelude::*;
-use bevy_mod_debugdump::schedule_graph::schedule_graph_dot;
+// use bevy_mod_debugdump::schedule_graph::schedule_graph_dot;
 
 use structopt::StructOpt;
 
-use character::PlayerMarker;
-use common::{
-    character::{CharacterIndex, CharacterMarker},
-    network::{find_my_ip_address, SERVER_PORT},
-};
+use common::network::{find_my_ip_address, SERVER_PORT};
 use network::NetworkPlugin;
 use state::*;
 use window::window_description;
@@ -38,14 +29,6 @@ pub struct Opt {
     passcode: u64,
 }
 
-fn print_positions(
-    mut query: Query<(&CharacterIndex, &Transform, With<PlayerMarker>), With<CharacterMarker>>,
-) {
-    for (index, transform, player) in query.iter_mut() {
-        // info!(?index, position = ?transform.translation, %player);
-    }
-}
-
 fn main() {
     let window_description = window_description();
 
@@ -53,14 +36,14 @@ fn main() {
 
     ////
     // Debug plugin
-    const FPS_COLLECTION_INTERVAL: Duration = Duration::from_secs(1);
-    const RENDER_UPDATE_INTERVAL: Duration = Duration::from_millis(1_000);
-    const ENV_FILTER: &str = concat!(env!("CARGO_PKG_NAME"), "=trace,common=trace");
-    let debug_plugin = debug::DebugTerminalPlugin::new(
-        ENV_FILTER,
-        FPS_COLLECTION_INTERVAL,
-        RENDER_UPDATE_INTERVAL,
-    );
+    // const FPS_COLLECTION_INTERVAL: Duration = Duration::from_secs(1);
+    // const RENDER_UPDATE_INTERVAL: Duration = Duration::from_millis(1_000);
+    // const ENV_FILTER: &str = concat!(env!("CARGO_PKG_NAME"), "=trace,common=trace");
+    // let debug_plugin = debug::DebugTerminalPlugin::new(
+    //     ENV_FILTER,
+    //     FPS_COLLECTION_INTERVAL,
+    //     RENDER_UPDATE_INTERVAL,
+    // );
 
     let state_transitions = SystemSet::new()
         .before("state-transitions")
@@ -86,22 +69,21 @@ fn main() {
         .add_plugin(ArenaPlugin)
         .add_system_set(state_transitions)
         // Network plugin
-        .add_plugin(NetworkPlugin)
-        .add_system(print_positions.system());
+        .add_plugin(NetworkPlugin);
 
     // save_schedule_graph(&mut app).expect("failed to save schedule graph");
 
     app.run();
 }
 
-pub fn save_schedule_graph(app: &mut AppBuilder) -> Result<(), io::Error> {
-    const PATH: &str = "./schedule.dot";
+// pub fn save_schedule_graph(app: &mut AppBuilder) -> Result<(), io::Error> {
+//     const PATH: &str = "./schedule.dot";
 
-    let mut schedule_graph = File::create(PATH)?;
-    schedule_graph.write(schedule_graph_dot(&app.app.schedule).as_bytes())?;
+//     let mut schedule_graph = File::create(PATH)?;
+//     schedule_graph.write(schedule_graph_dot(&app.app.schedule).as_bytes())?;
 
-    Ok(())
-}
+//     Ok(())
+// }
 
 fn state_transition(
     time: Res<Time>,

@@ -6,7 +6,6 @@ use std::marker::PhantomData;
 
 use crate::{
     character::{PlayerMarker, PlayerState},
-    state::ClientState,
     ui::mouse::{WorldMousePosition, WORLD_MOUSE_LABEL},
 };
 use bevy::{

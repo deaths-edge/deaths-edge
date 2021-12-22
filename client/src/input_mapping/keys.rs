@@ -74,7 +74,7 @@ impl MotionKey {
                     (MotionKey::Backward, MotionDirection::LeftBackward) => {
                         Some(MotionDirection::Left)
                     }
-                    _ => unreachable!("cannot release"),
+                    (key, direction) => unreachable!("cannot release: {:?} {:?}", key, direction),
                 };
                 Motion(direction_opt)
             }
