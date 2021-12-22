@@ -9,14 +9,14 @@ use common::{
     game::GameRoster,
     network::{
         server::{GameCommand, ServerMessage, SpawnCharacter},
-        NetworkSendEvent, Packetting,
+        NetworkResource,
     },
     state::SpawningState,
 };
 
 use crate::{
     character::{CharacterBundle, ClientAddress},
-    network::{NETWORK_HANDLE_LABEL, NETWORK_SEND_LABEL},
+    network::NETWORK_HANDLE_LABEL,
 };
 
 pub const SPAWNER_LABEL: &str = "spawner";
@@ -29,8 +29,6 @@ impl Plugin for SpawnPlugin {
             .label(SPAWNER_LABEL)
             // NETWORK_HANDLE_LABEL sends [`SpawnCharacter`] events
             .after(NETWORK_HANDLE_LABEL)
-            // NETWORK_SEND_LABEL reads NetworkSendEvent<ServerMessage> events
-            .before(NETWORK_SEND_LABEL)
             .with_system(spawn_characters.system());
 
         // TODO: Don't start active
@@ -50,7 +48,7 @@ pub fn spawn_characters(
         (&CharacterIndex, &CharacterClass, &Transform),
         With<CharacterMarker>,
     >,
-    mut network_writer: EventWriter<NetworkSendEvent<ServerMessage>>,
+    mut net: ResMut<NetworkResource>,
 
     mut commands: Commands,
 ) {
@@ -64,47 +62,34 @@ pub fn spawn_characters(
                 CharacterBundle::new(transform, common_bundle, ClientAddress(new_address));
 
             // Send all existing characters to new character
-            let network_spawn_events =
-                character_existing_query
-                    .iter()
-                    .map(|(index, class, transform)| {
-                        let message = SpawnCharacter::new(
-                            *index,
-                            *class,
-                            false,
-                            transform.translation.truncate(),
-                            transform.rotation.z,
-                        );
-                        let message =
-                            ServerMessage::GameCommand(GameCommand::SpawnCharacter(message));
-                        NetworkSendEvent::new(
-                            message,
-                            new_address,
-                            Packetting::ReliableOrdered(Some(index.0)),
-                        )
-                    });
-            network_writer.send_batch(network_spawn_events);
+            for (index, class, transform) in character_existing_query.iter() {
+                let message = SpawnCharacter::new(
+                    *index,
+                    *class,
+                    false,
+                    transform.translation.truncate(),
+                    transform.rotation.z,
+                );
+                let message = ServerMessage::GameCommand(GameCommand::SpawnCharacter(message));
+                net.send_message(new_address, message)
+                    .expect("failed to send SpawnCharacter to new character");
+            }
 
             commands.spawn_bundle(character_bundle);
 
             // Send spawn to all existing characters and new character
-            let network_spawn_events = character_address_query
+            let iter = character_address_query
                 .iter()
                 .map(|address| **address)
-                .chain(once(new_address))
-                .map(|address| {
-                    let player = address == new_address;
-                    let message =
-                        SpawnCharacter::new(*next_index, permit.class, player, position, 0.);
-                    let message = ServerMessage::GameCommand(GameCommand::SpawnCharacter(message));
+                .chain(once(new_address));
+            for address in iter {
+                let player = address == new_address;
+                let message = SpawnCharacter::new(*next_index, permit.class, player, position, 0.);
+                let message = ServerMessage::GameCommand(GameCommand::SpawnCharacter(message));
 
-                    NetworkSendEvent::new(
-                        message,
-                        address,
-                        Packetting::ReliableOrdered(Some(next_index.0)),
-                    )
-                });
-            network_writer.send_batch(network_spawn_events);
+                net.send_message(address, message)
+                    .expect("failed to send SpawnCharacter to existing characters");
+            }
             next_index.increment();
         }
     }

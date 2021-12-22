@@ -10,7 +10,7 @@ use common::{
     state::{ArenaState, SpawningState},
 };
 
-use crate::network::{NETWORK_HANDLE_LABEL, NETWORK_SEND_LABEL};
+use crate::network::NETWORK_HANDLE_LABEL;
 
 pub const STATE_TRANSITION_LABEL: &str = "state-transition";
 
@@ -26,8 +26,8 @@ impl Plugin for StateTransitionPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let state_transitions = SystemSet::new()
             .label(STATE_TRANSITION_LABEL)
+            // TODO: Ordering
             .after(NETWORK_HANDLE_LABEL)
-            .before(NETWORK_SEND_LABEL)
             .with_system(state_transitions.system());
         app.add_event::<StateTransitionEvent>()
             .add_event::<ArenaState>()

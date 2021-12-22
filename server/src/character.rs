@@ -1,19 +1,19 @@
-use std::{net::SocketAddr, ops::Deref};
+use std::ops::Deref;
 
 use bevy::prelude::*;
 
-use common::character::CharacterBundle as CommonCharacterBundle;
+use common::{character::CharacterBundle as CommonCharacterBundle, network::ConnectionHandle};
 
-pub struct ClientAddress(pub SocketAddr);
+pub struct ClientAddress(pub ConnectionHandle);
 
-impl From<SocketAddr> for ClientAddress {
-    fn from(value: SocketAddr) -> Self {
+impl From<ConnectionHandle> for ClientAddress {
+    fn from(value: ConnectionHandle) -> Self {
         Self(value)
     }
 }
 
 impl Deref for ClientAddress {
-    type Target = SocketAddr;
+    type Target = ConnectionHandle;
 
     fn deref(&self) -> &Self::Target {
         &self.0

@@ -6,7 +6,6 @@ use std::marker::PhantomData;
 
 use crate::{
     character::{PlayerMarker, PlayerState},
-    network::{CHARACTER_NETWORK_COMMAND_LABEL, NETWORK_HANDLE_LABEL},
     state::ClientState,
     ui::mouse::{WorldMousePosition, WORLD_MOUSE_LABEL},
 };
@@ -129,7 +128,7 @@ fn input_map(
         let angle = FocalAngle(Vec2::new(0., 1.).angle_between(diff));
 
         info!(message = "sending focal angle", angle = %angle.0);
-        if *last_angle != angle {
+        if !last_angle.almost_eq(&angle) {
             *last_angle = angle;
             focal_holds.send(PlayerInputCommand(angle));
         }
@@ -171,7 +170,7 @@ pub struct InputMapPlugin;
 
 impl Plugin for InputMapPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let system_set = SystemSet::on_update(ClientState::Arena)
+        let system_set = SystemSet::on_update(PlayerState::Spawned)
             .label(INPUT_MAPPING_LABEL)
             // WORLD_MOUSE_LABEL sets WorldMousePosition
             .after(WORLD_MOUSE_LABEL)

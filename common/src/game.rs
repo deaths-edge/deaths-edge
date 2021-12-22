@@ -1,8 +1,6 @@
-use std::{
-    collections::{HashMap, HashSet},
-    net::SocketAddr,
-};
+use std::collections::{HashMap, HashSet};
 
+use bevy_networking_turbulence::ConnectionHandle;
 use serde::{Deserialize, Serialize};
 
 use crate::character::{CharacterClass, CharacterTeam};
@@ -31,7 +29,7 @@ impl ArenaPermit {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct GameRoster {
     permits: HashSet<ArenaPermit>,
-    success: HashMap<SocketAddr, ArenaPermit>,
+    success: HashMap<ConnectionHandle, ArenaPermit>,
 }
 
 pub struct FraudulentPermit;
@@ -45,17 +43,17 @@ impl GameRoster {
         }
     }
 
-    pub fn drain(&mut self) -> impl Iterator<Item = (SocketAddr, ArenaPermit)> + '_ {
+    pub fn drain(&mut self) -> impl Iterator<Item = (ConnectionHandle, ArenaPermit)> + '_ {
         self.success.drain()
     }
 
     pub fn apply_permit(
         &mut self,
-        socket_address: SocketAddr,
+        connection_handle: ConnectionHandle,
         permit: &ArenaPermit,
     ) -> Result<(), FraudulentPermit> {
         let permit = self.permits.take(permit).ok_or(FraudulentPermit)?;
-        self.success.insert(socket_address, permit);
+        self.success.insert(connection_handle, permit);
         Ok(())
     }
 }

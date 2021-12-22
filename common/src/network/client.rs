@@ -6,7 +6,7 @@ use crate::{
 };
 
 /// Primary message sent from client to server.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum ClientMessage {
     Permit(ArenaPermit),
     Command(ClientCommand),
@@ -18,7 +18,7 @@ impl<T: Into<ClientCommand>> From<T> for ClientMessage {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum ClientCommand {
     Motion(Motion),
     Action(Action),
@@ -46,5 +46,9 @@ impl From<FocalAngle> for ClientCommand {
 impl ClientMessage {
     pub fn from_bytes(payload: &[u8]) -> Result<Self, postcard::Error> {
         postcard::from_bytes(payload)
+    }
+
+    pub fn to_bytes(&self) -> Result<Vec<u8>, postcard::Error> {
+        postcard::to_stdvec(self)
     }
 }

@@ -5,10 +5,7 @@ use bevy::prelude::*;
 use heron::{rapier_plugin::PhysicsWorld, Velocity};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    effects::MovementInterruptBundle, network::NETWORK_POLL_LABEL,
-    spells::instances::fireball_action,
-};
+use crate::{effects::MovementInterruptBundle, spells::instances::fireball_action};
 
 use super::{
     CharacterCastState, CharacterClass, CharacterMarker, CharacterSpeedMultiplier, CharacterTarget,
@@ -42,8 +39,14 @@ pub enum Action {
     Action8,
 }
 
-#[derive(Default, Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct FocalAngle(pub f32);
+
+impl FocalAngle {
+    pub fn almost_eq(&self, other: &Self) -> bool {
+        (self.0 - other.0).abs() * 512. < std::f32::consts::PI
+    }
+}
 
 /// Receives an [`Action`] and performs the associated action.
 pub fn character_action(

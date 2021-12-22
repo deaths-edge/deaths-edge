@@ -13,17 +13,19 @@ use std::{
     fs::File,
     io::{self, Write},
     net::SocketAddr,
-    path::Path,
     time::Duration,
 };
 
-use bevy::{log::LogPlugin, prelude::*};
+use bevy::prelude::*;
 use bevy_mod_debugdump::schedule_graph::schedule_graph_dot;
 
 use structopt::StructOpt;
 
 use character::PlayerMarker;
-use common::character::{CharacterIndex, CharacterMarker};
+use common::{
+    character::{CharacterIndex, CharacterMarker},
+    network::{find_my_ip_address, SERVER_PORT},
+};
 use network::NetworkPlugin;
 use state::*;
 use window::window_description;
@@ -32,8 +34,6 @@ use window::window_description;
 pub struct Opt {
     #[structopt(short, long, default_value = "127.0.0.1:8000")]
     server: SocketAddr,
-    #[structopt(short, long, default_value = "127.0.0.1:8001")]
-    bind: SocketAddr,
     #[structopt(short, long, default_value = "1234")]
     passcode: u64,
 }
@@ -62,8 +62,6 @@ fn main() {
         RENDER_UPDATE_INTERVAL,
     );
 
-    let network_plugin = NetworkPlugin::new(opt.bind);
-
     let state_transitions = SystemSet::new()
         .before("state-transitions")
         .with_system(state_transition.system());
@@ -78,20 +76,20 @@ fn main() {
         // Window description
         .insert_resource(window_description)
         // Default plugins
-        // .add_plugins(DefaultPlugins)
-        .add_plugins_with(DefaultPlugins, |plugins| plugins.disable::<LogPlugin>())
+        .add_plugins(DefaultPlugins)
+        // .add_plugins_with(DefaultPlugins, |plugins| plugins.disable::<LogPlugin>())
         // Debug plugins
-        .add_plugin(debug_plugin)
+        // .add_plugin(debug_plugin)
         .add_state(ClientState::Splash)
         .add_plugin(StateTransitionPlugin)
         .add_plugin(SplashPlugin)
         .add_plugin(ArenaPlugin)
         .add_system_set(state_transitions)
         // Network plugin
-        .add_plugin(network_plugin)
+        .add_plugin(NetworkPlugin)
         .add_system(print_positions.system());
 
-    save_schedule_graph(&mut app).expect("failed to save schedule graph");
+    // save_schedule_graph(&mut app).expect("failed to save schedule graph");
 
     app.run();
 }
@@ -117,9 +115,13 @@ fn state_transition(
         return;
     }
 
+    let ip_address = find_my_ip_address().expect("can't find ip address");
+    let server = SocketAddr::new(ip_address, SERVER_PORT);
+
     if *app_state.current() != ClientState::Arena {
-        transition_writer.send(StateTransitionEvent::ToArena {
-            server: settings.server,
-        });
+        // transition_writer.send(StateTransitionEvent::ToArena {
+        //     server: settings.server,
+        // });
+        transition_writer.send(StateTransitionEvent::ToArena { server });
     }
 }

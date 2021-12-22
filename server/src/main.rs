@@ -3,9 +3,13 @@ mod network;
 mod spawning;
 mod state;
 
-use std::{net::SocketAddr, time::Duration};
+use std::time::Duration;
 
-use bevy::{core::FixedTimestep, prelude::*};
+use bevy::{
+    app::{ScheduleRunnerPlugin, ScheduleRunnerSettings},
+    log::LogPlugin,
+    prelude::*,
+};
 
 use character::ClientAddress;
 use common::{
@@ -22,40 +26,51 @@ use state::{ServerState, StateTransitionEvent, StateTransitionPlugin};
 use crate::{spawning::SpawnPlugin, state::STATE_TRANSITION_LABEL};
 
 fn main() {
-    let socket: SocketAddr = "127.0.0.1:8000".parse().expect("invalid socket");
-
     let initial_set = SystemSet::new()
         .before(STATE_TRANSITION_LABEL)
         .with_system(initial.system());
 
-    let print_positions = SystemSet::new()
-        .with_run_criteria(FixedTimestep::step(1.0))
-        .with_system(print_positions.system());
+    // let print_positions = SystemSet::new()
+    //     .with_run_criteria(FixedTimestep::step(1.0))
+    //     .with_system(print_positions.system());
+
+    let permits = [
+        ArenaPermit::new(
+            ArenaPasscode(1234),
+            CharacterClass::Medea,
+            CharacterTeam::Red,
+        ),
+        ArenaPermit::new(
+            ArenaPasscode(4321),
+            CharacterClass::Medea,
+            CharacterTeam::Red,
+        ),
+    ]
+    .into_iter()
+    .collect();
 
     ////
     // App construction
     App::build()
-        .add_plugins(DefaultPlugins)
+        .insert_resource(ScheduleRunnerSettings::run_loop(Duration::from_secs_f64(
+            1.0 / 60.0,
+        )))
+        .add_plugins(MinimalPlugins)
+        .add_plugin(LogPlugin)
+        .add_plugin(ScheduleRunnerPlugin::default())
         .add_plugin(CharacterEntityCommandPlugin::new(ServerState::Running))
         // .add_plugin(LogPlugin)
         // .add_plugin(CorePlugin)
         // .add_plugin(TransformPlugin)
         .add_state(ServerState::Idle)
-        .add_plugin(NetworkServerPlugin::new(socket))
+        .add_plugin(NetworkServerPlugin)
         .add_plugin(StateTransitionPlugin)
         .add_plugin(PhysicsPlugin::default())
         .add_plugin(SpawnPlugin)
-        .add_system_set(print_positions)
+        .insert_resource(GameRoster::new(permits))
+        // .add_system_set(print_positions)
         .add_system_set(initial_set)
         .run();
-}
-
-fn print_positions(
-    query: Query<(&CharacterIndex, &ClientAddress, &Transform), With<CharacterMarker>>,
-) {
-    for (index, address, transform) in query.iter() {
-        info!(?index, position = ?transform.translation, address = %address.0);
-    }
 }
 
 fn initial(

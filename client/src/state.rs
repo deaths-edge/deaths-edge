@@ -52,7 +52,7 @@ fn state_transitions(
     mut commands: Commands,
     mut transition_events: EventReader<StateTransitionEvent>,
     mut app_state: ResMut<State<ClientState>>,
-    mut arena_state: ResMut<State<ArenaState>>,
+    arena_state: ResMut<State<ArenaState>>,
 ) {
     if let Some(event) = transition_events.iter().next() {
         info!(state_transition = ?event);

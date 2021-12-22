@@ -14,4 +14,4 @@ thiserror = "1.0.30"
 
 serde = { version = "1.0.132", features = ["derive"] }
 postcard = { version = "0.7.2", features = ["use-std"], default-features = false }
-laminar = "0.5.0"
+bevy_networking_turbulence = "0.3.3"
