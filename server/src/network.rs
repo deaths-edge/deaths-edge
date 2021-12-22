@@ -5,7 +5,7 @@ use bevy::{core::FixedTimestep, prelude::*};
 use common::{
     character::{
         Action, CharacterEntityCommand, CharacterIndex, CharacterMarker, FocalAngle, Motion,
-        CHARACTER_COMMANDS,
+        Target, CHARACTER_COMMANDS,
     },
     game::{ArenaPermit, GameRoster},
     network::{
@@ -63,43 +63,6 @@ where
     Ok(())
 }
 
-fn process_message<'a>(
-    connection_handle: ConnectionHandle,
-    client_message: ClientMessage,
-
-    game_roster: &mut GameRoster,
-
-    to_send: &mut Vec<(ConnectionHandle, ServerMessage)>,
-
-    motion_writer: &mut EventWriter<CharacterEntityCommand<Motion>>,
-    action_writer: &mut EventWriter<CharacterEntityCommand<Action>>,
-    focal_writer: &mut EventWriter<CharacterEntityCommand<FocalAngle>>,
-
-    char_query_iter: impl Iterator<Item = (Entity, &'a ClientAddress)>,
-) {
-    match client_message {
-        ClientMessage::Permit(permit) => {
-            process_permit(connection_handle, &permit, game_roster, to_send)
-        }
-        ClientMessage::Command(command) => {
-            let result = match command {
-                ClientCommand::Motion(motion) => {
-                    process_command(connection_handle, char_query_iter, motion, motion_writer)
-                }
-                ClientCommand::Action(action) => {
-                    process_command(connection_handle, char_query_iter, action, action_writer)
-                }
-                ClientCommand::Rotate(rotate) => {
-                    process_command(connection_handle, char_query_iter, rotate, focal_writer)
-                }
-            };
-            if let Err(_) = result {
-                error!("not found");
-            }
-        }
-    }
-}
-
 fn handle_connects(
     mut net: ResMut<NetworkResource>,
     mut network_reader: EventReader<NetworkEvent>,
@@ -134,24 +97,51 @@ fn handle_client_messages(
     char_query: Query<(Entity, &ClientAddress), With<CharacterMarker>>,
 
     mut motion_writer: EventWriter<CharacterEntityCommand<Motion>>,
-    mut action_commands: EventWriter<CharacterEntityCommand<Action>>,
-    mut focal_commands: EventWriter<CharacterEntityCommand<FocalAngle>>,
+    mut target_writer: EventWriter<CharacterEntityCommand<Target>>,
+    mut action_writer: EventWriter<CharacterEntityCommand<Action>>,
+    mut focal_writer: EventWriter<CharacterEntityCommand<FocalAngle>>,
 ) {
     let mut to_send = Vec::new();
 
-    for (handle, connection) in net.connections.iter_mut() {
+    for (connection_handle, connection) in net.connections.iter_mut() {
         let channels = connection.channels().unwrap();
         while let Some(client_message) = channels.recv::<ClientMessage>() {
-            process_message(
-                *handle,
-                client_message,
-                &mut game_roster,
-                &mut to_send,
-                &mut motion_writer,
-                &mut action_commands,
-                &mut focal_commands,
-                char_query.iter(),
-            )
+            match client_message {
+                ClientMessage::Permit(permit) => {
+                    process_permit(*connection_handle, &permit, &mut game_roster, &mut to_send)
+                }
+                ClientMessage::Command(command) => {
+                    let result = match command {
+                        ClientCommand::Motion(motion) => process_command(
+                            *connection_handle,
+                            char_query.iter(),
+                            motion,
+                            &mut motion_writer,
+                        ),
+                        ClientCommand::Target(target) => process_command(
+                            *connection_handle,
+                            char_query.iter(),
+                            target,
+                            &mut target_writer,
+                        ),
+                        ClientCommand::Action(action) => process_command(
+                            *connection_handle,
+                            char_query.iter(),
+                            action,
+                            &mut action_writer,
+                        ),
+                        ClientCommand::Rotate(rotate) => process_command(
+                            *connection_handle,
+                            char_query.iter(),
+                            rotate,
+                            &mut focal_writer,
+                        ),
+                    };
+                    if let Err(_) = result {
+                        error!("not found");
+                    }
+                }
+            }
         }
     }
 

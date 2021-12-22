@@ -1,31 +1,26 @@
 use bevy::prelude::*;
 
 #[derive(Default, Debug, Clone, Copy)]
-pub struct CharacterTarget {
-    // TODO: Remove pub
-    pub target: Option<Entity>,
-}
+pub struct CharacterTarget(pub Option<Entity>);
 
 impl From<Entity> for CharacterTarget {
     fn from(entity: Entity) -> Self {
-        Self {
-            target: Some(entity),
-        }
+        Self(Some(entity))
     }
 }
 
 impl CharacterTarget {
     pub fn set_entity(&mut self, character: Entity) -> &mut Self {
-        self.target = Some(character);
+        self.0 = Some(character);
         self
     }
 
     pub fn deselect(&mut self) -> &mut Self {
-        self.target = None;
+        self.0 = None;
         self
     }
 
     pub fn id(&self) -> Option<Entity> {
-        self.target
+        self.0
     }
 }

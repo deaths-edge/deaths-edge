@@ -1,11 +1,13 @@
 use std::{fmt::Debug, hash::Hash};
 
-use bevy::{prelude::*, sprite::collide_aabb::collide};
+use bevy::prelude::*;
 
 use super::*;
-use crate::input_mapping::SelectClick;
 
-use common::{character::CharacterTarget, network::server::SpawnCharacter};
+use common::{
+    character::{CharacterEntityCommand, CharacterIndex, CharacterMarker, Target},
+    network::server::SpawnCharacter,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum PlayerState {
@@ -39,7 +41,7 @@ impl Plugin for PlayerPlugin {
         let character_actions = SystemSet::on_update(PlayerState::Spawned)
             .label(CHARACTER_ACTIONS)
             // TODO: Ordering
-            .with_system(player_char_select.system());
+            .with_system(player_select.system());
         app.add_state(PlayerState::Waiting)
             .add_system_set(player_state_transition)
             .add_system_set(character_actions);
@@ -64,61 +66,31 @@ impl PlayerBundle {
     }
 }
 
-/// Receives a [`SelectClick`] event and selects a character.
-pub fn player_char_select(
-    mut select_clicks: EventReader<SelectClick>,
+pub fn player_select(
+    mut target_reader: EventReader<CharacterEntityCommand<Target>>,
+    player_query: Query<(), With<PlayerMarker>>,
     mut character_query: QuerySet<(
         Query<(Entity, &mut Selected)>,
-        Query<(Entity, &Transform, &Sprite, &mut Selected)>,
-        Query<&mut CharacterTarget, With<PlayerMarker>>,
+        Query<(&CharacterIndex, &mut Selected), With<CharacterMarker>>,
     )>,
 ) {
-    const SELECT_SIZE: (f32, f32) = (30., 30.);
+    for target_command in target_reader.iter() {
+        let is_player = player_query.get(target_command.id()).is_ok();
 
-    // Get selected click
-    let select_click = if let Some(some) = select_clicks.iter().last() {
-        some
-    } else {
-        return;
-    };
+        if is_player {
+            // Deselect everything
+            for (_, mut selected) in character_query.q0_mut().iter_mut() {
+                *selected = Selected::Unselected;
+            }
 
-    // Find and set selection
-    let selected_entity_opt = character_query
-        .q1_mut()
-        .iter_mut()
-        .find(|(_, char_transform, char_sprite, _)| {
-            collide(
-                select_click.mouse_position.extend(0.),
-                SELECT_SIZE.into(),
-                char_transform.translation,
-                char_sprite.size,
-            )
-            .is_some()
-        })
-        .map(|(entity, _, _, selected)| (entity, selected))
-        .map(|(entity, mut selected)| {
-            // Set selection
-            *selected = Selected::Selected;
-
-            entity
-        });
-
-    // Set character selection
-    if let Ok(mut character_target) = character_query.q2_mut().single_mut() {
-        if let Some(index) = selected_entity_opt {
-            tracing::info!(message = "selected character", ?index);
-            character_target.set_entity(index);
-        } else {
-            character_target.deselect();
+            if let Some(target_index) = target_command.command().0 {
+                let (_, mut selected) = character_query
+                    .q1_mut()
+                    .iter_mut()
+                    .find(|(index, _)| **index == target_index)
+                    .expect("failed to find selection");
+                *selected = Selected::Selected;
+            }
         }
-    };
-
-    // Deselect everything else
-    for (_, mut selected) in character_query
-        .q0_mut()
-        .iter_mut()
-        .filter(|(entity, _)| Some(*entity) != selected_entity_opt)
-    {
-        *selected = Selected::Unselected;
     }
 }

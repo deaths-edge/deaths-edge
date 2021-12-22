@@ -5,7 +5,9 @@ use std::{marker::PhantomData, net::SocketAddr};
 use bevy::prelude::*;
 
 use common::{
-    character::{Action, CharacterClass, CharacterTeam, FocalAngle, Motion, CHARACTER_COMMANDS},
+    character::{
+        Action, CharacterClass, CharacterTeam, FocalAngle, Motion, Target, CHARACTER_COMMANDS,
+    },
     game::{ArenaPasscode, ArenaPermit},
     network::{
         client::ClientMessage,
@@ -196,6 +198,7 @@ impl Plugin for NetworkPlugin {
         app.add_state(NetworkConnectivity::Disconnected)
             .add_plugin(NetworkingPlugin::default())
             .add_plugin(CharacterNetworkCommandPlugin::<Motion>::new())
+            .add_plugin(CharacterNetworkCommandPlugin::<Target>::new())
             .add_plugin(CharacterNetworkCommandPlugin::<Action>::new())
             .add_plugin(CharacterNetworkCommandPlugin::<FocalAngle>::new())
             .add_system_set(setup)

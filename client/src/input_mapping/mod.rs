@@ -11,10 +11,13 @@ use crate::{
 use bevy::{
     input::{mouse::MouseButtonInput, ElementState},
     prelude::*,
+    sprite::collide_aabb::collide,
 };
 
 pub use bindings::*;
-use common::character::{Action, CharacterEntityCommand, FocalAngle, Motion, CHARACTER_COMMANDS};
+use common::character::{
+    Action, CharacterEntityCommand, CharacterIndex, FocalAngle, Motion, Target, CHARACTER_COMMANDS,
+};
 pub use keys::*;
 pub use mouse::*;
 
@@ -54,7 +57,8 @@ fn input_map(
     mut mouse_right_state: Local<MouseRightElementState>,
 
     // Character
-    character_query: Query<&Transform, With<PlayerMarker>>,
+    transform_query: Query<&Transform, With<PlayerMarker>>,
+    collide_query: Query<(&CharacterIndex, &Transform, &Sprite)>,
 
     mut last_angle: Local<FocalAngle>,
 
@@ -63,7 +67,7 @@ fn input_map(
     mut motion_events: EventWriter<PlayerInputCommand<Motion>>,
     mut actions: EventWriter<PlayerInputCommand<Action>>,
     mut focal_holds: EventWriter<PlayerInputCommand<FocalAngle>>,
-    mut select_clicks: EventWriter<SelectClick>,
+    mut target: EventWriter<PlayerInputCommand<Target>>,
 ) {
     let pressed_iter = keyboard_input
         .get_just_pressed()
@@ -103,9 +107,22 @@ fn input_map(
             button: MouseButton::Left,
             state: ElementState::Released,
         }) => {
-            select_clicks.send(SelectClick {
-                mouse_position: mouse_position.position,
-            });
+            const SELECT_SIZE: (f32, f32) = (30., 30.);
+
+            let index_opt = collide_query
+                .iter()
+                .find(|(_, char_transform, char_sprite)| {
+                    collide(
+                        mouse_position.position.extend(0.),
+                        SELECT_SIZE.into(),
+                        char_transform.translation,
+                        char_sprite.size,
+                    )
+                    .is_some()
+                })
+                .map(|(index, _, _)| *index);
+
+            target.send(PlayerInputCommand(Target(index_opt)));
         }
         Some(MouseButtonInput {
             button: MouseButton::Right,
@@ -119,7 +136,7 @@ fn input_map(
     }
 
     if *mouse_right_state == MouseRightElementState::Pressed {
-        let transform = character_query.single().expect("could not find player");
+        let transform = transform_query.single().expect("could not find player");
         let translation = transform.translation.truncate();
 
         let diff = mouse_position.position - translation;
@@ -178,6 +195,7 @@ impl Plugin for InputMapPlugin {
             .with_system(input_map.system());
         app.init_resource::<Bindings>()
             .add_plugin(InputToCharPlugin::<Motion>::new())
+            .add_plugin(InputToCharPlugin::<Target>::new())
             .add_plugin(InputToCharPlugin::<Action>::new())
             .add_plugin(InputToCharPlugin::<FocalAngle>::new())
             .add_event::<SelectClick>()
