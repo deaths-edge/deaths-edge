@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use heron::Velocity;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
@@ -16,15 +17,20 @@ impl FocalAngle {
 
 /// Receives [`FocalAngle`] event and rotates character in that direction.
 pub fn character_focal_rotate(
-    mut character_query: Query<&mut Transform, With<CharacterMarker>>,
+    mut character_query: Query<(&mut Transform, &mut Velocity), With<CharacterMarker>>,
     mut events: EventReader<CharacterEntityCommand<FocalAngle>>,
 ) {
     if let Some(command) = events.iter().last() {
         info!(message = "rotating", angle = %command.command.0);
-        let mut transform = character_query
+        let (mut transform, mut velocity) = character_query
             .get_mut(command.id)
             .expect("player not found");
 
-        transform.rotation = Quat::from_rotation_z(command.command.0);
+        let new_rotation = Quat::from_rotation_z(command.command.0);
+        let rotation_delta = transform.rotation.inverse() * new_rotation;
+
+        transform.rotation = new_rotation;
+
+        velocity.linear = rotation_delta * velocity.linear;
     }
 }

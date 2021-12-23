@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Debug, Clone, Copy)]
-pub struct SpellTarget(Entity);
+pub struct SpellTarget(pub Entity);
 
 impl SpellTarget {
     pub fn id(&self) -> Entity {

@@ -1,32 +1,10 @@
 use std::{fmt::Debug, hash::Hash};
 
 use bevy::{core::Time, prelude::*, utils::Instant};
+use heron::rapier_plugin::PhysicsWorld;
 
-use crate::spells::{instances::SpellMaterials, SpellCast};
-
-pub struct CastingPlugin<T> {
-    state: T,
-}
-
-impl<T> CastingPlugin<T> {
-    pub fn new(state: T) -> Self {
-        Self { state }
-    }
-}
-
-pub const CASTING_LABEL: &str = "casting";
-
-impl<T> Plugin for CastingPlugin<T>
-where
-    T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
-{
-    fn build(&self, app: &mut AppBuilder) {
-        let casting_system = SystemSet::on_update(self.state)
-            .label(CASTING_LABEL)
-            .with_system(complete_casting.system());
-        app.add_system_set(casting_system);
-    }
-}
+use super::CharacterMarker;
+use crate::spells::{check_in_front, check_line_of_sight, instances::SpellMaterials, SpellCast};
 
 #[derive(Default, Debug)]
 pub struct CharacterCastState {
@@ -65,25 +43,85 @@ impl CharacterCast {
 }
 
 fn complete_casting(
-    mut query: Query<(Entity, &Transform, &mut CharacterCastState)>,
+    mut cast_query: Query<(Entity, &Transform, &mut CharacterCastState)>,
+    target_query: Query<&Transform, With<CharacterMarker>>,
+
     mut commands: Commands,
+
+    physics_world: PhysicsWorld,
 
     time: Res<Time>,
     spell_materials: Res<SpellMaterials>,
 ) {
     let last_update = time.last_update().expect("last update not found");
-    for (character_entity, transform, mut cast_state) in
-        query.iter_mut().filter(|(_, _, cast_state)| {
+    for (character_entity, character_transform, mut cast_state) in
+        cast_query.iter_mut().filter(|(_, _, cast_state)| {
             cast_state
                 .cast()
                 .map(|cast| cast.is_complete(last_update))
                 .unwrap_or_default()
         })
     {
-        tracing::info!(message = "completed cast", ?cast_state);
+        tracing::info!(message = "cast completed", ?cast_state);
         let cast = cast_state.stop_cast().expect("checked valid");
 
-        cast.spell
-            .spawn_bundle(character_entity, transform, &mut commands, &spell_materials)
+        // Check targeting rules
+        if let Some(targeting) = cast.spell.targeting() {
+            let target_transform = target_query
+                .get(targeting.target.0)
+                .expect("failed to find target");
+
+            let is_los = check_line_of_sight(
+                character_transform,
+                target_transform.translation,
+                &physics_world,
+            )
+            .is_ok();
+            if !is_los {
+                warn!("failed line-of-sight check");
+                continue;
+            }
+
+            if targeting.requires_fov {
+                let is_in_front =
+                    check_in_front(character_transform, target_transform.translation).is_ok();
+
+                if !is_in_front {
+                    warn!("failed fov check");
+                    continue;
+                }
+            }
+        }
+
+        cast.spell.spawn_bundle(
+            character_entity,
+            character_transform,
+            &mut commands,
+            &spell_materials,
+        )
+    }
+}
+
+pub struct CastingPlugin<T> {
+    state: T,
+}
+
+impl<T> CastingPlugin<T> {
+    pub fn new(state: T) -> Self {
+        Self { state }
+    }
+}
+
+pub const CASTING_LABEL: &str = "casting";
+
+impl<T> Plugin for CastingPlugin<T>
+where
+    T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
+{
+    fn build(&self, app: &mut AppBuilder) {
+        let casting_system = SystemSet::on_update(self.state)
+            .label(CASTING_LABEL)
+            .with_system(complete_casting.system());
+        app.add_system_set(casting_system);
     }
 }
