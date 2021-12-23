@@ -58,6 +58,7 @@ pub fn handle_server_messages(
     mut net: ResMut<NetworkResource>,
     mut spawn_writer: EventWriter<SpawnCharacter>,
     mut motion_writer: EventWriter<CharacterNetworkCommand<Motion>>,
+    mut target_writer: EventWriter<CharacterNetworkCommand<Target>>,
     mut action_writer: EventWriter<CharacterNetworkCommand<Action>>,
     mut focal_angle_writer: EventWriter<CharacterNetworkCommand<FocalAngle>>,
     mut reconcile_writer: EventWriter<Reconcile>,
@@ -73,6 +74,7 @@ pub fn handle_server_messages(
                 },
                 ServerMessage::CharacterCommand(command) => match command {
                     CharacterCommand::Motion(motion) => motion_writer.send(motion),
+                    CharacterCommand::Target(target) => target_writer.send(target),
                     CharacterCommand::Action(action) => action_writer.send(action),
                     CharacterCommand::FocalAngle(angle) => focal_angle_writer.send(angle),
                 },

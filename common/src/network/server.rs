@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::character::{Action, CharacterClass, CharacterIndex, FocalAngle, Motion};
+use crate::character::{Action, CharacterClass, CharacterIndex, FocalAngle, Motion, Target};
 
 use super::CharacterNetworkCommand;
 
@@ -16,6 +16,7 @@ pub enum ServerMessage {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum CharacterCommand {
     Motion(CharacterNetworkCommand<Motion>),
+    Target(CharacterNetworkCommand<Target>),
     Action(CharacterNetworkCommand<Action>),
     FocalAngle(CharacterNetworkCommand<FocalAngle>),
 }
@@ -29,6 +30,12 @@ pub struct Reconcile {
 impl From<CharacterNetworkCommand<Motion>> for CharacterCommand {
     fn from(value: CharacterNetworkCommand<Motion>) -> Self {
         Self::Motion(value)
+    }
+}
+
+impl From<CharacterNetworkCommand<Target>> for CharacterCommand {
+    fn from(value: CharacterNetworkCommand<Target>) -> Self {
+        Self::Target(value)
     }
 }
 

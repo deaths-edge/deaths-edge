@@ -90,7 +90,6 @@ fn handle_connects(
 }
 
 fn handle_client_messages(
-    // mut network_server: ResMut<NetworkServer>,
     mut net: ResMut<NetworkResource>,
 
     mut game_roster: ResMut<GameRoster>,
@@ -235,6 +234,7 @@ impl Plugin for NetworkServerPlugin {
             // NETWORK_HANDLE_LABEL writes CharacterEntityCommand<Value> events
             .after(NETWORK_HANDLE_LABEL)
             .with_system(relay_character_commands::<Motion>.system())
+            .with_system(relay_character_commands::<Target>.system())
             .with_system(relay_character_commands::<Action>.system())
             .with_system(relay_character_commands::<FocalAngle>.system());
 
