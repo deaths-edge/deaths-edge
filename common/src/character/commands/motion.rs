@@ -9,20 +9,53 @@ use crate::{
     effects::MovementInterruptBundle,
 };
 
+const FORWARD_SPEED: f32 = 1.0;
+const STRAFE_SPEED: f32 = 0.8;
+const BACKPEDDLE_SPEED: f32 = 0.6;
+
 #[derive(Debug, PartialEq, Clone, Copy, Deserialize, Serialize)]
-pub enum MotionDirection {
-    Left,
+pub enum ParallelMotion {
     Forward,
-    Right,
     Backward,
-    LeftForward,
-    LeftBackward,
-    RightForward,
-    RightBackward,
 }
 
-#[derive(Debug, Default, PartialEq, Clone, Copy, Deserialize, Serialize)]
-pub struct Motion(pub Option<MotionDirection>);
+impl Into<Vec2> for ParallelMotion {
+    fn into(self) -> Vec2 {
+        match self {
+            Self::Forward => Vec2::new(0., FORWARD_SPEED),
+            Self::Backward => Vec2::new(0., -BACKPEDDLE_SPEED),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Copy, Deserialize, Serialize)]
+pub enum NormalMotion {
+    Left,
+    Right,
+}
+
+impl Into<Vec2> for NormalMotion {
+    fn into(self) -> Vec2 {
+        match self {
+            Self::Left => Vec2::new(-STRAFE_SPEED, 0.),
+            Self::Right => Vec2::new(STRAFE_SPEED, 0.),
+        }
+    }
+}
+
+#[derive(Default, Debug, PartialEq, Clone, Copy, Deserialize, Serialize)]
+pub struct Motion {
+    pub parallel: Option<ParallelMotion>,
+    pub normal: Option<NormalMotion>,
+}
+
+impl Into<Vec2> for Motion {
+    fn into(self) -> Vec2 {
+        let parallel: Vec2 = self.parallel.map(Into::into).unwrap_or_default();
+        let normal: Vec2 = self.normal.map(Into::into).unwrap_or_default();
+        parallel + normal
+    }
+}
 
 /// Receives [`Motion`] input and accelerates character in said direction.
 pub fn character_movement(
@@ -41,27 +74,13 @@ pub fn character_movement(
 
     mut commands: Commands,
 ) {
-    const FORWARD_SPEED: f32 = 1.0;
-    const STRAFE_SPEED: f32 = 0.8;
-    const BACKPEDDLE_SPEED: f32 = 0.6;
-
     for command in motion_events.iter() {
         let (character_entity, speed_multiplier, transform, mut velocity) = character_query
             .get_mut(command.id())
             .expect("failed to find character");
 
         // Construct direction
-        let mut direction = match command.command().0 {
-            None => Vec2::ZERO,
-            Some(MotionDirection::Left) => Vec2::new(-STRAFE_SPEED, 0.),
-            Some(MotionDirection::LeftForward) => Vec2::new(-STRAFE_SPEED, FORWARD_SPEED),
-            Some(MotionDirection::Forward) => Vec2::new(0., FORWARD_SPEED),
-            Some(MotionDirection::RightForward) => Vec2::new(STRAFE_SPEED, FORWARD_SPEED),
-            Some(MotionDirection::Right) => Vec2::new(STRAFE_SPEED, 0.),
-            Some(MotionDirection::RightBackward) => Vec2::new(STRAFE_SPEED, -BACKPEDDLE_SPEED),
-            Some(MotionDirection::Backward) => Vec2::new(0., -BACKPEDDLE_SPEED),
-            Some(MotionDirection::LeftBackward) => Vec2::new(-STRAFE_SPEED, -FORWARD_SPEED),
-        };
+        let mut direction: Vec2 = command.command().clone().into();
 
         // TODO: Constify this
         if direction != Vec2::ZERO {
