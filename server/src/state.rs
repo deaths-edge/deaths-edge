@@ -1,13 +1,12 @@
 use bevy::prelude::*;
 
 use common::{
-    character::CastingPlugin, effects::EffectPlugin, heron::PhysicsPlugin, spells::SpellPlugin,
-    state::ArenaState,
+    character::CastingPlugin, effects::EffectPlugin, heron::PhysicsPlugin, state::ArenaState,
 };
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub struct ServerState;
 
-use crate::network::NETWORK_HANDLE_LABEL;
+use crate::{network::NETWORK_HANDLE_LABEL, spells::SpellPlugin};
 
 pub const STATE_TRANSITION_LABEL: &str = "state-transition";
 
@@ -30,14 +29,12 @@ impl Plugin for StateTransitionPlugin {
 #[derive(Debug)]
 pub enum StateTransition {}
 
-fn state_transitions(
-    mut transition_events: EventReader<StateTransition>,
+fn state_transitions(// mut transition_events: EventReader<StateTransition>,
+    // mut spawning_state: ResMut<State<ArenaState>>,
 
-    mut spawning_state: ResMut<State<ArenaState>>,
-
-    mut commands: Commands,
+    // mut commands: Commands,
 ) {
-    if let Some(event) = transition_events.iter().next() {}
+    // if let Some(event) = transition_events.iter().next() {}
 }
 
 pub struct RunningPlugin;
@@ -45,7 +42,7 @@ pub struct RunningPlugin;
 impl Plugin for RunningPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_plugin(CastingPlugin::new(ServerState))
-            .add_plugin(SpellPlugin::new(ServerState))
+            .add_plugin(SpellPlugin)
             .add_plugin(EffectPlugin::new(ServerState))
             .add_plugin(PhysicsPlugin::default());
     }

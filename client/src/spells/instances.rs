@@ -7,7 +7,7 @@ use super::SpellMaterials;
 #[derive(Bundle)]
 pub struct FireballBundle {
     #[bundle]
-    common: CommonFireballBundle,
+    pub common: CommonFireballBundle,
     #[bundle]
     sprite: SpriteBundle,
 }

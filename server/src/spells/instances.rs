@@ -5,8 +5,8 @@ use common::spells::instances::FireballBundle as CommonFireballBundle;
 #[derive(Bundle)]
 pub struct FireballBundle {
     #[bundle]
-    common: CommonFireballBundle,
-    transform: Transform,
+    pub common: CommonFireballBundle,
+    pub transform: Transform,
     global_transform: GlobalTransform,
 }
 

@@ -53,21 +53,24 @@ impl Spell {
     }
 }
 
-pub struct SpellPlugin<T> {
-    state: T,
+pub struct SpellPlugin<State, Trigger> {
+    state: State,
+    trigger: Trigger,
 }
 
-impl<T> SpellPlugin<T> {
-    pub fn new(state: T) -> Self {
-        Self { state }
+impl<State, Trigger> SpellPlugin<State, Trigger> {
+    pub fn new(state: State, trigger: Trigger) -> Self {
+        Self { state, trigger }
     }
 }
 
 pub const SPELLS_LABEL: &str = "spells";
 
-impl<T> Plugin for SpellPlugin<T>
+impl<State, Trigger> Plugin for SpellPlugin<State, Trigger>
 where
-    T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
+    State: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
+    Trigger: Sync + Send + 'static,
+    Trigger: SpellTrigger,
 {
     fn build(&self, app: &mut AppBuilder) {
         let spells = SystemSet::on_update(self.state)
@@ -75,7 +78,7 @@ where
             .with_system(spell_tracking.system())
             .with_system(spell_projectile_motion.system())
             .with_system(spell_projectile_collision.system())
-            .with_system(spell_impact.exclusive_system());
+            .with_system(spell_impact::<Trigger>.exclusive_system());
 
         app.add_event::<SpellImpactEvent>().add_system_set(spells);
     }

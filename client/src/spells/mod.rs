@@ -1,12 +1,13 @@
 mod instances;
 mod materials;
+mod spawn;
 
 use bevy::prelude::*;
 
 use common::{
-    character::{CharacterMarker, CASTING_LABEL},
+    character::CASTING_LABEL,
     spells::{
-        instances::FireballBundle as CommonFireballBundle, Spell, SpellPlugin as CommonSpellPlugin,
+        instances::FireballEffect, SpellMarker, SpellPlugin as CommonSpellPlugin, SpellTrigger,
     },
 };
 
@@ -15,9 +16,35 @@ pub use materials::*;
 
 use crate::state::ClientState;
 
+use spawn::spawn_spells;
+
 pub struct SpellPlugin;
 
 pub const SPELLS_LABEL: &str = "spells";
+
+struct ClientSpellTrigger;
+
+impl SpellTrigger for ClientSpellTrigger {
+    fn trigger(this: &common::spells::SpellImpactEvent, world: &mut World) {
+        use SpellMarker::*;
+        let mut spell_entity_mut = world.entity_mut(this.id);
+
+        match this.spell_marker {
+            Fireball => {
+                let fireball_bundle = spell_entity_mut
+                    .remove_bundle::<FireballBundle>()
+                    .expect("fireball bundle not found");
+
+                let fireball_effect = FireballEffect {
+                    marker: common::effects::EffectMarker,
+                    target: fireball_bundle.common.target().into(),
+                    damage: common::effects::DamageEffect { amount: 30 },
+                };
+                world.spawn().insert_bundle(fireball_effect);
+            }
+        }
+    }
+}
 
 impl Plugin for SpellPlugin {
     fn build(&self, app: &mut AppBuilder) {
@@ -26,27 +53,10 @@ impl Plugin for SpellPlugin {
             .after(CASTING_LABEL)
             .with_system(spawn_spells.system());
         app.init_resource::<SpellMaterials>()
-            .add_plugin(CommonSpellPlugin::new(ClientState::Arena))
+            .add_plugin(CommonSpellPlugin::new(
+                ClientState::Arena,
+                ClientSpellTrigger,
+            ))
             .add_system_set(spawn_spells);
-    }
-}
-
-fn spawn_spells(
-    spell_materials: Res<SpellMaterials>,
-    transform_query: Query<&Transform, With<CharacterMarker>>,
-    mut spell_reader: EventReader<Spell>,
-
-    mut commands: Commands,
-) {
-    for spell in spell_reader.iter() {
-        match spell {
-            Spell::Fireball { source, target } => {
-                let common = CommonFireballBundle::new(*source, *target, 1.0);
-                let transform = transform_query.get(source.0).expect("can't find caster");
-                let bundle = FireballBundle::new(common, *transform, &spell_materials);
-
-                commands.spawn_bundle(bundle);
-            }
-        }
     }
 }
