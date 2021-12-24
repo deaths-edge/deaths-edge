@@ -1,11 +1,6 @@
-use bevy::{app::Events, ecs::world::EntityMut, prelude::*};
+use bevy::{app::Events, prelude::*};
 
-use crate::effects::{DamageEffect, EffectMarker};
-
-use super::{
-    instances::{FireballBundle, FireballEffect},
-    SpellMarker,
-};
+use super::SpellMarker;
 
 pub struct SpellImpactEvent {
     pub id: Entity,
@@ -13,25 +8,7 @@ pub struct SpellImpactEvent {
 }
 
 pub trait SpellTrigger {
-    fn trigger(this: &SpellImpactEvent, world: &mut World) {
-        use SpellMarker::*;
-        let mut spell_entity_mut = world.entity_mut(this.id);
-
-        match this.spell_marker {
-            Fireball => {
-                let fireball_bundle = spell_entity_mut
-                    .remove_bundle::<FireballBundle>()
-                    .expect("fireball bundle not found");
-
-                let fireball_effect = FireballEffect {
-                    marker: EffectMarker,
-                    target: fireball_bundle.target().into(),
-                    damage: DamageEffect { amount: 30 },
-                };
-                world.spawn().insert_bundle(fireball_effect);
-            }
-        }
-    }
+    fn trigger(this: &SpellImpactEvent, world: &mut World);
 }
 
 impl SpellImpactEvent {

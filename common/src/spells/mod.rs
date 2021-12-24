@@ -21,9 +21,14 @@ pub use utilities::*;
 
 use crate::character::{CharacterMarker, LastCastInstant};
 
+/// Enumeration of all spells.
 #[derive(Debug)]
 pub enum Spell {
     Fireball {
+        source: SpellSource,
+        target: SpellTarget,
+    },
+    Spear {
         source: SpellSource,
         target: SpellTarget,
     },
@@ -35,17 +40,22 @@ pub struct SpellTargeting<'a> {
 }
 
 impl Spell {
-    pub fn duration(&self) -> Duration {
+    pub fn duration(&self) -> Option<Duration> {
         use Spell::*;
 
         match self {
-            Fireball { .. } => Duration::from_secs(1),
+            Fireball { .. } => Some(Duration::from_secs(1)),
+            Spear { .. } => None,
         }
     }
 
     pub fn targeting(&self) -> Option<SpellTargeting<'_>> {
         match self {
             Spell::Fireball { target, .. } => Some(SpellTargeting {
+                target,
+                requires_fov: true,
+            }),
+            Spell::Spear { target, .. } => Some(SpellTargeting {
                 target,
                 requires_fov: true,
             }),

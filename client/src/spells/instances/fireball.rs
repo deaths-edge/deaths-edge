@@ -1,8 +1,11 @@
 use bevy::prelude::*;
 
-use common::spells::instances::{FireballBundle as CommonFireballBundle, FIREBALL_SIZE};
+use common::{
+    effects::{DamageEffect, EffectMarker},
+    spells::instances::{CommonFireballBundle, FireballEffect, ToEffect, FIREBALL_SIZE},
+};
 
-use super::SpellMaterials;
+use crate::spells::SpellMaterials;
 
 #[derive(Bundle)]
 pub struct FireballBundle {
@@ -28,4 +31,18 @@ impl FireballBundle {
             },
         }
     }
+}
+
+impl From<FireballBundle> for FireballEffect {
+    fn from(bundle: FireballBundle) -> Self {
+        Self {
+            marker: EffectMarker,
+            target: bundle.common.target().into(),
+            damage: DamageEffect { amount: 30 },
+        }
+    }
+}
+
+impl ToEffect for FireballBundle {
+    type Effect = FireballEffect;
 }

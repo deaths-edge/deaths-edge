@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use common::{
     character::CharacterMarker,
-    spells::{instances::FireballBundle as CommonFireballBundle, Spell},
+    spells::{instances::CommonFireballBundle, Spell},
 };
 
 use super::instances::FireballBundle;
@@ -22,6 +22,7 @@ pub fn spawn_spells(
 
                 commands.spawn_bundle(bundle);
             }
+            _ => todo!(),
         }
     }
 }

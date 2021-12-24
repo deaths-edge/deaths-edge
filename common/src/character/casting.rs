@@ -38,7 +38,11 @@ impl CharacterCast {
     }
 
     pub fn is_complete(&self, now: Instant) -> bool {
-        self.start + self.spell.duration() <= now
+        if let Some(duration) = self.spell.duration() {
+            self.start + duration <= now
+        } else {
+            true
+        }
     }
 }
 

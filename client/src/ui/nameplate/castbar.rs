@@ -41,14 +41,17 @@ pub fn cast_bar_update(
             if let Ok(character_cast_state) = character_query.get(nameplate_parent.id()) {
                 if let Some(character_cast) = character_cast_state.cast() {
                     cast_bar_style.display = Display::Flex;
-                    let cast_total_duration = character_cast.spell.duration();
-                    let now = time.last_update().expect("last update not found");
-                    let current_duration = now - character_cast.start;
+                    if let Some(cast_total_duration) = character_cast.spell.duration() {
+                        let now = time.last_update().expect("last update not found");
+                        let current_duration = now - character_cast.start;
 
-                    let percent =
-                        100. * current_duration.as_secs_f32() / cast_total_duration.as_secs_f32();
+                        let percent = 100. * current_duration.as_secs_f32()
+                            / cast_total_duration.as_secs_f32();
 
-                    cast_bar_style.size.width = Val::Percent(percent);
+                        cast_bar_style.size.width = Val::Percent(percent);
+                    } else {
+                        cast_bar_style.display = Display::None;
+                    }
                 } else {
                     cast_bar_style.display = Display::None;
                 }

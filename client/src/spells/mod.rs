@@ -6,9 +6,7 @@ use bevy::prelude::*;
 
 use common::{
     character::CASTING_LABEL,
-    spells::{
-        instances::FireballEffect, SpellMarker, SpellPlugin as CommonSpellPlugin, SpellTrigger,
-    },
+    spells::{instances::ToEffect, SpellMarker, SpellPlugin as CommonSpellPlugin, SpellTrigger},
 };
 
 pub use instances::*;
@@ -27,20 +25,13 @@ struct ClientSpellTrigger;
 impl SpellTrigger for ClientSpellTrigger {
     fn trigger(this: &common::spells::SpellImpactEvent, world: &mut World) {
         use SpellMarker::*;
-        let mut spell_entity_mut = world.entity_mut(this.id);
 
         match this.spell_marker {
             Fireball => {
-                let fireball_bundle = spell_entity_mut
-                    .remove_bundle::<FireballBundle>()
-                    .expect("fireball bundle not found");
-
-                let fireball_effect = FireballEffect {
-                    marker: common::effects::EffectMarker,
-                    target: fireball_bundle.common.target().into(),
-                    damage: common::effects::DamageEffect { amount: 30 },
-                };
-                world.spawn().insert_bundle(fireball_effect);
+                FireballBundle::process_spell(this.id, world);
+            }
+            Spear => {
+                SpearBundle::process_spell(this.id, world);
             }
         }
     }

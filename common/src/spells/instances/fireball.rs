@@ -81,7 +81,7 @@ pub fn fireball_action(
 }
 
 #[derive(Bundle)]
-pub struct FireballBundle {
+pub struct CommonFireballBundle {
     spell_marker: SpellMarker,
     projectile_marker: SpellProjectileMarker,
 
@@ -91,13 +91,12 @@ pub struct FireballBundle {
 
     source: SpellSource,
     target: SpellTarget,
-    // TODO: Maybe include effect here?
 }
 
 pub const FIREBALL_SPEED: f32 = 300.;
 pub const FIREBALL_SIZE: f32 = 15.;
 
-impl FireballBundle {
+impl CommonFireballBundle {
     pub fn new(source: SpellSource, target: SpellTarget, speed_multiplier: f32) -> Self {
         Self {
             spell_marker: SpellMarker::Fireball,

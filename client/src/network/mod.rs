@@ -19,8 +19,7 @@ use common::{
 };
 
 use crate::{
-    character::PlayerState,
-    input_mapping::{PlayerInputCommand, INPUT_TO_CHARACTER_LABEL},
+    input_mapping::PlayerInputCommand,
     spawning::SPAWN_CHARACTER_LABEL,
     state::{ClientState, StateTransition},
     Opt,

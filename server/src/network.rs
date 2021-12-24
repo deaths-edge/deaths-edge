@@ -14,11 +14,11 @@ use common::{
         find_my_ip_address, network_setup,
         server::{ArenaSetup, CharacterCommand, GameCommand, Reconcile, ServerMessage},
         CharacterNetworkCommand, ConnectionHandle, NetworkEvent, NetworkResource, NetworkingPlugin,
-        NETWORK_SETUP_LABEL, SERVER_PORT,
+        SERVER_PORT,
     },
 };
 
-use crate::{character::ClientAddress, state::ServerState};
+use crate::character::ClientAddress;
 
 pub const NETWORK_HANDLE_LABEL: &str = "network-handle";
 pub const NETWORK_RELAY_LABEL: &str = "network-relay";

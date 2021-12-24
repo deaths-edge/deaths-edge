@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
-use crate::{spells::instances::FireballBundle, state::ServerState};
+use crate::{
+    spells::instances::{FireballBundle, SpearBundle},
+    state::ServerState,
+};
 
-use common::{
-    effects::{DamageEffect, EffectMarker},
-    spells::{
-        instances::FireballEffect, SpellMarker, SpellPlugin as CommonSpellPlugin, SpellTrigger,
-    },
+use common::spells::{
+    instances::ToEffect, SpellMarker, SpellPlugin as CommonSpellPlugin, SpellTrigger,
 };
 
 use spawn::spawn_spells;
@@ -23,16 +23,10 @@ impl SpellTrigger for ServerSpellTrigger {
 
         match this.spell_marker {
             Fireball => {
-                let fireball_bundle = spell_entity_mut
-                    .remove_bundle::<FireballBundle>()
-                    .expect("fireball bundle not found");
-
-                let fireball_effect = FireballEffect {
-                    marker: EffectMarker,
-                    target: fireball_bundle.common.target().into(),
-                    damage: DamageEffect { amount: 30 },
-                };
-                world.spawn().insert_bundle(fireball_effect);
+                FireballBundle::process_spell(this.id, world);
+            }
+            Spear => {
+                SpearBundle::process_spell(this.id, world);
             }
         }
     }

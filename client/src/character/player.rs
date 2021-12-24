@@ -4,10 +4,7 @@ use bevy::prelude::*;
 
 use super::*;
 
-use common::{
-    character::{CharacterEntityCommand, CharacterIndex, CharacterMarker, Target},
-    network::server::SpawnCharacter,
-};
+use common::character::{CharacterEntityCommand, CharacterIndex, CharacterMarker, Target};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum PlayerState {
