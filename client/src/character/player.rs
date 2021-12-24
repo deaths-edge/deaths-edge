@@ -16,38 +16,6 @@ pub enum PlayerState {
     Dead,
 }
 
-/// Switch from waiting to spawned
-pub fn spawn_state(
-    mut spawn_reader: EventReader<SpawnCharacter>,
-    mut player_state: ResMut<State<PlayerState>>,
-) {
-    for spawn in spawn_reader.iter() {
-        if spawn.player() {
-            player_state
-                .set(PlayerState::Spawned)
-                .expect("this can't happen twice")
-        }
-    }
-}
-
-pub const CHARACTER_ACTIONS: &str = "character-actions";
-
-pub struct PlayerPlugin;
-
-impl Plugin for PlayerPlugin {
-    fn build(&self, app: &mut AppBuilder) {
-        let player_state_transition =
-            SystemSet::on_update(PlayerState::Waiting).with_system(spawn_state.system());
-        let character_actions = SystemSet::on_update(PlayerState::Spawned)
-            .label(CHARACTER_ACTIONS)
-            // TODO: Ordering
-            .with_system(player_select.system());
-        app.add_state(PlayerState::Waiting)
-            .add_system_set(player_state_transition)
-            .add_system_set(character_actions);
-    }
-}
-
 pub struct PlayerMarker;
 
 #[derive(Bundle)]
@@ -92,5 +60,21 @@ pub fn player_select(
                 *selected = Selected::Selected;
             }
         }
+    }
+}
+
+pub const PLAYER_ACTIONS_LABEL: &str = "player-actions";
+pub const PLAYER_SPAWN_STATE_LABEL: &str = "player-spawn-state";
+
+pub struct PlayerPlugin;
+
+impl Plugin for PlayerPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        let character_actions = SystemSet::on_update(PlayerState::Spawned)
+            .label(PLAYER_ACTIONS_LABEL)
+            // TODO: Ordering
+            .with_system(player_select.system());
+        app.add_state(PlayerState::Waiting)
+            .add_system_set(character_actions);
     }
 }

@@ -11,7 +11,7 @@ use common::{
         server::{GameCommand, ServerMessage, SpawnCharacter},
         NetworkResource,
     },
-    state::SpawningState,
+    state::ArenaState,
 };
 
 use crate::{
@@ -25,15 +25,14 @@ pub struct SpawnPlugin;
 
 impl Plugin for SpawnPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let spawner = SystemSet::on_update(SpawningState::Active)
+        let spawner = SystemSet::on_update(ArenaState::Waiting)
             .label(SPAWNER_LABEL)
             // NETWORK_HANDLE_LABEL sends [`SpawnCharacter`] events
             .after(NETWORK_HANDLE_LABEL)
             .with_system(spawn_characters.system());
 
         // TODO: Don't start active
-        app.add_state(SpawningState::Deactive)
-            .add_system_set(spawner);
+        app.add_state(ArenaState::Waiting).add_system_set(spawner);
     }
 }
 

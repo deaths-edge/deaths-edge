@@ -7,11 +7,12 @@ use common::{
         Action, CharacterEntityCommand, CharacterIndex, CharacterMarker, FocalAngle, Motion,
         Target, CHARACTER_COMMANDS,
     },
+    environment::Map,
     game::{ArenaPermit, GameRoster},
     network::{
         client::{ClientCommand, ClientMessage},
         find_my_ip_address, network_setup,
-        server::{CharacterCommand, Reconcile, ServerMessage},
+        server::{ArenaSetup, CharacterCommand, GameCommand, Reconcile, ServerMessage},
         CharacterNetworkCommand, ConnectionHandle, NetworkEvent, NetworkResource, NetworkingPlugin,
         NETWORK_SETUP_LABEL, SERVER_PORT,
     },
@@ -35,7 +36,11 @@ fn process_permit(
     if result.is_ok() {
         info!("permit passed");
         // Send passcode acknowledgement
-        to_send.push((connection_handle, ServerMessage::ArenaPasscodeAck));
+        let arena_spawn = ArenaSetup { map: Map::Duo };
+        to_send.push((
+            connection_handle,
+            ServerMessage::GameCommand(GameCommand::Setup(arena_spawn)),
+        ));
     } else {
         error!("fraudulent permit");
     }
@@ -74,11 +79,6 @@ fn handle_connects(
                 error!(message = "timeout", %handle, ?error);
             }
             NetworkEvent::Connected(handle) => {
-                net.send_message(*handle, ServerMessage::ArenaPasscodeAck)
-                    .expect("failed to send ArenaPasscodeAck");
-                let addr = net.connections.get(handle).unwrap();
-
-                info!(addr = ?addr.remote_address(), stats = ?addr.stats());
                 info!(message = "connected", %handle);
             }
             NetworkEvent::Disconnected(handle) => {
@@ -217,19 +217,14 @@ pub struct NetworkServerPlugin;
 
 impl Plugin for NetworkServerPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let setup = SystemSet::on_enter(ServerState::Running)
-            .label(NETWORK_SETUP_LABEL)
-            .with_system(startup.system())
-            .with_system(network_setup.system());
-
-        let handle_client = SystemSet::on_update(ServerState::Running)
+        let handle_client = SystemSet::new()
             .label(NETWORK_HANDLE_LABEL)
             // CHARACTER_COMMANDS reads CharacterEntityCommand<Value> events
             .before(CHARACTER_COMMANDS)
             .with_system(handle_client_messages.system())
             .with_system(handle_connects.system());
 
-        let relay_commands = SystemSet::on_update(ServerState::Running)
+        let relay_commands = SystemSet::new()
             .label(NETWORK_RELAY_LABEL)
             // NETWORK_HANDLE_LABEL writes CharacterEntityCommand<Value> events
             .after(NETWORK_HANDLE_LABEL)
@@ -238,14 +233,15 @@ impl Plugin for NetworkServerPlugin {
             .with_system(relay_character_commands::<Action>.system())
             .with_system(relay_character_commands::<FocalAngle>.system());
 
-        let broadcast_reconciles = SystemSet::on_update(ServerState::Running)
+        let broadcast_reconciles = SystemSet::new()
             .with_run_criteria(FixedTimestep::step(5.0))
             .with_system(reconcile_broadcast.system());
 
         app.add_plugin(NetworkingPlugin::default())
-            .add_system_set(setup)
             .add_system_set(handle_client)
             .add_system_set(relay_commands)
-            .add_system_set(broadcast_reconciles);
+            .add_system_set(broadcast_reconciles)
+            .add_startup_system(startup.system())
+            .add_startup_system(network_setup.system());
     }
 }

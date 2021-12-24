@@ -1,7 +1,8 @@
-use std::{fmt::Debug, hash::Hash};
+use std::fmt::Debug;
 
 use bevy::prelude::*;
 use heron::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use crate::physics::WorldLayer;
 
@@ -44,6 +45,37 @@ impl Environment {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize, Hash, PartialEq, Eq, Clone)]
+pub enum Map {
+    Duo,
+}
+
+impl Map {
+    pub fn spawn_environment(
+        &self,
+        commands: &mut Commands,
+        mut materials: &mut Assets<ColorMaterial>,
+    ) {
+        match self {
+            Self::Duo => {
+                let pillar_a = Environment::new(
+                    Transform::from_xyz(300., 300., 0.),
+                    Size::new(100., 100.),
+                    &mut materials,
+                );
+                let pillar_b = Environment::new(
+                    Transform::from_xyz(-300., -300., 0.),
+                    Size::new(100., 100.),
+                    &mut materials,
+                );
+
+                commands.spawn_bundle(pillar_a);
+                commands.spawn_bundle(pillar_b);
+            }
+        }
+    }
+}
+
 pub struct EnvironmentPlugin<T> {
     state: T,
 }
@@ -54,30 +86,14 @@ impl<T> EnvironmentPlugin<T> {
     }
 }
 
-impl<T> Plugin for EnvironmentPlugin<T>
-where
-    T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
-{
-    fn build(&self, app: &mut AppBuilder) {
-        let spawn_environment =
-            SystemSet::on_enter(self.state).with_system(spawn_environment.system());
+// impl<T> Plugin for EnvironmentPlugin<T>
+// where
+//     T: Sync + Send + Debug + Clone + Copy + Eq + Hash + 'static,
+// {
+//     fn build(&self, app: &mut AppBuilder) {
+//         let spawn_environment =
+//             SystemSet::on_enter(self.state).with_system(spawn_environment.system());
 
-        app.add_system_set(spawn_environment);
-    }
-}
-
-pub fn spawn_environment(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
-    let environment_a = Environment::new(
-        Transform::from_xyz(300., 300., 0.),
-        Size::new(100., 100.),
-        &mut materials,
-    );
-    let environment_b = Environment::new(
-        Transform::from_xyz(-300., -300., 0.),
-        Size::new(100., 100.),
-        &mut materials,
-    );
-
-    commands.spawn_bundle(environment_a);
-    commands.spawn_bundle(environment_b);
-}
+//         app.add_system(spawn_environment);
+//     }
+// }

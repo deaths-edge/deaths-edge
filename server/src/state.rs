@@ -1,24 +1,15 @@
 use bevy::prelude::*;
 
 use common::{
-    character::CastingPlugin,
-    effects::EffectPlugin,
-    environment::EnvironmentPlugin,
-    game::GameRoster,
-    heron::PhysicsPlugin,
-    spells::SpellPlugin,
-    state::{ArenaState, SpawningState},
+    character::CastingPlugin, effects::EffectPlugin, heron::PhysicsPlugin, spells::SpellPlugin,
+    state::ArenaState,
 };
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub struct ServerState;
 
 use crate::network::NETWORK_HANDLE_LABEL;
 
 pub const STATE_TRANSITION_LABEL: &str = "state-transition";
-
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-pub enum ServerState {
-    Idle,
-    Running,
-}
 
 pub struct StateTransitionPlugin;
 
@@ -29,36 +20,36 @@ impl Plugin for StateTransitionPlugin {
             // TODO: Ordering
             .after(NETWORK_HANDLE_LABEL)
             .with_system(state_transitions.system());
-        app.add_event::<StateTransitionEvent>()
+        app.add_event::<StateTransition>()
+            .add_state(ServerState)
             .add_event::<ArenaState>()
             .add_system_set(state_transitions);
     }
 }
 
 #[derive(Debug)]
-pub enum StateTransitionEvent {
-    Setup { roster: GameRoster },
-}
+pub enum StateTransition {}
 
 fn state_transitions(
+    mut transition_events: EventReader<StateTransition>,
+
+    mut spawning_state: ResMut<State<ArenaState>>,
+
     mut commands: Commands,
-    mut transition_events: EventReader<StateTransitionEvent>,
-    mut app_state: ResMut<State<ServerState>>,
-    mut spawning_state: ResMut<State<SpawningState>>,
 ) {
     if let Some(event) = transition_events.iter().next() {
-        match event {
-            StateTransitionEvent::Setup { roster } => {
-                if *app_state.current() == ServerState::Idle {
-                    info!(message = "inserting roster", ?roster);
-                    commands.insert_resource(roster.clone());
-                    app_state.set(ServerState::Running).expect("double set");
-                    spawning_state
-                        .set(SpawningState::Active)
-                        .expect("couldn't set spawning state");
-                }
-            }
-        }
+        // match event {
+        //     StateTransition::Setup { roster } => {
+        //         if *app_state.current() == ServerState::Idle {
+        //             info!(message = "inserting roster", ?roster);
+        //             commands.insert_resource(roster.clone());
+        //             app_state.set(ServerState::Running).expect("double set");
+        //             spawning_state
+        //                 .set(ArenaState::Waiting)
+        //                 .expect("couldn't set spawning state");
+        //         }
+        //     }
+        // }
     }
 }
 
@@ -66,10 +57,9 @@ pub struct RunningPlugin;
 
 impl Plugin for RunningPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_plugin(CastingPlugin::new(ServerState::Running))
-            .add_plugin(SpellPlugin::new(ServerState::Running))
-            .add_plugin(EffectPlugin::new(ServerState::Running))
-            .add_plugin(PhysicsPlugin::default())
-            .add_plugin(EnvironmentPlugin::new(ServerState::Running));
+        app.add_plugin(CastingPlugin::new(ServerState))
+            .add_plugin(SpellPlugin::new(ServerState))
+            .add_plugin(EffectPlugin::new(ServerState))
+            .add_plugin(PhysicsPlugin::default());
     }
 }

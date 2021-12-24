@@ -15,16 +15,6 @@ pub struct ArenaPermit {
     pub team: CharacterTeam,
 }
 
-impl ArenaPermit {
-    pub fn new(passcode: ArenaPasscode, class: CharacterClass, team: CharacterTeam) -> Self {
-        Self {
-            passcode,
-            class,
-            team,
-        }
-    }
-}
-
 /// Sent by matchmaking server.
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct GameRoster {

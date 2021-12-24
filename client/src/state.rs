@@ -7,14 +7,14 @@ use crate::{
     game_camera::GameCameraPlugin,
     input_mapping::InputMapPlugin,
     music::SplashMusicPlugin,
-    network::GameServer,
+    network::{GameServer, NetworkingState},
     spawning::SpawnPlugin,
     ui::{splash::SplashUIPlugin, UIPlugins},
 };
 
 use common::{
-    effects::EffectPlugin, environment::EnvironmentPlugin, heron::PhysicsPlugin,
-    spells::SpellPlugin, state::ArenaState,
+    effects::EffectPlugin, heron::PhysicsPlugin, network::server::ArenaSetup, spells::SpellPlugin,
+    state::ArenaState,
 };
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
@@ -23,6 +23,8 @@ pub enum ClientState {
     Splash,
     /// Main lobby
     MainLobby,
+    /// Connecting
+    Connecting,
     /// In arena
     Arena,
 }
@@ -37,31 +39,48 @@ impl Plugin for StateTransitionPlugin {
             .label(STATE_TRANSITIONS_LABEL)
             // TODO: Ordering
             .with_system(state_transitions.system());
-        app.add_event::<StateTransitionEvent>()
+        app.add_event::<StateTransition>()
             .add_system_set(state_transitions);
     }
 }
 
 #[derive(Debug)]
-pub enum StateTransitionEvent {
-    ToArena { server: SocketAddr },
+pub enum StateTransition {
+    Connect { server: SocketAddr },
+    Connected { setup: ArenaSetup },
 }
 
-/// Listen for [`StateTransitionEvent`]s and perform actions.
+/// Listen for [`StateTransition`]s and perform actions.
 fn state_transitions(
-    mut commands: Commands,
-    mut transition_events: EventReader<StateTransitionEvent>,
+    mut transition_events: EventReader<StateTransition>,
+
     mut app_state: ResMut<State<ClientState>>,
-    arena_state: ResMut<State<ArenaState>>,
+    mut network_state: ResMut<State<NetworkingState>>,
+    mut arena_state: ResMut<State<ArenaState>>,
+
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut commands: Commands,
 ) {
     if let Some(event) = transition_events.iter().next() {
         info!(state_transition = ?event);
         match event {
-            StateTransitionEvent::ToArena { server } => {
+            StateTransition::Connect { server } => {
+                app_state
+                    .set(ClientState::Connecting)
+                    .expect("state transition failed");
+                network_state
+                    .set(NetworkingState::Active)
+                    .expect("state transition failed");
+                commands.insert_resource(GameServer::new(*server))
+            }
+            StateTransition::Connected { setup } => {
                 app_state
                     .set(ClientState::Arena)
                     .expect("state transition failed");
-                commands.insert_resource(GameServer::new(*server))
+                arena_state
+                    .set(ArenaState::Waiting)
+                    .expect("state transition failed");
+                setup.map.spawn_environment(&mut commands, &mut materials);
             }
         }
     }
@@ -79,7 +98,7 @@ pub struct ArenaPlugin;
 
 impl Plugin for ArenaPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_state(ArenaState::Waiting)
+        app.add_state(ArenaState::Inactive)
             .add_plugin(CharacterPlugin)
             .add_plugins(UIPlugins)
             .add_plugin(SpawnPlugin)
@@ -88,6 +107,7 @@ impl Plugin for ArenaPlugin {
             .add_plugin(EffectPlugin::new(ClientState::Arena))
             .add_plugin(PhysicsPlugin::default())
             .add_plugin(GameCameraPlugin)
-            .add_plugin(EnvironmentPlugin::new(ClientState::Arena));
+            // .add_plugin(EnvironmentPlugin::new(ClientState::Arena))
+            ;
     }
 }

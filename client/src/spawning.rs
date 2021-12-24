@@ -6,7 +6,9 @@ use common::{
 };
 
 use crate::{
-    character::{CharacterBundle, CharacterMaterials, PlayerBundle},
+    character::{
+        CharacterBundle, CharacterMaterials, PlayerBundle, PlayerState, PLAYER_SPAWN_STATE_LABEL,
+    },
     network::NETWORK_HANDLE_LABEL,
     ui::nameplate::{setup_nameplate, NameplateMaterials},
 };
@@ -18,7 +20,10 @@ pub fn spawn_characters(
     time: Res<Time>,
     character_materials: Res<CharacterMaterials>,
     nameplate_materials: Res<NameplateMaterials>,
+
     mut spawn_reader: EventReader<SpawnCharacter>,
+
+    mut player_state: ResMut<State<PlayerState>>,
     mut commands: Commands,
 ) {
     for spawn_event in spawn_reader.iter() {
@@ -29,9 +34,14 @@ pub fn spawn_characters(
 
         let character_bundle = CharacterBundle::new(transform, common_bundle, &character_materials);
         let id = if spawn_event.player() {
+            info!("spawned player");
             let player_bundle = PlayerBundle::new(character_bundle);
+            player_state
+                .set(PlayerState::Spawned)
+                .expect("this can't happen twice");
             commands.spawn_bundle(player_bundle).id()
         } else {
+            info!("spawned character");
             commands.spawn_bundle(character_bundle).id()
         };
         setup_nameplate(id, &nameplate_materials, &mut commands);
@@ -47,6 +57,8 @@ impl Plugin for SpawnPlugin {
             .label(SPAWN_CHARACTER_LABEL)
             // NETWORK_HANDLE_LABEL writes SpawnCharacter events.
             .after(NETWORK_HANDLE_LABEL)
+            // PLAYER_SPAWN_STATE_LABEL sets PlayerSpawned state
+            .after(PLAYER_SPAWN_STATE_LABEL)
             .with_system(spawn_characters.system());
 
         app.add_event::<SpawnCharacter>().add_system_set(spawner);

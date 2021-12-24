@@ -22,7 +22,7 @@ use crate::{
     character::PlayerState,
     input_mapping::{PlayerInputCommand, INPUT_TO_CHARACTER_LABEL},
     spawning::SPAWN_CHARACTER_LABEL,
-    state::ClientState,
+    state::{ClientState, StateTransition},
     Opt,
 };
 
@@ -46,31 +46,38 @@ impl GameServer {
 
 fn request_arena_entry(mut net: ResMut<NetworkResource>, opts: Res<Opt>) {
     info!("sending arena permit");
-    let message = ClientMessage::Permit(ArenaPermit::new(
-        ArenaPasscode(opts.passcode),
-        CharacterClass::Medea,
-        CharacterTeam::Red,
-    ));
+    let message = ClientMessage::Permit(ArenaPermit {
+        passcode: ArenaPasscode(opts.passcode),
+        class: CharacterClass::Medea,
+        team: CharacterTeam::Red,
+    });
     net.broadcast_message(message);
 }
 
 pub fn handle_server_messages(
     mut net: ResMut<NetworkResource>,
+
     mut spawn_writer: EventWriter<SpawnCharacter>,
+
     mut motion_writer: EventWriter<CharacterNetworkCommand<Motion>>,
     mut target_writer: EventWriter<CharacterNetworkCommand<Target>>,
     mut action_writer: EventWriter<CharacterNetworkCommand<Action>>,
     mut focal_angle_writer: EventWriter<CharacterNetworkCommand<FocalAngle>>,
+
     mut reconcile_writer: EventWriter<Reconcile>,
+
+    mut transition: EventWriter<StateTransition>,
 ) {
     for (_, connection) in net.connections.iter_mut() {
         let channels = connection.channels().unwrap();
 
         while let Some(server_message) = channels.recv::<ServerMessage>() {
             match server_message {
-                ServerMessage::ArenaPasscodeAck => {}
                 ServerMessage::GameCommand(command) => match command {
                     GameCommand::SpawnCharacter(spawn) => spawn_writer.send(spawn),
+                    GameCommand::Setup(setup) => {
+                        transition.send(StateTransition::Connected { setup })
+                    }
                 },
                 ServerMessage::CharacterCommand(command) => match command {
                     CharacterCommand::Motion(motion) => motion_writer.send(motion),
@@ -123,51 +130,8 @@ fn player_input_to_network<Value>(
 
 pub struct NetworkPlugin;
 
-pub const CHARACTER_NETWORK_COMMAND_LABEL: &str = "broadcast-inputs";
-
-pub struct CharacterNetworkCommandPlugin<T> {
-    _command: PhantomData<T>,
-}
-
-impl<T> CharacterNetworkCommandPlugin<T> {
-    pub fn new() -> Self {
-        Self {
-            _command: PhantomData,
-        }
-    }
-}
-
 pub fn startup(mut net: ResMut<NetworkResource>, game_server: Res<GameServer>) {
     net.connect(game_server.address());
-}
-
-pub const NETWORK_TO_ENTITY_LABEL: &str = "network-to-entity";
-
-impl<T> Plugin for CharacterNetworkCommandPlugin<T>
-where
-    T: Send + Sync + 'static,
-    T: Clone,
-    T: Into<ClientMessage>,
-{
-    fn build(&self, app: &mut AppBuilder) {
-        let broadcast_inputs = SystemSet::on_update(PlayerState::Spawned)
-            .label(CHARACTER_NETWORK_COMMAND_LABEL)
-            // INPUT_TO_CHARACTER_LABEL sends PlayerInputCommand<Value> events
-            .after(INPUT_TO_CHARACTER_LABEL)
-            .with_system(player_input_to_network::<T>.system());
-
-        let network_to_entity = SystemSet::on_update(ClientState::Arena)
-            .label(NETWORK_TO_ENTITY_LABEL)
-            // NETWORK_HANDLE_LABEL sends CharacterNetworkCommand<Value> events
-            .after(NETWORK_HANDLE_LABEL)
-            // CHARACTER_COMMANDS reads CharacterEntityCommand<Value> events
-            .before(CHARACTER_COMMANDS)
-            .with_system(network_to_entity_command::<T>.system());
-
-        app.add_event::<CharacterNetworkCommand<T>>()
-            .add_system_set(broadcast_inputs)
-            .add_system_set(network_to_entity);
-    }
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
@@ -176,9 +140,15 @@ pub enum NetworkConnectivity {
     Disconnected,
 }
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub enum NetworkingState {
+    Active,
+    Sleep,
+}
+
 impl Plugin for NetworkPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let setup = SystemSet::on_enter(ClientState::Arena)
+        let setup = SystemSet::on_enter(ClientState::Connecting)
             .label(NETWORK_SETUP_LABEL)
             .with_system(startup.system())
             .with_system(network_setup.system());
@@ -188,7 +158,7 @@ impl Plugin for NetworkPlugin {
         let send_passcode = SystemSet::on_enter(NetworkConnectivity::Connected)
             .with_system(request_arena_entry.system());
 
-        let handle_server_message = SystemSet::on_update(ClientState::Arena)
+        let handle_server_message = SystemSet::on_update(NetworkingState::Active)
             .label(NETWORK_HANDLE_LABEL)
             // NETWORK_TO_ENTITY_LABEL reads CharacterNetworkCommand<Value> events
             .before(NETWORK_TO_ENTITY_LABEL)
@@ -198,6 +168,7 @@ impl Plugin for NetworkPlugin {
             .with_system(handle_connects.system());
 
         app.add_state(NetworkConnectivity::Disconnected)
+            .add_state(NetworkingState::Sleep)
             .add_plugin(NetworkingPlugin::default())
             .add_plugin(CharacterNetworkCommandPlugin::<Motion>::new())
             .add_plugin(CharacterNetworkCommandPlugin::<Target>::new())

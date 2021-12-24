@@ -88,7 +88,7 @@ fn main() {
 fn state_transition(
     time: Res<Time>,
     app_state: Res<State<ClientState>>,
-    mut transition_writer: EventWriter<StateTransitionEvent>,
+    mut transition_writer: EventWriter<StateTransition>,
     settings: Res<Opt>,
 ) {
     let duration = time.time_since_startup();
@@ -100,10 +100,10 @@ fn state_transition(
     let ip_address = find_my_ip_address().expect("can't find ip address");
     let server = SocketAddr::new(ip_address, SERVER_PORT);
 
-    if *app_state.current() != ClientState::Arena {
-        // transition_writer.send(StateTransitionEvent::ToArena {
+    if *app_state.current() == ClientState::Splash {
+        // transition_writer.send(StateTransition::ToArena {
         //     server: settings.server,
         // });
-        transition_writer.send(StateTransitionEvent::ToArena { server });
+        transition_writer.send(StateTransition::Connect { server });
     }
 }

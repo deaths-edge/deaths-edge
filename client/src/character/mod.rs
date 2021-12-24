@@ -58,9 +58,9 @@ impl Plugin for CharacterPlugin {
             .with_system(reconcile.system());
         app.add_system_set(reconcile)
             .add_event::<Reconcile>()
-            .add_plugin(CharacterEntityCommandPlugin::new(PlayerState::Spawned))
+            .add_plugin(CharacterEntityCommandPlugin::new(ClientState::Arena))
             .add_plugin(CharacterMaterialPlugin)
             .add_plugin(PlayerPlugin)
-            .add_plugin(CastingPlugin::new(PlayerState::Spawned));
+            .add_plugin(CastingPlugin::new(ClientState::Arena));
     }
 }

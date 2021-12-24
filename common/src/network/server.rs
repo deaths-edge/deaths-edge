@@ -1,13 +1,15 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::character::{Action, CharacterClass, CharacterIndex, FocalAngle, Motion, Target};
+use crate::{
+    character::{Action, CharacterClass, CharacterIndex, FocalAngle, Motion, Target},
+    environment::Map,
+};
 
 use super::CharacterNetworkCommand;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum ServerMessage {
-    ArenaPasscodeAck,
     GameCommand(GameCommand),
     CharacterCommand(CharacterCommand),
     Reconcile(Reconcile),
@@ -51,9 +53,15 @@ impl From<CharacterNetworkCommand<FocalAngle>> for CharacterCommand {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize, Hash, PartialEq, Eq, Clone)]
+pub struct ArenaSetup {
+    pub map: Map,
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum GameCommand {
     SpawnCharacter(SpawnCharacter),
+    Setup(ArenaSetup),
 }
 
 impl ServerMessage {
