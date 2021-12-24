@@ -10,7 +10,7 @@ pub use reconcile::*;
 
 use common::{
     character::{
-        CastingPlugin, CharacterBundle as CommonCharacterBundle, CharacterEntityCommandPlugin,
+        CharacterBundle as CommonCharacterBundle, CharacterPlugin as CommonCharacterPlugin,
     },
     network::server::Reconcile,
 };
@@ -58,9 +58,10 @@ impl Plugin for CharacterPlugin {
             .with_system(reconcile.system());
         app.add_system_set(reconcile)
             .add_event::<Reconcile>()
-            .add_plugin(CharacterEntityCommandPlugin::new(ClientState::Arena))
             .add_plugin(CharacterMaterialPlugin)
             .add_plugin(PlayerPlugin)
-            .add_plugin(CastingPlugin::new(ClientState::Arena));
+            .add_plugin(CommonCharacterPlugin {
+                state: ClientState::Arena,
+            });
     }
 }

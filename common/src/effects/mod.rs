@@ -31,7 +31,7 @@ where
 {
     fn build(&self, app: &mut AppBuilder) {
         let system_set = SystemSet::on_update(self.state)
-            .label("effects")
+            .label(EFFECTS_LABEL)
             .with_system(damage_effect_apply.system())
             .with_system(health_effect_apply.system())
             .with_system(interrupt_effect_apply.system());

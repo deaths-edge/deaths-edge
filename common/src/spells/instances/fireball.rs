@@ -7,8 +7,6 @@ use crate::{
     spells::*,
 };
 
-use super::SpellMaterials;
-
 #[derive(Error, Debug)]
 pub enum FireballActionError {
     #[error("global cooldown")]
@@ -87,9 +85,6 @@ pub struct FireballBundle {
     spell_marker: SpellMarker,
     projectile_marker: SpellProjectileMarker,
 
-    #[bundle]
-    sprite: SpriteBundle,
-
     rigid_body: RigidBody,
     collision_shape: CollisionShape,
     velocity: Velocity,
@@ -100,26 +95,13 @@ pub struct FireballBundle {
 }
 
 impl FireballBundle {
-    pub fn new(
-        transform: Transform,
-        source: SpellSource,
-        target: SpellTarget,
-        speed_multiplier: f32,
-        materials: &SpellMaterials,
-    ) -> Self {
+    pub fn new(source: SpellSource, target: SpellTarget, speed_multiplier: f32) -> Self {
         const FIREBALL_SPEED: f32 = 300.;
         const FIREBALL_SIZE: f32 = 15.;
 
         Self {
             spell_marker: SpellMarker::Fireball,
             projectile_marker: SpellProjectileMarker,
-
-            sprite: SpriteBundle {
-                material: materials.fireball_material.clone(),
-                sprite: Sprite::new(Vec2::new(FIREBALL_SIZE, FIREBALL_SIZE)),
-                transform,
-                ..Default::default()
-            },
 
             source,
             target,

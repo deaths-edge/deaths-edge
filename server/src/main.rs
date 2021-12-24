@@ -12,7 +12,7 @@ use bevy::{
 };
 
 use common::{
-    character::{CharacterClass, CharacterEntityCommandPlugin, CharacterTeam},
+    character::{CharacterClass, CharacterEntityCommandPlugin, CharacterPlugin, CharacterTeam},
     game::{ArenaPasscode, ArenaPermit, GameRoster},
     heron::PhysicsPlugin,
 };
@@ -48,7 +48,7 @@ fn main() {
         .add_plugins(MinimalPlugins)
         .add_plugin(LogPlugin)
         .add_plugin(ScheduleRunnerPlugin::default())
-        .add_plugin(CharacterEntityCommandPlugin::new(ServerState))
+        .add_plugin(CharacterPlugin { state: ServerState })
         .add_plugin(NetworkServerPlugin)
         .add_plugin(StateTransitionPlugin)
         .add_plugin(PhysicsPlugin::default())

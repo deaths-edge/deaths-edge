@@ -9,12 +9,12 @@ use crate::{
     music::SplashMusicPlugin,
     network::{GameServer, NetworkingState},
     spawning::SpawnPlugin,
+    spells::SpellPlugin,
     ui::{splash::SplashUIPlugin, UIPlugins},
 };
 
 use common::{
-    effects::EffectPlugin, heron::PhysicsPlugin, network::server::ArenaSetup, spells::SpellPlugin,
-    state::ArenaState,
+    effects::EffectPlugin, heron::PhysicsPlugin, network::server::ArenaSetup, state::ArenaState,
 };
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
@@ -103,7 +103,7 @@ impl Plugin for ArenaPlugin {
             .add_plugins(UIPlugins)
             .add_plugin(SpawnPlugin)
             .add_plugin(InputMapPlugin)
-            .add_plugin(SpellPlugin::new(ClientState::Arena))
+            .add_plugin(SpellPlugin)
             .add_plugin(EffectPlugin::new(ClientState::Arena))
             .add_plugin(PhysicsPlugin::default())
             .add_plugin(GameCameraPlugin)

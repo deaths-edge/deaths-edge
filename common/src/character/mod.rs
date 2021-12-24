@@ -11,6 +11,8 @@ mod speed_multiplier;
 mod target;
 mod team;
 
+use std::{fmt::Debug, hash::Hash};
+
 use bevy::prelude::*;
 use heron::prelude::*;
 
@@ -77,8 +79,8 @@ impl CharacterBundle {
             rotational_constraints: RotationConstraints::lock(),
 
             power: CharacterPower {
-                current: 0,
-                total: 100,
+                current: 0.,
+                total: 100.,
             },
             health: CharacterHealth {
                 current: 75,
@@ -95,5 +97,22 @@ impl CharacterBundle {
 
     pub fn class(&self) -> CharacterClass {
         self.class
+    }
+}
+
+pub struct CharacterPlugin<T> {
+    pub state: T,
+}
+
+impl<T> Plugin for CharacterPlugin<T>
+where
+    T: Send + Sync + 'static,
+    T: Clone + Copy + Eq + Hash + Debug,
+{
+    fn build(&self, app: &mut AppBuilder) {
+        let regenerate = SystemSet::on_update(self.state).with_system(regenerate_power.system());
+        app.add_system_set(regenerate)
+            .add_plugin(CastingPlugin::new(self.state))
+            .add_plugin(CharacterEntityCommandPlugin::new(self.state));
     }
 }

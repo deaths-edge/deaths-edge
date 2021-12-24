@@ -4,7 +4,7 @@ use bevy::{core::Time, prelude::*, utils::Instant};
 use heron::rapier_plugin::PhysicsWorld;
 
 use super::CharacterMarker;
-use crate::spells::{check_in_front, check_line_of_sight, instances::SpellMaterials, SpellCast};
+use crate::spells::{check_in_front, check_line_of_sight, SpellCast};
 
 #[derive(Default, Debug)]
 pub struct CharacterCastState {
@@ -43,25 +43,23 @@ impl CharacterCast {
 }
 
 fn complete_casting(
-    mut cast_query: Query<(Entity, &Transform, &mut CharacterCastState)>,
+    mut cast_query: Query<(&Transform, &mut CharacterCastState)>,
     target_query: Query<&Transform, With<CharacterMarker>>,
-
-    mut commands: Commands,
 
     physics_world: PhysicsWorld,
 
     time: Res<Time>,
-    spell_materials: Res<SpellMaterials>,
+
+    mut spell_writer: EventWriter<SpellCast>,
 ) {
     let last_update = time.last_update().expect("last update not found");
-    for (character_entity, character_transform, mut cast_state) in
-        cast_query.iter_mut().filter(|(_, _, cast_state)| {
-            cast_state
-                .cast()
-                .map(|cast| cast.is_complete(last_update))
-                .unwrap_or_default()
-        })
-    {
+
+    for (character_transform, mut cast_state) in cast_query.iter_mut().filter(|(_, cast_state)| {
+        cast_state
+            .cast()
+            .map(|cast| cast.is_complete(last_update))
+            .unwrap_or_default()
+    }) {
         tracing::info!(message = "cast completed", ?cast_state);
         let cast = cast_state.stop_cast().expect("checked valid");
 
@@ -93,12 +91,8 @@ fn complete_casting(
             }
         }
 
-        cast.spell.spawn_bundle(
-            character_entity,
-            character_transform,
-            &mut commands,
-            &spell_materials,
-        )
+        // TODO: Send batch
+        spell_writer.send(cast.spell);
     }
 }
 
@@ -122,6 +116,6 @@ where
         let casting_system = SystemSet::on_update(self.state)
             .label(CASTING_LABEL)
             .with_system(complete_casting.system());
-        app.add_system_set(casting_system);
+        app.add_event::<SpellCast>().add_system_set(casting_system);
     }
 }

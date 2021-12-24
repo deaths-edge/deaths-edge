@@ -5,6 +5,7 @@ mod input_mapping;
 mod music;
 mod network;
 mod spawning;
+mod spells;
 mod state;
 mod ui;
 mod window;
@@ -27,6 +28,38 @@ pub struct Opt {
     server: SocketAddr,
     #[structopt(short, long, default_value = "1234")]
     passcode: u64,
+}
+
+// pub fn save_schedule_graph(app: &mut AppBuilder) -> Result<(), io::Error> {
+//     const PATH: &str = "./schedule.dot";
+
+//     let mut schedule_graph = File::create(PATH)?;
+//     schedule_graph.write(schedule_graph_dot(&app.app.schedule).as_bytes())?;
+
+//     Ok(())
+// }
+
+fn state_transition(
+    time: Res<Time>,
+    app_state: Res<State<ClientState>>,
+    mut transition_writer: EventWriter<StateTransition>,
+    settings: Res<Opt>,
+) {
+    let duration = time.time_since_startup();
+
+    if duration < Duration::from_secs(3) {
+        return;
+    }
+
+    let ip_address = find_my_ip_address().expect("can't find ip address");
+    let server = SocketAddr::new(ip_address, SERVER_PORT);
+
+    if *app_state.current() == ClientState::Splash {
+        // transition_writer.send(StateTransition::ToArena {
+        //     server: settings.server,
+        // });
+        transition_writer.send(StateTransition::Connect { server });
+    }
 }
 
 fn main() {
@@ -74,36 +107,4 @@ fn main() {
     // save_schedule_graph(&mut app).expect("failed to save schedule graph");
 
     app.run();
-}
-
-// pub fn save_schedule_graph(app: &mut AppBuilder) -> Result<(), io::Error> {
-//     const PATH: &str = "./schedule.dot";
-
-//     let mut schedule_graph = File::create(PATH)?;
-//     schedule_graph.write(schedule_graph_dot(&app.app.schedule).as_bytes())?;
-
-//     Ok(())
-// }
-
-fn state_transition(
-    time: Res<Time>,
-    app_state: Res<State<ClientState>>,
-    mut transition_writer: EventWriter<StateTransition>,
-    settings: Res<Opt>,
-) {
-    let duration = time.time_since_startup();
-
-    if duration < Duration::from_secs(3) {
-        return;
-    }
-
-    let ip_address = find_my_ip_address().expect("can't find ip address");
-    let server = SocketAddr::new(ip_address, SERVER_PORT);
-
-    if *app_state.current() == ClientState::Splash {
-        // transition_writer.send(StateTransition::ToArena {
-        //     server: settings.server,
-        // });
-        transition_writer.send(StateTransition::Connect { server });
-    }
 }

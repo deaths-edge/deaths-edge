@@ -1,5 +1,5 @@
 mod fireball;
-mod materials;
+mod spear;
 
 pub use fireball::*;
-pub use materials::*;
+pub use spear::*;

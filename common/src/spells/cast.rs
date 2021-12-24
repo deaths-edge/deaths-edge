@@ -2,8 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use super::{instances::SpellMaterials, SpellSource, SpellTarget};
-use crate::spells::instances::FireballBundle;
+use super::{SpellSource, SpellTarget};
 
 #[derive(Debug)]
 pub enum SpellCast {
@@ -33,24 +32,6 @@ impl SpellCast {
                 target,
                 requires_fov: true,
             }),
-        }
-    }
-
-    pub fn spawn_bundle(
-        &self,
-        _parent_entity: Entity,
-        transform: &Transform,
-        commands: &mut Commands,
-        materials: &SpellMaterials,
-    ) {
-        use SpellCast::*;
-
-        match self {
-            Fireball { source, target } => {
-                commands.spawn_bundle(FireballBundle::new(
-                    *transform, *source, *target, 1.0, materials,
-                ));
-            }
         }
     }
 }
