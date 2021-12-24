@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Debug, Clone, Copy)]
-pub struct SpellSource(Entity);
+pub struct SpellSource(pub Entity);
 
 impl From<Entity> for SpellSource {
     fn from(value: Entity) -> Self {

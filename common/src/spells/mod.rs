@@ -1,4 +1,3 @@
-mod cast;
 mod impact;
 mod index;
 pub mod instances;
@@ -8,12 +7,11 @@ mod source;
 mod target;
 mod utilities;
 
-use std::{fmt::Debug, hash::Hash};
+use std::{fmt::Debug, hash::Hash, time::Duration};
 
 use bevy::prelude::*;
 use heron::{prelude::*, rapier_plugin::PhysicsWorld};
 
-pub use cast::*;
 pub use impact::*;
 pub use marker::*;
 pub use projectiles::*;
@@ -22,6 +20,38 @@ pub use target::*;
 pub use utilities::*;
 
 use crate::character::{CharacterMarker, LastCastInstant};
+
+#[derive(Debug)]
+pub enum Spell {
+    Fireball {
+        source: SpellSource,
+        target: SpellTarget,
+    },
+}
+
+pub struct SpellTargeting<'a> {
+    pub target: &'a SpellTarget,
+    pub requires_fov: bool,
+}
+
+impl Spell {
+    pub fn duration(&self) -> Duration {
+        use Spell::*;
+
+        match self {
+            Fireball { .. } => Duration::from_secs(1),
+        }
+    }
+
+    pub fn targeting(&self) -> Option<SpellTargeting<'_>> {
+        match self {
+            Spell::Fireball { target, .. } => Some(SpellTargeting {
+                target,
+                requires_fov: true,
+            }),
+        }
+    }
+}
 
 pub struct SpellPlugin<T> {
     state: T,

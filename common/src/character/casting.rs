@@ -4,7 +4,7 @@ use bevy::{core::Time, prelude::*, utils::Instant};
 use heron::rapier_plugin::PhysicsWorld;
 
 use super::CharacterMarker;
-use crate::spells::{check_in_front, check_line_of_sight, SpellCast};
+use crate::spells::{check_in_front, check_line_of_sight, Spell};
 
 #[derive(Default, Debug)]
 pub struct CharacterCastState {
@@ -29,11 +29,11 @@ impl CharacterCastState {
 #[derive(Debug)]
 pub struct CharacterCast {
     pub start: Instant,
-    pub spell: SpellCast,
+    pub spell: Spell,
 }
 
 impl CharacterCast {
-    pub fn new(start: Instant, spell: SpellCast) -> Self {
+    pub fn new(start: Instant, spell: Spell) -> Self {
         Self { start, spell }
     }
 
@@ -50,7 +50,7 @@ fn complete_casting(
 
     time: Res<Time>,
 
-    mut spell_writer: EventWriter<SpellCast>,
+    mut spell_writer: EventWriter<Spell>,
 ) {
     let last_update = time.last_update().expect("last update not found");
 
@@ -116,6 +116,6 @@ where
         let casting_system = SystemSet::on_update(self.state)
             .label(CASTING_LABEL)
             .with_system(complete_casting.system());
-        app.add_event::<SpellCast>().add_system_set(casting_system);
+        app.add_event::<Spell>().add_system_set(casting_system);
     }
 }

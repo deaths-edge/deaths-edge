@@ -37,20 +37,7 @@ fn state_transitions(
 
     mut commands: Commands,
 ) {
-    if let Some(event) = transition_events.iter().next() {
-        // match event {
-        //     StateTransition::Setup { roster } => {
-        //         if *app_state.current() == ServerState::Idle {
-        //             info!(message = "inserting roster", ?roster);
-        //             commands.insert_resource(roster.clone());
-        //             app_state.set(ServerState::Running).expect("double set");
-        //             spawning_state
-        //                 .set(ArenaState::Waiting)
-        //                 .expect("couldn't set spawning state");
-        //         }
-        //     }
-        // }
-    }
+    if let Some(event) = transition_events.iter().next() {}
 }
 
 pub struct RunningPlugin;

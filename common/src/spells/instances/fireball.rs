@@ -70,7 +70,7 @@ pub fn fireball_action(
 
     check_in_front(character_transform, target_transform.translation)?;
 
-    let spell = SpellCast::Fireball {
+    let spell = Spell::Fireball {
         source: SpellSource::from(character_entity),
         target: target_entity.into(),
     };
@@ -94,11 +94,11 @@ pub struct FireballBundle {
     // TODO: Maybe include effect here?
 }
 
+pub const FIREBALL_SPEED: f32 = 300.;
+pub const FIREBALL_SIZE: f32 = 15.;
+
 impl FireballBundle {
     pub fn new(source: SpellSource, target: SpellTarget, speed_multiplier: f32) -> Self {
-        const FIREBALL_SPEED: f32 = 300.;
-        const FIREBALL_SIZE: f32 = 15.;
-
         Self {
             spell_marker: SpellMarker::Fireball,
             projectile_marker: SpellProjectileMarker,

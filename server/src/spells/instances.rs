@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::spells::instances::FireballBundle as CommonFireballBundle;
+use common::spells::instances::FireballBundle as CommonFireballBundle;
 
 #[derive(Bundle)]
 pub struct FireballBundle {

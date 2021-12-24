@@ -1,6 +1,7 @@
 mod character;
 mod network;
 mod spawning;
+mod spells;
 mod state;
 
 use std::time::Duration;
