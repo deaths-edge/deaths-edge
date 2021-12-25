@@ -1,10 +1,12 @@
 mod authorize;
-mod create;
+mod create_account;
+mod create_team;
 pub mod models;
 mod setup;
 
 use authorize::authorize;
-use create::create;
+use create_account::create_account;
+use create_team::create_team;
 
 use tower::ServiceBuilder;
 use tracing::{info, warn};
@@ -66,7 +68,8 @@ async fn main() {
     }
     let app = Router::new()
         .route("/authorize", post(authorize))
-        .route("/create", post(create))
+        .route("/create_account", post(create_account))
+        .route("/create_team", post(create_team))
         .layer(ServiceBuilder::new().layer(AddExtensionLayer::new(conn)));
 
     let server_addr: SocketAddr = format!("{}:{}", host, port)

@@ -34,7 +34,7 @@ impl IntoResponse for CreateError {
 
 pub struct CreateError(DbErr);
 
-pub async fn create(
+pub async fn create_account(
     Json(payload): Json<CreatePayload>,
     Extension(ref conn): Extension<DatabaseConnection>,
 ) -> Result<(), CreateError> {
