@@ -61,7 +61,6 @@ pub fn player_select(
 }
 
 pub const PLAYER_ACTIONS_LABEL: &str = "player-actions";
-pub const PLAYER_SPAWN_STATE_LABEL: &str = "player-spawn-state";
 
 pub struct PlayerPlugin;
 

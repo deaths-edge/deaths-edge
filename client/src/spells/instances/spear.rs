@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use common::{
     effects::{DamageEffect, EffectMarker},
-    spells::instances::{CommonSpearBundle, SpearEffect, ToEffect, FIREBALL_SIZE},
+    spells::instances::{CommonSpearBundle, SpearEffect, ToEffect, SPEAR_SIZE},
 };
 
 use crate::spells::SpellMaterials;
@@ -24,7 +24,7 @@ impl SpearBundle {
         Self {
             common,
             sprite: SpriteBundle {
-                sprite: Sprite::new(Vec2::new(FIREBALL_SIZE, FIREBALL_SIZE)),
+                sprite: Sprite::new(Vec2::new(SPEAR_SIZE.0, SPEAR_SIZE.1)),
                 material: materials.fireball_material.clone(),
                 transform,
                 ..Default::default()

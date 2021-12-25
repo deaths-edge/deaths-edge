@@ -27,7 +27,7 @@ fn main() {
     let permits = [
         ArenaPermit {
             passcode: ArenaPasscode(1234),
-            class: CharacterClass::Medea,
+            class: CharacterClass::Mars,
             team: CharacterTeam::Red,
         },
         ArenaPermit {

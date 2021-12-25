@@ -6,9 +6,7 @@ use common::{
 };
 
 use crate::{
-    character::{
-        CharacterBundle, CharacterMaterials, PlayerBundle, PlayerState, PLAYER_SPAWN_STATE_LABEL,
-    },
+    character::{CharacterBundle, CharacterMaterials, PlayerBundle, PlayerState},
     network::NETWORK_HANDLE_LABEL,
     ui::nameplate::{setup_nameplate, NameplateMaterials},
 };
@@ -57,8 +55,6 @@ impl Plugin for SpawnPlugin {
             .label(SPAWN_CHARACTER_LABEL)
             // NETWORK_HANDLE_LABEL writes SpawnCharacter events.
             .after(NETWORK_HANDLE_LABEL)
-            // PLAYER_SPAWN_STATE_LABEL sets PlayerSpawned state
-            .after(PLAYER_SPAWN_STATE_LABEL)
             .with_system(spawn_characters.system());
 
         app.add_event::<SpawnCharacter>().add_system_set(spawner);

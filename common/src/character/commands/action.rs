@@ -7,7 +7,7 @@ use crate::{
     character::{
         CharacterCastState, CharacterClass, CharacterMarker, CharacterTarget, LastCastInstant,
     },
-    spells::instances::fireball_action,
+    spells::instances::{fireball_action, spear_action},
 };
 
 use super::CharacterEntityCommand;
@@ -60,7 +60,25 @@ pub fn character_action(
 
         let action = command.command();
         match character_class {
-            CharacterClass::Mars => {}
+            CharacterClass::Mars => match action {
+                Action::Action1 => {
+                    let result = spear_action(
+                        &time,
+                        &physics_world,
+                        last_cast_instant,
+                        character_entity,
+                        character_transform,
+                        character_target,
+                        &mut character_cast_state,
+                        &target_query,
+                    );
+
+                    if let Err(error) = result {
+                        warn!(message = "failed to cast fireball", %error)
+                    }
+                }
+                _ => todo!(),
+            },
             CharacterClass::Medea => match action {
                 Action::Action1 => {
                     let result = fireball_action(
@@ -78,13 +96,7 @@ pub fn character_action(
                         warn!(message = "failed to cast fireball", %error)
                     }
                 }
-                Action::Action2 => todo!(),
-                Action::Action3 => todo!(),
-                Action::Action4 => todo!(),
-                Action::Action5 => todo!(),
-                Action::Action6 => todo!(),
-                Action::Action7 => todo!(),
-                Action::Action8 => todo!(),
+                _ => todo!(),
             },
             CharacterClass::Heka => {}
             CharacterClass::Pluto => {}

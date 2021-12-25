@@ -68,10 +68,7 @@ where
     Ok(())
 }
 
-fn handle_connects(
-    mut net: ResMut<NetworkResource>,
-    mut network_reader: EventReader<NetworkEvent>,
-) {
+fn handle_connects(mut network_reader: EventReader<NetworkEvent>) {
     for event in network_reader.iter() {
         info!(message = "received network event", ?event);
         match event {
