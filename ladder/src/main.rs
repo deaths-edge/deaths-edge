@@ -1,13 +1,17 @@
 mod authorize;
+mod create;
 pub mod models;
 mod setup;
 
 use authorize::authorize;
+use create::create;
+
+use tower::ServiceBuilder;
 use tracing::{info, warn};
 
-use std::{env, net::SocketAddr, time::Duration};
+use std::{env, net::SocketAddr};
 
-use axum::{routing::post, Router};
+use axum::{routing::post, AddExtensionLayer, Router};
 use sea_orm::Database;
 
 // async fn ws_handler(
@@ -60,7 +64,10 @@ async fn main() {
     if let Err(err) = setup::setup(&conn).await {
         warn!(error = %err);
     }
-    let app = Router::new().route("/authorize", post(authorize));
+    let app = Router::new()
+        .route("/authorize", post(authorize))
+        .route("/create", post(create))
+        .layer(ServiceBuilder::new().layer(AddExtensionLayer::new(conn)));
 
     let server_addr: SocketAddr = format!("{}:{}", host, port)
         .parse()

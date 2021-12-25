@@ -6,7 +6,12 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub id: u32,
 
+    #[sea_orm(unique)]
     pub name: String,
+
+    pub username: String,
+    // TODO: Obviously don't store plaintext
+    pub password: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

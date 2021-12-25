@@ -1,8 +1,8 @@
-use sea_orm::{ConnectionTrait, DbConn, DbErr, Schema};
+use sea_orm::{ConnectionTrait, DatabaseConnection, DbErr, Schema};
 
 use crate::models::*;
 
-pub async fn setup(db: &DbConn) -> Result<(), DbErr> {
+pub async fn setup(db: &DatabaseConnection) -> Result<(), DbErr> {
     let builder = db.get_database_backend();
     let schema = Schema::new(builder);
 
