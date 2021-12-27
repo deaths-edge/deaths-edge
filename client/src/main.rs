@@ -55,10 +55,8 @@ fn state_transition(
     let server = SocketAddr::new(ip_address, SERVER_PORT);
 
     if *app_state.current() == ClientState::Splash {
-        // transition_writer.send(StateTransition::ToArena {
-        //     server: settings.server,
-        // });
-        transition_writer.send(StateTransition::Connect { server });
+        // transition_writer.send(StateTransition::Connect { server });
+        transition_writer.send(StateTransition::MainLobby);
     }
 }
 

@@ -98,9 +98,7 @@ pub fn character_action(
                 }
                 _ => todo!(),
             },
-            CharacterClass::Heka => {}
-            CharacterClass::Pluto => {}
-            CharacterClass::Mammon => {}
+            _ => todo!(),
         }
     }
 }

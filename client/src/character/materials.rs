@@ -5,9 +5,6 @@ use common::character::CharacterClass;
 pub struct CharacterMaterials {
     medea_material: Handle<ColorMaterial>,
     mars_material: Handle<ColorMaterial>,
-    pluto_material: Handle<ColorMaterial>,
-    mammon_material: Handle<ColorMaterial>,
-    heka_material: Handle<ColorMaterial>,
 }
 
 impl FromWorld for CharacterMaterials {
@@ -16,9 +13,6 @@ impl FromWorld for CharacterMaterials {
         Self {
             medea_material: materials.add(Color::rgb(0.15, 0.15, 0.15).into()),
             mars_material: materials.add(Color::rgb(0.15, 0.15, 0.15).into()),
-            pluto_material: materials.add(Color::rgb(0.15, 0.15, 0.15).into()),
-            mammon_material: materials.add(Color::rgb(0.15, 0.15, 0.15).into()),
-            heka_material: materials.add(Color::rgb(0.15, 0.15, 0.15).into()),
         }
     }
 }
@@ -29,9 +23,7 @@ impl CharacterMaterials {
         match class {
             Medea => &self.medea_material,
             Mars => &self.mars_material,
-            Pluto => &self.pluto_material,
-            Mammon => &self.mammon_material,
-            Heka => &self.heka_material,
+            _ => todo!(),
         }
     }
 }

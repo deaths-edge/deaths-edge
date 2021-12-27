@@ -10,7 +10,7 @@ use crate::{
     network::{GameServer, NetworkingState},
     spawning::SpawnPlugin,
     spells::SpellPlugin,
-    ui::{splash::SplashUIPlugin, UIPlugins},
+    ui::{splash::SplashUIPlugin, UIPlugin},
 };
 
 use common::{
@@ -46,6 +46,7 @@ impl Plugin for StateTransitionPlugin {
 
 #[derive(Debug)]
 pub enum StateTransition {
+    MainLobby,
     Connect { server: SocketAddr },
     Connected { setup: ArenaSetup },
 }
@@ -64,6 +65,11 @@ fn state_transitions(
     if let Some(event) = transition_events.iter().next() {
         info!(state_transition = ?event);
         match event {
+            StateTransition::MainLobby => {
+                app_state
+                    .set(ClientState::MainLobby)
+                    .expect("state transition failed");
+            }
             StateTransition::Connect { server } => {
                 app_state
                     .set(ClientState::Connecting)
@@ -100,7 +106,7 @@ impl Plugin for ArenaPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_state(ArenaState::Inactive)
             .add_plugin(CharacterPlugin)
-            .add_plugins(UIPlugins)
+            .add_plugin(UIPlugin)
             .add_plugin(SpawnPlugin)
             .add_plugin(InputMapPlugin)
             .add_plugin(SpellPlugin)

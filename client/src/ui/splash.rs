@@ -2,17 +2,7 @@ use bevy::prelude::*;
 
 use crate::state::ClientState;
 
-pub struct UIFonts {
-    splash: Handle<Font>,
-}
-
-impl FromWorld for UIFonts {
-    fn from_world(world: &mut World) -> Self {
-        let asset_server = world.get_resource::<AssetServer>().unwrap();
-        let splash = asset_server.load("fonts/Oswald-Regular.ttf");
-        Self { splash }
-    }
-}
+use super::UIFonts;
 
 pub struct SplashMaterials {
     background: Handle<ColorMaterial>,
@@ -91,8 +81,7 @@ pub struct SplashUIPlugin;
 impl Plugin for SplashUIPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let teardown = SystemSet::on_exit(ClientState::Splash).with_system(remove_splash.system());
-        app.init_resource::<UIFonts>()
-            .init_resource::<SplashMaterials>()
+        app.init_resource::<SplashMaterials>()
             .add_startup_system(setup_splash.system())
             .add_system_set(teardown);
     }
