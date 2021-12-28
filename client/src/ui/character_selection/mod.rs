@@ -151,7 +151,8 @@ impl Plugin for CharacterSelectionPlugin {
         let handle_clicks = SystemSet::on_update(ClientState::MainLobby)
             .label(HANDLE_SELECTION_CLICKS)
             .with_system(handle_click_left.system())
-            .with_system(handle_click_right.system());
+            .with_system(handle_click_right.system())
+            .with_system(handle_confirm_click.system());
 
         let character_class = SystemSet::on_update(ClientState::MainLobby)
             .with_system(character_text_changed.system());

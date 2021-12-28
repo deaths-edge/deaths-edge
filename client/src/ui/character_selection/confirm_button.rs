@@ -1,4 +1,9 @@
+use std::net::SocketAddr;
+
 use bevy::prelude::*;
+use common::network::{find_my_ip_address, SERVER_PORT};
+
+use crate::state::StateTransition;
 
 use super::CharacterSelectionMaterials;
 
@@ -27,6 +32,28 @@ impl CharacterConfirmButton {
                 material: materials.confirm_button.clone(),
                 ..Default::default()
             },
+        }
+    }
+}
+
+pub fn handle_confirm_click(
+    mut interaction_query: Query<
+        &Interaction,
+        (
+            Changed<Interaction>,
+            With<Button>,
+            With<CharacterConfirmButtonMarker>,
+        ),
+    >,
+    mut state_transition: EventWriter<StateTransition>,
+) {
+    for interaction in interaction_query.iter_mut() {
+        let ip_address = find_my_ip_address().expect("can't find ip address");
+        let server = SocketAddr::new(ip_address, SERVER_PORT);
+
+        match *interaction {
+            Interaction::Clicked => state_transition.send(StateTransition::Connect { server }),
+            _ => (),
         }
     }
 }

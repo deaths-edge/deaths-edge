@@ -51,11 +51,7 @@ fn state_transition(
         return;
     }
 
-    let ip_address = find_my_ip_address().expect("can't find ip address");
-    let server = SocketAddr::new(ip_address, SERVER_PORT);
-
     if *app_state.current() == ClientState::Splash {
-        // transition_writer.send(StateTransition::Connect { server });
         transition_writer.send(StateTransition::MainLobby);
     }
 }
