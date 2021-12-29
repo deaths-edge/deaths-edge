@@ -66,7 +66,7 @@ impl CharacterBundle {
             marker: CharacterMarker,
             class,
 
-            speed_modifier: CharacterSpeedMultiplier::from(1.),
+            speed_modifier: CharacterSpeedMultiplier(1.),
             rigid_body: RigidBody::Dynamic,
             collision_shape: CollisionShape::Cuboid {
                 half_extends: Vec2::new(size.width / 2., size.height / 2.).extend(0.),

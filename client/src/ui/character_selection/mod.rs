@@ -130,6 +130,14 @@ pub fn spawn_character_selection(
         });
 }
 
+fn despawn_character_selection(
+    query: Query<Entity, With<CharacterSelectionRootMarker>>,
+    mut commands: Commands,
+) {
+    let id = query.single().expect("character selection not found");
+    commands.entity(id).despawn_recursive();
+}
+
 fn character_text_changed(
     selected_char: Res<CharacterClass>,
     mut text_query: Query<&mut Text, With<CharacterSelectionTextMarker>>,
@@ -148,6 +156,9 @@ impl Plugin for CharacterSelectionPlugin {
         let spawn_ui = SystemSet::on_enter(ClientState::MainLobby)
             .with_system(spawn_character_selection.system());
 
+        let despawn_ui = SystemSet::on_exit(ClientState::MainLobby)
+            .with_system(despawn_character_selection.system());
+
         let handle_clicks = SystemSet::on_update(ClientState::MainLobby)
             .label(HANDLE_SELECTION_CLICKS)
             .with_system(handle_click_left.system())
@@ -160,6 +171,7 @@ impl Plugin for CharacterSelectionPlugin {
         app.insert_resource(CharacterClass::Heka)
             .init_resource::<CharacterSelectionMaterials>()
             .add_system_set(spawn_ui)
+            .add_system_set(despawn_ui)
             .add_system_set(handle_clicks)
             .add_system_set(character_class);
     }

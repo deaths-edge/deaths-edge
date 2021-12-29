@@ -1,13 +1,11 @@
 mod character_command;
 
-use std::{marker::PhantomData, net::SocketAddr};
+use std::net::SocketAddr;
 
 use bevy::prelude::*;
 
 use common::{
-    character::{
-        Action, CharacterClass, CharacterTeam, FocalAngle, Motion, Target, CHARACTER_COMMANDS,
-    },
+    character::{Action, CharacterClass, CharacterTeam, FocalAngle, Motion, Target},
     game::{ArenaPasscode, ArenaPermit},
     network::{
         client::ClientMessage,
@@ -43,11 +41,15 @@ impl GameServer {
     }
 }
 
-fn request_arena_entry(mut net: ResMut<NetworkResource>, opts: Res<Opt>) {
+fn request_arena_entry(
+    mut net: ResMut<NetworkResource>,
+    class: Res<CharacterClass>,
+    opts: Res<Opt>,
+) {
     info!("sending arena permit");
     let message = ClientMessage::Permit(ArenaPermit {
         passcode: ArenaPasscode(opts.passcode),
-        class: CharacterClass::Medea,
+        class: *class,
         team: CharacterTeam::Red,
     });
     net.broadcast_message(message);

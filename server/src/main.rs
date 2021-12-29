@@ -13,7 +13,7 @@ use bevy::{
 };
 
 use common::{
-    character::{CharacterClass, CharacterEntityCommandPlugin, CharacterPlugin, CharacterTeam},
+    character::{CharacterClass, CharacterPlugin, CharacterTeam},
     game::{ArenaPasscode, ArenaPermit, GameRoster},
     heron::PhysicsPlugin,
 };

@@ -19,8 +19,6 @@ pub struct ServerSpellTrigger;
 impl SpellTrigger for ServerSpellTrigger {
     fn trigger(this: &common::spells::SpellImpactEvent, world: &mut World) {
         use SpellMarker::*;
-        let mut spell_entity_mut = world.entity_mut(this.id);
-
         match this.spell_marker {
             Fireball => {
                 FireballBundle::process_spell(this.id, world);
