@@ -95,7 +95,7 @@ pub struct CommonSpearBundle {
 }
 
 pub const SPEAR_SPEED: f32 = 300.;
-pub const SPEAR_SIZE: (f32, f32) = (5., 20.);
+pub const SPEAR_SIZE: (f32, f32) = (30., 5.);
 
 impl CommonSpearBundle {
     pub fn new(source: SpellSource, target: SpellTarget, speed_multiplier: f32) -> Self {
