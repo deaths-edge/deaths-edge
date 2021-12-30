@@ -100,7 +100,7 @@ pub const SPEAR_SIZE: (f32, f32) = (5., 20.);
 impl CommonSpearBundle {
     pub fn new(source: SpellSource, target: SpellTarget, speed_multiplier: f32) -> Self {
         Self {
-            spell_marker: SpellMarker::Fireball,
+            spell_marker: SpellMarker::Spear,
             projectile_marker: SpellProjectileMarker,
 
             source,
