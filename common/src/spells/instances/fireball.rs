@@ -8,7 +8,7 @@ use crate::{
 };
 
 #[derive(Error, Debug)]
-pub enum FireballActionError {
+pub enum FireballAbilityError {
     #[error("global cooldown")]
     GlobalCooldown,
     #[error("no target")]
@@ -19,25 +19,25 @@ pub enum FireballActionError {
     LineOfSightObstruction,
 }
 
-impl From<GlobalCooldown> for FireballActionError {
+impl From<GlobalCooldown> for FireballAbilityError {
     fn from(_: GlobalCooldown) -> Self {
         Self::GlobalCooldown
     }
 }
 
-impl From<LineOfSightObstruction> for FireballActionError {
+impl From<LineOfSightObstruction> for FireballAbilityError {
     fn from(_: LineOfSightObstruction) -> Self {
         Self::LineOfSightObstruction
     }
 }
 
-impl From<OutOfFieldOfView> for FireballActionError {
+impl From<OutOfFieldOfView> for FireballAbilityError {
     fn from(value: OutOfFieldOfView) -> Self {
         Self::OutOfFieldOfView(value.0)
     }
 }
 
-pub fn fireball_action(
+pub fn fireball_ability(
     time: &Time,
     physics_world: &PhysicsWorld,
 
@@ -49,7 +49,7 @@ pub fn fireball_action(
     character_cast_state: &mut CharacterCastState,
 
     target_query: &Query<&Transform, With<CharacterMarker>>,
-) -> Result<(), FireballActionError> {
+) -> Result<(), FireballAbilityError> {
     check_global_cooldown(time, last_cast_instant)?;
 
     let start = time.last_update().expect("last update not found");
@@ -57,7 +57,7 @@ pub fn fireball_action(
     let target_entity = if let Some(some) = character_target.id() {
         some
     } else {
-        return Err(FireballActionError::NoTarget);
+        return Err(FireballAbilityError::NoTarget);
     };
 
     let target_transform = target_query.get(target_entity).expect("target not found");

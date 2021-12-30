@@ -2,25 +2,25 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    character::{Action, CharacterClass, CharacterIndex, FocalAngle, Motion, Target},
+    character::{Ability, CharacterClass, CharacterIndex, FocalAngle, Motion, Target},
     environment::Map,
 };
 
-use super::CharacterNetworkCommand;
+use super::CharacterNetworkAction;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum ServerMessage {
-    GameCommand(GameCommand),
-    CharacterCommand(CharacterCommand),
+    GameAction(GameAction),
+    CharacterAction(CharacterAction),
     Reconcile(Reconcile),
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub enum CharacterCommand {
-    Motion(CharacterNetworkCommand<Motion>),
-    Target(CharacterNetworkCommand<Target>),
-    Action(CharacterNetworkCommand<Action>),
-    FocalAngle(CharacterNetworkCommand<FocalAngle>),
+pub enum CharacterAction {
+    Motion(CharacterNetworkAction<Motion>),
+    Target(CharacterNetworkAction<Target>),
+    Ability(CharacterNetworkAction<Ability>),
+    FocalAngle(CharacterNetworkAction<FocalAngle>),
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -29,26 +29,26 @@ pub struct Reconcile {
     pub position: Vec2,
 }
 
-impl From<CharacterNetworkCommand<Motion>> for CharacterCommand {
-    fn from(value: CharacterNetworkCommand<Motion>) -> Self {
+impl From<CharacterNetworkAction<Motion>> for CharacterAction {
+    fn from(value: CharacterNetworkAction<Motion>) -> Self {
         Self::Motion(value)
     }
 }
 
-impl From<CharacterNetworkCommand<Target>> for CharacterCommand {
-    fn from(value: CharacterNetworkCommand<Target>) -> Self {
+impl From<CharacterNetworkAction<Target>> for CharacterAction {
+    fn from(value: CharacterNetworkAction<Target>) -> Self {
         Self::Target(value)
     }
 }
 
-impl From<CharacterNetworkCommand<Action>> for CharacterCommand {
-    fn from(value: CharacterNetworkCommand<Action>) -> Self {
-        Self::Action(value)
+impl From<CharacterNetworkAction<Ability>> for CharacterAction {
+    fn from(value: CharacterNetworkAction<Ability>) -> Self {
+        Self::Ability(value)
     }
 }
 
-impl From<CharacterNetworkCommand<FocalAngle>> for CharacterCommand {
-    fn from(value: CharacterNetworkCommand<FocalAngle>) -> Self {
+impl From<CharacterNetworkAction<FocalAngle>> for CharacterAction {
+    fn from(value: CharacterNetworkAction<FocalAngle>) -> Self {
         Self::FocalAngle(value)
     }
 }
@@ -59,7 +59,7 @@ pub struct ArenaSetup {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub enum GameCommand {
+pub enum GameAction {
     SpawnCharacter(SpawnCharacter),
     Setup(ArenaSetup),
 }

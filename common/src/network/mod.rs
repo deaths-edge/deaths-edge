@@ -70,9 +70,9 @@ pub fn network_setup(mut net: ResMut<NetworkResource>) {
     })
 }
 
-/// A character command, addressed by [`CharacterIndex`].
+/// A character action, addressed by [`CharacterIndex`].
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct CharacterNetworkCommand<T> {
+pub struct CharacterNetworkAction<T> {
     pub index: CharacterIndex,
-    pub command: T,
+    pub action: T,
 }

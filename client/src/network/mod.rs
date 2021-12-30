@@ -5,19 +5,19 @@ use std::net::SocketAddr;
 use bevy::prelude::*;
 
 use common::{
-    character::{Action, CharacterClass, CharacterTeam, FocalAngle, Motion, Target},
+    character::{Ability, CharacterClass, CharacterTeam, FocalAngle, Motion, Target},
     game::{ArenaPasscode, ArenaPermit},
     network::{
         client::ClientMessage,
         network_setup,
-        server::{CharacterCommand, GameCommand, Reconcile, ServerMessage, SpawnCharacter},
-        CharacterNetworkCommand, NetworkEvent, NetworkResource, NetworkingPlugin,
+        server::{CharacterAction, GameAction, Reconcile, ServerMessage, SpawnCharacter},
+        CharacterNetworkAction, NetworkEvent, NetworkResource, NetworkingPlugin,
         NETWORK_SETUP_LABEL,
     },
 };
 
 use crate::{
-    input_mapping::PlayerInputCommand,
+    input_mapping::PlayerInputAction,
     spawning::SPAWN_CHARACTER_LABEL,
     state::{ClientState, StateTransition},
     Opt,
@@ -60,10 +60,10 @@ pub fn handle_server_messages(
 
     mut spawn_writer: EventWriter<SpawnCharacter>,
 
-    mut motion_writer: EventWriter<CharacterNetworkCommand<Motion>>,
-    mut target_writer: EventWriter<CharacterNetworkCommand<Target>>,
-    mut action_writer: EventWriter<CharacterNetworkCommand<Action>>,
-    mut focal_angle_writer: EventWriter<CharacterNetworkCommand<FocalAngle>>,
+    mut motion_writer: EventWriter<CharacterNetworkAction<Motion>>,
+    mut target_writer: EventWriter<CharacterNetworkAction<Target>>,
+    mut ability_writer: EventWriter<CharacterNetworkAction<Ability>>,
+    mut focal_angle_writer: EventWriter<CharacterNetworkAction<FocalAngle>>,
 
     mut reconcile_writer: EventWriter<Reconcile>,
 
@@ -74,17 +74,17 @@ pub fn handle_server_messages(
 
         while let Some(server_message) = channels.recv::<ServerMessage>() {
             match server_message {
-                ServerMessage::GameCommand(command) => match command {
-                    GameCommand::SpawnCharacter(spawn) => spawn_writer.send(spawn),
-                    GameCommand::Setup(setup) => {
+                ServerMessage::GameAction(action) => match action {
+                    GameAction::SpawnCharacter(spawn) => spawn_writer.send(spawn),
+                    GameAction::Setup(setup) => {
                         transition.send(StateTransition::Connected { setup })
                     }
                 },
-                ServerMessage::CharacterCommand(command) => match command {
-                    CharacterCommand::Motion(motion) => motion_writer.send(motion),
-                    CharacterCommand::Target(target) => target_writer.send(target),
-                    CharacterCommand::Action(action) => action_writer.send(action),
-                    CharacterCommand::FocalAngle(angle) => focal_angle_writer.send(angle),
+                ServerMessage::CharacterAction(action) => match action {
+                    CharacterAction::Motion(motion) => motion_writer.send(motion),
+                    CharacterAction::Target(target) => target_writer.send(target),
+                    CharacterAction::Ability(ability) => ability_writer.send(ability),
+                    CharacterAction::FocalAngle(angle) => focal_angle_writer.send(angle),
                 },
                 ServerMessage::Reconcile(reconcile) => reconcile_writer.send(reconcile),
             }
@@ -115,17 +115,17 @@ fn handle_connects(
     }
 }
 
-/// Listens to [`PlayerInputCommand`] and sends the internal value to the server.
+/// Listens to [`PlayerInputAction`] and sends the internal value to the server.
 fn player_input_to_network<Value>(
-    mut input_commands: EventReader<PlayerInputCommand<Value>>,
+    mut input_commands: EventReader<PlayerInputAction<Value>>,
     mut net: ResMut<NetworkResource>,
 ) where
     Value: Clone + Send + Sync + 'static,
     Value: Into<ClientMessage>,
 {
-    for command in input_commands.iter().cloned() {
-        let command: ClientMessage = command.0.into();
-        net.broadcast_message(command);
+    for action in input_commands.iter().cloned() {
+        let action: ClientMessage = action.0.into();
+        net.broadcast_message(action);
     }
 }
 
@@ -161,7 +161,7 @@ impl Plugin for NetworkPlugin {
 
         let handle_server_message = SystemSet::on_update(NetworkingState::Active)
             .label(NETWORK_HANDLE_LABEL)
-            // NETWORK_TO_ENTITY_LABEL reads CharacterNetworkCommand<Value> events
+            // NETWORK_TO_ENTITY_LABEL reads CharacterNetworkAction<Value> events
             .before(NETWORK_TO_ENTITY_LABEL)
             // SPAWN_CHARACTER_LABEL reads SpawnCharacter events
             .before(SPAWN_CHARACTER_LABEL)
@@ -171,10 +171,10 @@ impl Plugin for NetworkPlugin {
         app.add_state(NetworkConnectivity::Disconnected)
             .add_state(NetworkingState::Sleep)
             .add_plugin(NetworkingPlugin::default())
-            .add_plugin(CharacterNetworkCommandPlugin::<Motion>::new())
-            .add_plugin(CharacterNetworkCommandPlugin::<Target>::new())
-            .add_plugin(CharacterNetworkCommandPlugin::<Action>::new())
-            .add_plugin(CharacterNetworkCommandPlugin::<FocalAngle>::new())
+            .add_plugin(CharacterNetworkActionPlugin::<Motion>::new())
+            .add_plugin(CharacterNetworkActionPlugin::<Target>::new())
+            .add_plugin(CharacterNetworkActionPlugin::<Ability>::new())
+            .add_plugin(CharacterNetworkActionPlugin::<FocalAngle>::new())
             .add_system_set(setup)
             .add_system_set(send_passcode)
             .add_system_set(handle_server_message);

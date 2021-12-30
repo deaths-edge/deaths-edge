@@ -3,7 +3,7 @@ use heron::Velocity;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use super::CharacterEntityCommand;
+use super::CharacterEntityAction;
 use crate::{
     character::{CharacterMarker, CharacterSpeedMultiplier},
     effects::{EffectTarget, MovementInterruptBundle},
@@ -59,7 +59,7 @@ impl Into<Vec2> for Motion {
 
 /// Receives [`Motion`] input and accelerates character in said direction.
 pub fn character_movement(
-    mut motion_events: EventReader<CharacterEntityCommand<Motion>>,
+    mut motion_events: EventReader<CharacterEntityAction<Motion>>,
 
     // CharacterIndex query
     mut character_query: Query<
@@ -74,13 +74,13 @@ pub fn character_movement(
 
     mut commands: Commands,
 ) {
-    for command in motion_events.iter() {
+    for action in motion_events.iter() {
         let (character_entity, speed_multiplier, transform, mut velocity) = character_query
-            .get_mut(command.id())
+            .get_mut(action.id())
             .expect("failed to find character");
 
         // Construct direction
-        let mut direction: Vec2 = command.command().clone().into();
+        let mut direction: Vec2 = action.action().clone().into();
 
         // TODO: Constify this
         if direction != Vec2::ZERO {

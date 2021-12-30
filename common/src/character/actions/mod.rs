@@ -1,9 +1,9 @@
-mod action;
+mod ability;
 mod focal_angle;
 mod motion;
 mod target;
 
-pub use action::*;
+pub use ability::*;
 pub use focal_angle::*;
 pub use motion::*;
 pub use target::*;
@@ -14,37 +14,37 @@ use bevy::prelude::*;
 
 pub const CHARACTER_COMMANDS: &str = "character-commands";
 
-/// A character command, addressed by [`Entity`].
-pub struct CharacterEntityCommand<Command> {
+/// A character action, addressed by [`Entity`].
+pub struct CharacterEntityAction<Action> {
     pub id: Entity,
-    pub command: Command,
+    pub action: Action,
 }
 
-impl<Command> CharacterEntityCommand<Command> {
-    pub fn new(id: Entity, command: Command) -> Self {
-        Self { id, command }
+impl<Action> CharacterEntityAction<Action> {
+    pub fn new(id: Entity, action: Action) -> Self {
+        Self { id, action }
     }
 
     pub fn id(&self) -> Entity {
         self.id
     }
 
-    pub fn command(&self) -> &Command {
-        &self.command
+    pub fn action(&self) -> &Action {
+        &self.action
     }
 }
 
-pub struct CharacterEntityCommandPlugin<T> {
+pub struct CharacterEntityActionPlugin<T> {
     state: T,
 }
 
-impl<T> CharacterEntityCommandPlugin<T> {
+impl<T> CharacterEntityActionPlugin<T> {
     pub fn new(state: T) -> Self {
         Self { state }
     }
 }
 
-impl<T> Plugin for CharacterEntityCommandPlugin<T>
+impl<T> Plugin for CharacterEntityActionPlugin<T>
 where
     T: Send + Sync + 'static + Debug + Eq + Hash + Clone + Copy,
 {
@@ -53,12 +53,12 @@ where
             .label(CHARACTER_COMMANDS)
             .with_system(character_movement.system())
             .with_system(character_target.system())
-            .with_system(character_action.system())
+            .with_system(character_ability.system())
             .with_system(character_focal_rotate.system());
-        app.add_event::<CharacterEntityCommand<Motion>>()
-            .add_event::<CharacterEntityCommand<Target>>()
-            .add_event::<CharacterEntityCommand<Action>>()
-            .add_event::<CharacterEntityCommand<FocalAngle>>()
+        app.add_event::<CharacterEntityAction<Motion>>()
+            .add_event::<CharacterEntityAction<Target>>()
+            .add_event::<CharacterEntityAction<Ability>>()
+            .add_event::<CharacterEntityAction<FocalAngle>>()
             .add_system_set(movement);
     }
 }

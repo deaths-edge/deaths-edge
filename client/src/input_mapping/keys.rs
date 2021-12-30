@@ -1,4 +1,4 @@
-use common::character::{Action, Motion, NormalMotion, ParallelMotion};
+use common::character::{Ability, Motion, NormalMotion, ParallelMotion};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum MotionKey {
@@ -157,7 +157,7 @@ impl MotionKey {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum ActionKey {
+pub enum AbilityKey {
     Key1,
     Key2,
     Key3,
@@ -168,24 +168,24 @@ pub enum ActionKey {
     Key8,
 }
 
-impl ActionKey {
+impl AbilityKey {
     // TODO: Remapping
-    pub fn into_action(self) -> Action {
+    pub fn into_ability(self) -> Ability {
         match self {
-            ActionKey::Key1 => Action::Action1,
-            ActionKey::Key2 => Action::Action2,
-            ActionKey::Key3 => Action::Action3,
-            ActionKey::Key4 => Action::Action4,
-            ActionKey::Key5 => Action::Action5,
-            ActionKey::Key6 => Action::Action6,
-            ActionKey::Key7 => Action::Action7,
-            ActionKey::Key8 => Action::Action8,
+            AbilityKey::Key1 => Ability::Ability1,
+            AbilityKey::Key2 => Ability::Ability2,
+            AbilityKey::Key3 => Ability::Ability3,
+            AbilityKey::Key4 => Ability::Ability4,
+            AbilityKey::Key5 => Ability::Ability5,
+            AbilityKey::Key6 => Ability::Ability6,
+            AbilityKey::Key7 => Ability::Ability7,
+            AbilityKey::Key8 => Ability::Ability8,
         }
     }
 }
 
 #[derive(Debug)]
 pub enum BoundKey {
-    Action(ActionKey),
+    Ability(AbilityKey),
     Motion(MotionKey),
 }

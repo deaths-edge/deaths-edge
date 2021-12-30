@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::{ActionKey, BoundKey, MotionKey};
+use super::{AbilityKey, BoundKey, MotionKey};
 
 pub struct MovementBindings {
     pub move_left: KeyCode,
@@ -38,51 +38,51 @@ impl MovementBindings {
     }
 }
 
-pub struct ActionBindings {
-    pub action_1: KeyCode,
-    pub action_2: KeyCode,
-    pub action_3: KeyCode,
-    pub action_4: KeyCode,
-    pub action_5: KeyCode,
-    pub action_6: KeyCode,
-    pub action_7: KeyCode,
-    pub action_8: KeyCode,
+pub struct AbilityBindings {
+    pub ability_1: KeyCode,
+    pub ability_2: KeyCode,
+    pub ability_3: KeyCode,
+    pub ability_4: KeyCode,
+    pub ability_5: KeyCode,
+    pub ability_6: KeyCode,
+    pub ability_7: KeyCode,
+    pub ability_8: KeyCode,
 }
 
-impl Default for ActionBindings {
+impl Default for AbilityBindings {
     fn default() -> Self {
         Self {
-            action_1: KeyCode::Key1,
-            action_2: KeyCode::Key2,
-            action_3: KeyCode::Key3,
-            action_4: KeyCode::Key4,
-            action_5: KeyCode::Key5,
-            action_6: KeyCode::Key6,
-            action_7: KeyCode::Key7,
-            action_8: KeyCode::Key8,
+            ability_1: KeyCode::Key1,
+            ability_2: KeyCode::Key2,
+            ability_3: KeyCode::Key3,
+            ability_4: KeyCode::Key4,
+            ability_5: KeyCode::Key5,
+            ability_6: KeyCode::Key6,
+            ability_7: KeyCode::Key7,
+            ability_8: KeyCode::Key8,
         }
     }
 }
 
-impl ActionBindings {
-    fn try_map(&self, key: KeyCode) -> Result<ActionKey, KeyCode> {
-        use ActionKey::*;
+impl AbilityBindings {
+    fn try_map(&self, key: KeyCode) -> Result<AbilityKey, KeyCode> {
+        use AbilityKey::*;
 
-        if key == self.action_1 {
+        if key == self.ability_1 {
             Ok(Key1)
-        } else if key == self.action_2 {
+        } else if key == self.ability_2 {
             Ok(Key2)
-        } else if key == self.action_3 {
+        } else if key == self.ability_3 {
             Ok(Key3)
-        } else if key == self.action_4 {
+        } else if key == self.ability_4 {
             Ok(Key4)
-        } else if key == self.action_5 {
+        } else if key == self.ability_5 {
             Ok(Key5)
-        } else if key == self.action_6 {
+        } else if key == self.ability_6 {
             Ok(Key6)
-        } else if key == self.action_7 {
+        } else if key == self.ability_7 {
             Ok(Key7)
-        } else if key == self.action_8 {
+        } else if key == self.ability_8 {
             Ok(Key8)
         } else {
             Err(key)
@@ -93,7 +93,7 @@ impl ActionBindings {
 #[derive(Default)]
 pub struct Bindings {
     movement_bindings: MovementBindings,
-    action_bindings: ActionBindings,
+    ability_bindings: AbilityBindings,
 }
 
 impl Bindings {
@@ -101,6 +101,6 @@ impl Bindings {
         self.movement_bindings
             .try_map(key)
             .map(BoundKey::Motion)
-            .or_else(|key| self.action_bindings.try_map(key).map(BoundKey::Action))
+            .or_else(|key| self.ability_bindings.try_map(key).map(BoundKey::Ability))
     }
 }

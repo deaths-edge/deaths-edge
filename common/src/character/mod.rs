@@ -1,7 +1,7 @@
+mod actions;
 mod buffs;
 mod casting;
 mod classes;
-mod commands;
 mod control;
 mod cooldowns;
 mod health;
@@ -19,10 +19,10 @@ use heron::prelude::*;
 
 use crate::physics::WorldLayer;
 
+pub use actions::*;
 pub use buffs::*;
 pub use casting::*;
 pub use classes::*;
-pub use commands::*;
 pub use control::*;
 pub use cooldowns::*;
 pub use health::*;
@@ -125,6 +125,6 @@ where
         let regenerate = SystemSet::on_update(self.state).with_system(regenerate_power.system());
         app.add_system_set(regenerate)
             .add_plugin(CastingPlugin::new(self.state))
-            .add_plugin(CharacterEntityCommandPlugin::new(self.state));
+            .add_plugin(CharacterEntityActionPlugin::new(self.state));
     }
 }

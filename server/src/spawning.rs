@@ -8,7 +8,7 @@ use common::{
     },
     game::GameRoster,
     network::{
-        server::{GameCommand, ServerMessage, SpawnCharacter},
+        server::{GameAction, ServerMessage, SpawnCharacter},
         NetworkResource,
     },
     state::ArenaState,
@@ -69,7 +69,7 @@ pub fn spawn_characters(
                     transform.translation.truncate(),
                     transform.rotation.z,
                 );
-                let message = ServerMessage::GameCommand(GameCommand::SpawnCharacter(message));
+                let message = ServerMessage::GameAction(GameAction::SpawnCharacter(message));
                 net.send_message(new_address, message)
                     .expect("failed to send SpawnCharacter to new character");
             }
@@ -84,7 +84,7 @@ pub fn spawn_characters(
             for address in iter {
                 let player = address == new_address;
                 let message = SpawnCharacter::new(*next_index, permit.class, player, position, 0.);
-                let message = ServerMessage::GameCommand(GameCommand::SpawnCharacter(message));
+                let message = ServerMessage::GameAction(GameAction::SpawnCharacter(message));
 
                 net.send_message(address, message)
                     .expect("failed to send SpawnCharacter to existing characters");

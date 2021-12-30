@@ -51,7 +51,7 @@ pub enum StateTransition {
     Connected { setup: ArenaSetup },
 }
 
-/// Listen for [`StateTransition`]s and perform actions.
+/// Listen for [`StateTransition`]s and perform abilitys.
 fn state_transitions(
     mut transition_events: EventReader<StateTransition>,
 

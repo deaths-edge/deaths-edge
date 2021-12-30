@@ -4,16 +4,16 @@ use bevy::{core::FixedTimestep, prelude::*};
 
 use common::{
     character::{
-        Action, CharacterEntityCommand, CharacterIndex, CharacterMarker, FocalAngle, Motion,
+        Ability, CharacterEntityAction, CharacterIndex, CharacterMarker, FocalAngle, Motion,
         Target, CHARACTER_COMMANDS,
     },
     environment::Map,
     game::{ArenaPermit, GameRoster},
     network::{
-        client::{ClientCommand, ClientMessage},
+        client::{ClientAction, ClientMessage},
         find_my_ip_address, network_setup,
-        server::{ArenaSetup, CharacterCommand, GameCommand, Reconcile, ServerMessage},
-        CharacterNetworkCommand, ConnectionHandle, NetworkEvent, NetworkResource, NetworkingPlugin,
+        server::{ArenaSetup, CharacterAction, GameAction, Reconcile, ServerMessage},
+        CharacterNetworkAction, ConnectionHandle, NetworkEvent, NetworkResource, NetworkingPlugin,
         SERVER_PORT,
     },
 };
@@ -39,7 +39,7 @@ fn process_permit(
         let arena_spawn = ArenaSetup { map: Map::Duo };
         to_send.push((
             connection_handle,
-            ServerMessage::GameCommand(GameCommand::Setup(arena_spawn)),
+            ServerMessage::GameAction(GameAction::Setup(arena_spawn)),
         ));
     } else {
         error!("fraudulent permit");
@@ -51,20 +51,20 @@ pub struct CharacterNotFound;
 fn process_command<'a, T>(
     connection_handle: ConnectionHandle,
     mut char_query_iter: impl Iterator<Item = (Entity, &'a ClientAddress)>,
-    command: T,
-    command_writer: &mut EventWriter<CharacterEntityCommand<T>>,
+    action: T,
+    command_writer: &mut EventWriter<CharacterEntityAction<T>>,
 ) -> Result<(), CharacterNotFound>
 where
     T: Send + Sync + std::fmt::Debug + 'static,
 {
-    info!(message = "sending entity", ?command);
+    info!(message = "sending entity", ?action);
 
     let id = char_query_iter
         .find(|(_, addr)| ***addr == connection_handle)
         .map(|(id, _)| id)
         .ok_or(CharacterNotFound)?;
-    let motion_action = CharacterEntityCommand::new(id, command);
-    command_writer.send(motion_action);
+    let motion_ability = CharacterEntityAction::new(id, action);
+    command_writer.send(motion_ability);
     Ok(())
 }
 
@@ -92,10 +92,10 @@ fn handle_client_messages(
     mut game_roster: ResMut<GameRoster>,
     char_query: Query<(Entity, &ClientAddress), With<CharacterMarker>>,
 
-    mut motion_writer: EventWriter<CharacterEntityCommand<Motion>>,
-    mut target_writer: EventWriter<CharacterEntityCommand<Target>>,
-    mut action_writer: EventWriter<CharacterEntityCommand<Action>>,
-    mut focal_writer: EventWriter<CharacterEntityCommand<FocalAngle>>,
+    mut motion_writer: EventWriter<CharacterEntityAction<Motion>>,
+    mut target_writer: EventWriter<CharacterEntityAction<Target>>,
+    mut ability_writer: EventWriter<CharacterEntityAction<Ability>>,
+    mut focal_writer: EventWriter<CharacterEntityAction<FocalAngle>>,
 ) {
     let mut to_send = Vec::new();
 
@@ -106,27 +106,27 @@ fn handle_client_messages(
                 ClientMessage::Permit(permit) => {
                     process_permit(*connection_handle, &permit, &mut game_roster, &mut to_send)
                 }
-                ClientMessage::Command(command) => {
-                    let result = match command {
-                        ClientCommand::Motion(motion) => process_command(
+                ClientMessage::Action(action) => {
+                    let result = match action {
+                        ClientAction::Motion(motion) => process_command(
                             *connection_handle,
                             char_query.iter(),
                             motion,
                             &mut motion_writer,
                         ),
-                        ClientCommand::Target(target) => process_command(
+                        ClientAction::Target(target) => process_command(
                             *connection_handle,
                             char_query.iter(),
                             target,
                             &mut target_writer,
                         ),
-                        ClientCommand::Action(action) => process_command(
+                        ClientAction::Ability(ability) => process_command(
                             *connection_handle,
                             char_query.iter(),
-                            action,
-                            &mut action_writer,
+                            ability,
+                            &mut ability_writer,
                         ),
-                        ClientCommand::Rotate(rotate) => process_command(
+                        ClientAction::Rotate(rotate) => process_command(
                             *connection_handle,
                             char_query.iter(),
                             rotate,
@@ -154,17 +154,17 @@ pub fn relay_character_commands<T>(
         With<CharacterMarker>,
     >,
 
-    mut character_entity_reader: EventReader<CharacterEntityCommand<T>>,
+    mut character_entity_reader: EventReader<CharacterEntityAction<T>>,
 
     mut net: ResMut<NetworkResource>,
 ) where
     T: Send + Sync + 'static,
     T: Clone + std::fmt::Debug,
-    CharacterNetworkCommand<T>: Into<CharacterCommand>,
+    CharacterNetworkAction<T>: Into<CharacterAction>,
 {
-    for command in character_entity_reader.iter() {
-        info!(message = "relaying", command = ?command.command());
-        let source_id = command.id();
+    for action in character_entity_reader.iter() {
+        info!(message = "relaying", action = ?action.action());
+        let source_id = action.id();
         let index = character_index_query
             .get(source_id)
             .expect("failed to find character");
@@ -174,15 +174,15 @@ pub fn relay_character_commands<T>(
             .filter(move |(id, _, _)| source_id != *id);
 
         for (_, _, addr) in iter {
-            info!(message = "relaying", command = ?command.command(), address = %addr.0);
+            info!(message = "relaying", action = ?action.action(), address = %addr.0);
 
-            let network_command = CharacterNetworkCommand {
+            let network_command = CharacterNetworkAction {
                 index: *index,
-                command: command.command().clone(),
+                action: action.action().clone(),
             };
-            let message = ServerMessage::CharacterCommand(network_command.into());
+            let message = ServerMessage::CharacterAction(network_command.into());
             net.send_message(**addr, message)
-                .expect("failed to send CharacterCommand");
+                .expect("failed to send CharacterAction");
         }
     }
 }
@@ -216,18 +216,18 @@ impl Plugin for NetworkServerPlugin {
     fn build(&self, app: &mut AppBuilder) {
         let handle_client = SystemSet::new()
             .label(NETWORK_HANDLE_LABEL)
-            // CHARACTER_COMMANDS reads CharacterEntityCommand<Value> events
+            // CHARACTER_COMMANDS reads CharacterEntityAction<Value> events
             .before(CHARACTER_COMMANDS)
             .with_system(handle_client_messages.system())
             .with_system(handle_connects.system());
 
         let relay_commands = SystemSet::new()
             .label(NETWORK_RELAY_LABEL)
-            // NETWORK_HANDLE_LABEL writes CharacterEntityCommand<Value> events
+            // NETWORK_HANDLE_LABEL writes CharacterEntityAction<Value> events
             .after(NETWORK_HANDLE_LABEL)
             .with_system(relay_character_commands::<Motion>.system())
             .with_system(relay_character_commands::<Target>.system())
-            .with_system(relay_character_commands::<Action>.system())
+            .with_system(relay_character_commands::<Ability>.system())
             .with_system(relay_character_commands::<FocalAngle>.system());
 
         let broadcast_reconciles = SystemSet::new()

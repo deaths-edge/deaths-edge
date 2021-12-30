@@ -8,7 +8,7 @@ use crate::{
 };
 
 #[derive(Error, Debug)]
-pub enum SpearActionError {
+pub enum SpearAbilityError {
     #[error("global cooldown")]
     GlobalCooldown,
     #[error("no target")]
@@ -19,25 +19,25 @@ pub enum SpearActionError {
     LineOfSightObstruction,
 }
 
-impl From<GlobalCooldown> for SpearActionError {
+impl From<GlobalCooldown> for SpearAbilityError {
     fn from(_: GlobalCooldown) -> Self {
         Self::GlobalCooldown
     }
 }
 
-impl From<LineOfSightObstruction> for SpearActionError {
+impl From<LineOfSightObstruction> for SpearAbilityError {
     fn from(_: LineOfSightObstruction) -> Self {
         Self::LineOfSightObstruction
     }
 }
 
-impl From<OutOfFieldOfView> for SpearActionError {
+impl From<OutOfFieldOfView> for SpearAbilityError {
     fn from(value: OutOfFieldOfView) -> Self {
         Self::OutOfFieldOfView(value.0)
     }
 }
 
-pub fn spear_action(
+pub fn spear_ability(
     time: &Time,
     physics_world: &PhysicsWorld,
 
@@ -49,7 +49,7 @@ pub fn spear_action(
     character_cast_state: &mut CharacterCastState,
 
     target_query: &Query<&Transform, With<CharacterMarker>>,
-) -> Result<(), SpearActionError> {
+) -> Result<(), SpearAbilityError> {
     check_global_cooldown(time, last_cast_instant)?;
 
     let start = time.last_update().expect("last update not found");
@@ -57,7 +57,7 @@ pub fn spear_action(
     let target_entity = if let Some(some) = character_target.id() {
         some
     } else {
-        return Err(SpearActionError::NoTarget);
+        return Err(SpearAbilityError::NoTarget);
     };
 
     let target_transform = target_query.get(target_entity).expect("target not found");

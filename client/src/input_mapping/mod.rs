@@ -16,7 +16,7 @@ use bevy::{
 
 pub use bindings::*;
 use common::character::{
-    Action, CharacterEntityCommand, CharacterIndex, FocalAngle, Motion, Target, CHARACTER_COMMANDS,
+    Ability, CharacterEntityAction, CharacterIndex, FocalAngle, Motion, Target, CHARACTER_COMMANDS,
 };
 pub use keys::*;
 pub use mouse::*;
@@ -25,8 +25,8 @@ pub const INPUT_MAPPING_LABEL: &str = "input-mapping";
 pub const INPUT_TO_CHARACTER_LABEL: &str = "input-to-character";
 
 fn input_to_character<Value>(
-    mut input_motion: EventReader<PlayerInputCommand<Value>>,
-    mut command_motion: EventWriter<CharacterEntityCommand<Value>>,
+    mut input_motion: EventReader<PlayerInputAction<Value>>,
+    mut command_motion: EventWriter<CharacterEntityAction<Value>>,
     player_query: Query<Entity, With<PlayerMarker>>,
 ) where
     Value: Clone + Send + Sync + 'static,
@@ -35,13 +35,13 @@ fn input_to_character<Value>(
     command_motion.send_batch(
         input_motion
             .iter()
-            .map(|input| CharacterEntityCommand::new(entity, input.0.clone())),
+            .map(|input| CharacterEntityAction::new(entity, input.0.clone())),
     )
 }
 
-/// A player input command.
+/// A player input action.
 #[derive(Clone)]
-pub struct PlayerInputCommand<Action>(pub Action);
+pub struct PlayerInputAction<Ability>(pub Ability);
 
 /// Takes raw inputs and maps them to in game events with the use of [`Bindings`].
 fn input_map(
@@ -64,10 +64,10 @@ fn input_map(
 
     // Outputs
     mut current_motion: Local<Motion>,
-    mut motion_events: EventWriter<PlayerInputCommand<Motion>>,
-    mut actions: EventWriter<PlayerInputCommand<Action>>,
-    mut focal_holds: EventWriter<PlayerInputCommand<FocalAngle>>,
-    mut target: EventWriter<PlayerInputCommand<Target>>,
+    mut motion_events: EventWriter<PlayerInputAction<Motion>>,
+    mut abilitys: EventWriter<PlayerInputAction<Ability>>,
+    mut focal_holds: EventWriter<PlayerInputAction<FocalAngle>>,
+    mut target: EventWriter<PlayerInputAction<Target>>,
 ) {
     let pressed_iter = keyboard_input
         .get_just_pressed()
@@ -90,14 +90,14 @@ fn input_map(
     for input in released_iter {
         match input {
             BoundKey::Motion(motion_key) => *current_motion = motion_key.release(*current_motion),
-            BoundKey::Action(action_key) => {
-                actions.send(PlayerInputCommand(action_key.into_action()))
+            BoundKey::Ability(ability_key) => {
+                abilitys.send(PlayerInputAction(ability_key.into_ability()))
             }
         }
     }
 
     if previous_motion != *current_motion {
-        motion_events.send(PlayerInputCommand(*current_motion));
+        motion_events.send(PlayerInputAction(*current_motion));
     }
 
     let mouse_input_last = mouse_click_events.iter().last();
@@ -122,7 +122,7 @@ fn input_map(
                 })
                 .map(|(index, _, _)| *index);
 
-            target.send(PlayerInputCommand(Target(index_opt)));
+            target.send(PlayerInputAction(Target(index_opt)));
         }
         Some(MouseButtonInput {
             button: MouseButton::Right,
@@ -146,7 +146,7 @@ fn input_map(
         info!(message = "sending focal angle", angle = %angle.0);
         if !last_angle.almost_eq(&angle) {
             *last_angle = angle;
-            focal_holds.send(PlayerInputCommand(angle));
+            focal_holds.send(PlayerInputAction(angle));
         }
     }
 }
@@ -171,13 +171,13 @@ where
     fn build(&self, app: &mut AppBuilder) {
         let input_to_character = SystemSet::on_update(PlayerState::Spawned)
             .label(INPUT_TO_CHARACTER_LABEL)
-            // INPUT_MAPPING_LABEL sends PlayerInputCommand<Value> event
+            // INPUT_MAPPING_LABEL sends PlayerInputAction<Value> event
             .after(INPUT_MAPPING_LABEL)
-            // CHARACTER_COMMANDS reads CharacterEntityCommand<Value>
+            // CHARACTER_COMMANDS reads CharacterEntityAction<Value>
             .before(CHARACTER_COMMANDS)
             .with_system(input_to_character::<T>.system());
 
-        app.add_event::<PlayerInputCommand<T>>()
+        app.add_event::<PlayerInputAction<T>>()
             .add_system_set(input_to_character);
     }
 }
@@ -190,13 +190,13 @@ impl Plugin for InputMapPlugin {
             .label(INPUT_MAPPING_LABEL)
             // WORLD_MOUSE_LABEL sets WorldMousePosition
             .after(WORLD_MOUSE_LABEL)
-            // INPUT_TO_CHARACTER_LABEL reads PlayerInputCommand<Value> events
+            // INPUT_TO_CHARACTER_LABEL reads PlayerInputAction<Value> events
             .before(INPUT_TO_CHARACTER_LABEL)
             .with_system(input_map.system());
         app.init_resource::<Bindings>()
             .add_plugin(InputToCharPlugin::<Motion>::new())
             .add_plugin(InputToCharPlugin::<Target>::new())
-            .add_plugin(InputToCharPlugin::<Action>::new())
+            .add_plugin(InputToCharPlugin::<Ability>::new())
             .add_plugin(InputToCharPlugin::<FocalAngle>::new())
             .add_event::<SelectClick>()
             .add_system_set(system_set);

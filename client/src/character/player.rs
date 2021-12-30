@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use super::*;
 
-use common::character::{CharacterEntityCommand, CharacterIndex, CharacterMarker, Target};
+use common::character::{CharacterEntityAction, CharacterIndex, CharacterMarker, Target};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum PlayerState {
@@ -32,7 +32,7 @@ impl PlayerBundle {
 }
 
 pub fn player_select(
-    mut target_reader: EventReader<CharacterEntityCommand<Target>>,
+    mut target_reader: EventReader<CharacterEntityAction<Target>>,
     player_query: Query<(), With<PlayerMarker>>,
     mut character_query: QuerySet<(
         Query<(Entity, &mut Selected)>,
@@ -48,7 +48,7 @@ pub fn player_select(
                 *selected = Selected::Unselected;
             }
 
-            if let Some(target_index) = target_command.command().0 {
+            if let Some(target_index) = target_command.action().0 {
                 let (_, mut selected) = character_query
                     .q1_mut()
                     .iter_mut()
@@ -60,17 +60,17 @@ pub fn player_select(
     }
 }
 
-pub const PLAYER_ACTIONS_LABEL: &str = "player-actions";
+pub const PLAYER_ACTIONS_LABEL: &str = "player-abilitys";
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let character_actions = SystemSet::on_update(PlayerState::Spawned)
+        let character_abilitys = SystemSet::on_update(PlayerState::Spawned)
             .label(PLAYER_ACTIONS_LABEL)
             // TODO: Ordering
             .with_system(player_select.system());
         app.add_state(PlayerState::Waiting)
-            .add_system_set(character_actions);
+            .add_system_set(character_abilitys);
     }
 }

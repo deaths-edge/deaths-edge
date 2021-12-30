@@ -7,30 +7,30 @@ use crate::{
     character::{
         CharacterCastState, CharacterClass, CharacterMarker, CharacterTarget, LastCastInstant,
     },
-    spells::instances::{fireball_action, spear_action},
+    spells::instances::{fireball_ability, spear_ability},
 };
 
-use super::CharacterEntityCommand;
+use super::CharacterEntityAction;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub enum Action {
-    Action1,
-    Action2,
-    Action3,
-    Action4,
-    Action5,
-    Action6,
-    Action7,
-    Action8,
+pub enum Ability {
+    Ability1,
+    Ability2,
+    Ability3,
+    Ability4,
+    Ability5,
+    Ability6,
+    Ability7,
+    Ability8,
 }
 
-/// Receives an [`Action`] and performs the associated action.
-pub fn character_action(
+/// Receives an [`Ability`] and performs the associated ability.
+pub fn character_ability(
     time: Res<Time>,
     physics_world: PhysicsWorld,
 
-    // Action events
-    mut events: EventReader<CharacterEntityCommand<Action>>,
+    // Ability events
+    mut events: EventReader<CharacterEntityAction<Ability>>,
 
     mut character_query: Query<
         (
@@ -46,7 +46,7 @@ pub fn character_action(
 
     target_query: Query<&Transform, With<CharacterMarker>>,
 ) {
-    for command in events.iter() {
+    for action in events.iter() {
         let (
             character_entity,
             character_transform,
@@ -55,14 +55,14 @@ pub fn character_action(
             mut character_cast_state,
             character_target,
         ) = character_query
-            .get_mut(command.id())
+            .get_mut(action.id())
             .expect("character not found");
 
-        let action = command.command();
+        let ability = action.action();
         match character_class {
-            CharacterClass::Mars => match action {
-                Action::Action1 => {
-                    let result = spear_action(
+            CharacterClass::Mars => match ability {
+                Ability::Ability1 => {
+                    let result = spear_ability(
                         &time,
                         &physics_world,
                         last_cast_instant,
@@ -79,9 +79,9 @@ pub fn character_action(
                 }
                 _ => todo!(),
             },
-            CharacterClass::Medea => match action {
-                Action::Action1 => {
-                    let result = fireball_action(
+            CharacterClass::Medea => match ability {
+                Ability::Ability1 => {
+                    let result = fireball_ability(
                         &time,
                         &physics_world,
                         last_cast_instant,
