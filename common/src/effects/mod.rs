@@ -1,3 +1,5 @@
+//! A categorization of the various effects which can be applied to characters.
+mod buff;
 mod damage;
 mod heal;
 mod interrupts;
@@ -7,11 +9,15 @@ use std::{fmt::Debug, hash::Hash};
 
 use bevy::prelude::*;
 
+pub use buff::*;
 pub use damage::*;
 pub use heal::*;
 pub use interrupts::*;
 pub use target::*;
 pub use target::*;
+
+#[derive(Default)]
+pub struct EffectMarker;
 
 pub struct EffectPlugin<T> {
     state: T,
@@ -38,6 +44,3 @@ where
         app.add_system_set(system_set);
     }
 }
-
-#[derive(Default)]
-pub struct EffectMarker;

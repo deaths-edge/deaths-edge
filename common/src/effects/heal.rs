@@ -4,6 +4,7 @@ use crate::character::CharacterHealth;
 
 use super::{EffectMarker, EffectTarget};
 
+/// Applies healing to the target.
 pub struct HealEffect {
     pub amount: u32,
 }
