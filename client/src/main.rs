@@ -17,7 +17,6 @@ use bevy::prelude::*;
 
 use structopt::StructOpt;
 
-use common::network::{find_my_ip_address, SERVER_PORT};
 use network::NetworkPlugin;
 use state::*;
 use window::window_description;

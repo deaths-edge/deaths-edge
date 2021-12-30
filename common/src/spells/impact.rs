@@ -20,6 +20,7 @@ impl SpellImpactEvent {
     }
 }
 
+/// Trigger spell effect on impact.
 pub fn spell_impact<Trigger>(world: &mut World)
 where
     Trigger: SpellTrigger,

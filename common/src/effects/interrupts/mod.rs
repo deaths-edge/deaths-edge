@@ -27,7 +27,7 @@ pub fn interrupt_effect_apply(
         let last_update = time.last_update().expect("last update not found");
 
         if let Ok((mut casting_state, mut interrupt_state)) =
-            character_query.get_mut(effect_target.id())
+            character_query.get_mut(effect_target.0)
         {
             let character_cast = casting_state.stop_cast();
             if let Some(cast) = character_cast {

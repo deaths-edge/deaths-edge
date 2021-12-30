@@ -17,7 +17,7 @@ impl From<SpearBundle> for SpearEffect {
     fn from(bundle: SpearBundle) -> Self {
         Self {
             marker: EffectMarker,
-            target: bundle.common.target().into(),
+            target: bundle.common.target.into(),
             damage: DamageEffect { amount: 30 },
         }
     }

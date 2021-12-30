@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use super::{CastBarBundle, HealthBarBundle, NameplateBundle, NameplateMaterials, PowerBarBundle};
+use super::{
+    CastBarBundle, HealthBarBundle, NameplateBundle, NameplateMaterials, NameplateParent,
+    PowerBarBundle,
+};
 
 pub fn setup_nameplate(
     character_entity: Entity,
@@ -9,7 +12,8 @@ pub fn setup_nameplate(
 
     commands: &mut Commands,
 ) {
-    let nameplate_bundle = NameplateBundle::new(character_entity.into(), &nameplate_materials);
+    let nameplate_bundle =
+        NameplateBundle::new(NameplateParent(character_entity), &nameplate_materials);
     commands
         .spawn_bundle(nameplate_bundle)
         .with_children(|commands| {

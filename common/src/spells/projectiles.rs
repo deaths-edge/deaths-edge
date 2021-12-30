@@ -5,6 +5,9 @@ use crate::character::CharacterMarker;
 
 use super::{SpellImpactEvent, SpellMarker, SpellTarget};
 
+pub struct SpellProjectileMarker;
+
+/// Move spell projectiles.
 pub fn spell_projectile_motion(
     time: Res<Time>,
 
@@ -18,8 +21,7 @@ pub fn spell_projectile_motion(
     }
 }
 
-pub struct SpellProjectileMarker;
-
+/// Perturb velocity of spell projectiles to track target.
 pub fn spell_tracking(
     mut spell_query: Query<
         (&SpellTarget, &mut Transform, &mut Velocity),
@@ -28,7 +30,7 @@ pub fn spell_tracking(
     character_query: Query<(Entity, &Transform), Without<SpellMarker>>,
 ) {
     for (spell_target, mut spell_transform, mut spell_velocity) in spell_query.iter_mut() {
-        if let Ok((_, char_transform)) = character_query.get(spell_target.id()) {
+        if let Ok((_, char_transform)) = character_query.get(spell_target.0) {
             let diff = (char_transform.translation - spell_transform.translation).truncate();
             let angle = Vec2::new(1., 0.).angle_between(diff);
             spell_transform.rotation = Quat::from_rotation_z(angle);
@@ -41,6 +43,7 @@ pub fn spell_tracking(
     }
 }
 
+/// Check whether spell projectile has collided, if so, send impact event.
 pub fn spell_projectile_collision(
     mut contact_events: EventReader<CollisionEvent>,
     mut spell_impact_events: EventWriter<SpellImpactEvent>,
@@ -54,7 +57,7 @@ pub fn spell_projectile_collision(
     for collision_event in contact_events.iter() {
         if let CollisionEvent::Started(collision_data_1, collision_data_2) = collision_event {
             for (spell_entity, spell_marker, spell_target) in spell_query.iter() {
-                if let Ok(character_entity) = character_query.get(spell_target.id()) {
+                if let Ok(character_entity) = character_query.get(spell_target.0) {
                     let eq_a = spell_entity == collision_data_1.rigid_body_entity()
                         && character_entity == collision_data_2.rigid_body_entity();
                     let eq_b = spell_entity == collision_data_2.rigid_body_entity()

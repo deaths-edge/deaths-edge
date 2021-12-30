@@ -71,8 +71,8 @@ pub fn spear_action(
     check_in_front(character_transform, target_transform.translation)?;
 
     let spell = Spell::Spear {
-        source: SpellSource::from(character_entity),
-        target: target_entity.into(),
+        source: SpellSource(character_entity),
+        target: SpellTarget(target_entity),
     };
     tracing::info!(message = "casting", ?spell, ?start);
     character_cast_state.set_cast(CharacterCast::new(start, spell));
@@ -89,8 +89,8 @@ pub struct CommonSpearBundle {
     collision_shape: CollisionShape,
     velocity: Velocity,
 
-    source: SpellSource,
-    target: SpellTarget,
+    pub source: SpellSource,
+    pub target: SpellTarget,
     // TODO: Maybe include effect here?
 }
 
@@ -113,10 +113,6 @@ impl CommonSpearBundle {
             },
             velocity: Velocity::from(Vec2::new(0., speed_multiplier * SPEAR_SPEED)),
         }
-    }
-
-    pub fn target(&self) -> SpellTarget {
-        self.target
     }
 }
 

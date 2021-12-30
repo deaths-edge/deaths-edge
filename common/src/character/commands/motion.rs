@@ -6,7 +6,7 @@ use tracing::info;
 use super::CharacterEntityCommand;
 use crate::{
     character::{CharacterMarker, CharacterSpeedMultiplier},
-    effects::MovementInterruptBundle,
+    effects::{EffectTarget, MovementInterruptBundle},
 };
 
 const FORWARD_SPEED: f32 = 1.0;
@@ -90,7 +90,7 @@ pub fn character_movement(
 
             commands
                 .spawn()
-                .insert_bundle(MovementInterruptBundle::new(character_entity));
+                .insert_bundle(MovementInterruptBundle::new(EffectTarget(character_entity)));
         }
 
         let direction = transform.rotation * (direction.extend(0.));

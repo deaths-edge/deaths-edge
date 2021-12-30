@@ -37,7 +37,7 @@ pub fn health_bar_update(
 ) {
     for (healthbar_parent, mut healthbar_style) in healthbar_query.iter_mut() {
         if let Ok(nameplate_parent) = nameplate_query.get(healthbar_parent.0) {
-            if let Ok(character_health) = character_query.get(nameplate_parent.id()) {
+            if let Ok(character_health) = character_query.get(nameplate_parent.0) {
                 let percent =
                     100. * character_health.current as f32 / character_health.total as f32;
                 info!(%percent, current = ?healthbar_style.margin.right);

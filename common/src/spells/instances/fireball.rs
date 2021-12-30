@@ -71,8 +71,8 @@ pub fn fireball_action(
     check_in_front(character_transform, target_transform.translation)?;
 
     let spell = Spell::Fireball {
-        source: SpellSource::from(character_entity),
-        target: target_entity.into(),
+        source: SpellSource(character_entity),
+        target: SpellTarget(target_entity),
     };
     tracing::info!(message = "casting", ?spell, ?start);
     character_cast_state.set_cast(CharacterCast::new(start, spell));

@@ -113,7 +113,7 @@ pub fn update_nameplate_position(
         .expect("there must be a player camera");
 
     for (nameplate_parent, node_offset, mut node_style) in nameplate_query.iter_mut() {
-        if let Ok(character_transform) = character_query.get(nameplate_parent.id()) {
+        if let Ok(character_transform) = character_query.get(nameplate_parent.0) {
             let primary_window = windows.get_primary().expect("no monitor");
 
             let window_position = local_to_window_position(

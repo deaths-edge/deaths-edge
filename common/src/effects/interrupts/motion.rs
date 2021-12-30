@@ -10,11 +10,11 @@ pub struct MovementInterruptBundle {
 }
 
 impl MovementInterruptBundle {
-    pub fn new<T: Into<EffectTarget>>(target: T) -> Self {
+    pub fn new(target: EffectTarget) -> Self {
         Self {
             effect_marker: EffectMarker,
             interrupt: InterruptEffect::default(),
-            target: target.into(),
+            target,
         }
     }
 }

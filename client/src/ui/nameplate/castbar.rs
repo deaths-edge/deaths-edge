@@ -38,7 +38,7 @@ pub fn cast_bar_update(
 ) {
     for (cast_bar_parent, mut cast_bar_style) in cast_bar_query.iter_mut() {
         if let Ok(nameplate_parent) = nameplate_query.get(cast_bar_parent.0) {
-            if let Ok(character_cast_state) = character_query.get(nameplate_parent.id()) {
+            if let Ok(character_cast_state) = character_query.get(nameplate_parent.0) {
                 if let Some(character_cast) = character_cast_state.cast() {
                     cast_bar_style.display = Display::Flex;
                     if let Some(cast_total_duration) = character_cast.spell.duration() {
