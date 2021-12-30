@@ -1,3 +1,4 @@
+mod buffs;
 mod casting;
 mod classes;
 mod commands;
@@ -18,6 +19,7 @@ use heron::prelude::*;
 
 use crate::physics::WorldLayer;
 
+pub use buffs::*;
 pub use casting::*;
 pub use classes::*;
 pub use commands::*;
@@ -48,11 +50,17 @@ pub struct CharacterBundle {
     velocity: Velocity,
     rotational_constraints: RotationConstraints,
 
+    // Resources
     health: CharacterHealth,
     power: CharacterPower,
 
+    // Buffs
+    buffs: CharacterBuffs,
+    controls: CharacterControls,
+
+    // Casting
     cast_state: CharacterCastState,
-    interrupt_state: InterruptState,
+    interrupt_state: CharacterInterruptState,
     last_cast_instant: LastCastInstant,
 
     target: CharacterTarget,
@@ -61,6 +69,7 @@ pub struct CharacterBundle {
 impl CharacterBundle {
     pub fn new(index: CharacterIndex, class: CharacterClass, time: &Time) -> Self {
         let size = class.size();
+        let health = class.health();
         Self {
             index,
             marker: CharacterMarker,
@@ -83,12 +92,15 @@ impl CharacterBundle {
                 total: 100.,
             },
             health: CharacterHealth {
-                current: 75,
-                total: 100,
+                current: health,
+                total: health,
             },
 
+            buffs: CharacterBuffs::default(),
+            controls: CharacterControls::default(),
+
             cast_state: CharacterCastState::default(),
-            interrupt_state: InterruptState::default(),
+            interrupt_state: CharacterInterruptState::default(),
             last_cast_instant: time.startup().into(),
 
             target: CharacterTarget::default(),

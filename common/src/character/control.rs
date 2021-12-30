@@ -1,7 +1,10 @@
 /// Different modes of character control.
-pub enum CharacterControl {
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Control {
     Stun,
     Dazed,
     Root,
-    Normal,
 }
+
+#[derive(Debug, Clone, Default)]
+pub struct CharacterControls(pub Vec<Control>);

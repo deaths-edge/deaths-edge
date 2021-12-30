@@ -36,6 +36,7 @@ pub enum Spell {
 pub struct SpellTargeting<'a> {
     pub target: &'a SpellTarget,
     pub requires_fov: bool,
+    // TODO: Range
 }
 
 impl Spell {

@@ -1,16 +1,16 @@
 #[derive(Debug)]
 pub struct CharacterHealth {
-    pub current: u32,
-    pub total: u32,
+    pub current: f32,
+    pub total: f32,
 }
 
 impl CharacterHealth {
-    pub fn apply_damage(&mut self, damage: u32) -> &mut Self {
-        self.current = self.current.saturating_sub(damage);
+    pub fn apply_damage(&mut self, damage: f32) -> &mut Self {
+        self.current = (self.current - damage).max(0.);
         self
     }
 
-    pub fn apply_heal(&mut self, heal: u32) -> &mut Self {
+    pub fn apply_heal(&mut self, heal: f32) -> &mut Self {
         self.current = self.total.min(self.current + heal);
         self
     }

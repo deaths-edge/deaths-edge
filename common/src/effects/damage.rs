@@ -1,17 +1,17 @@
 use bevy::prelude::*;
 
-use crate::character::CharacterHealth;
+use crate::character::{CharacterHealth, CharacterMarker};
 
 use super::{EffectMarker, EffectTarget};
 
 /// Applies damage to the target.
 pub struct DamageEffect {
-    pub amount: u32,
+    pub amount: f32,
 }
 
 pub fn damage_effect_apply(
     damage_query: Query<(Entity, &DamageEffect, &EffectTarget), With<EffectMarker>>,
-    mut character_query: Query<&mut CharacterHealth>,
+    mut character_query: Query<&mut CharacterHealth, With<CharacterMarker>>,
     mut commands: Commands,
 ) {
     for (effect_entity, effect_damage, effect_target) in damage_query.iter() {

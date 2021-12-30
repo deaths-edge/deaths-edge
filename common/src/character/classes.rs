@@ -41,6 +41,16 @@ pub enum CharacterClass {
 }
 
 impl CharacterClass {
+    pub fn health(&self) -> f32 {
+        use CharacterClass::*;
+
+        match self {
+            Mars => 200.,
+            Medea => 150.,
+            _ => todo!(),
+        }
+    }
+
     pub fn cycle_right(self) -> Self {
         use CharacterClass::*;
         match self {

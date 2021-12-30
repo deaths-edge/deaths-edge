@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
 use common::{
-    effects::{DamageEffect, EffectMarker},
+    character::Buff,
+    effects::{BuffEffect, DamageEffect, EffectMarker},
     spells::instances::{CommonSpearBundle, SpearEffect, ToEffect, SPEAR_SIZE},
 };
 
@@ -33,16 +34,23 @@ impl SpearBundle {
     }
 }
 
-impl From<SpearBundle> for SpearEffect {
-    fn from(bundle: SpearBundle) -> Self {
-        Self {
-            marker: EffectMarker,
-            target: bundle.common.target.into(),
-            damage: DamageEffect { amount: 30 },
-        }
-    }
-}
-
 impl ToEffect for SpearBundle {
     type Effect = SpearEffect;
+
+    fn to_effect(self, world: &World) -> Self::Effect {
+        SpearEffect {
+            marker: EffectMarker,
+            target: self.common.target.into(),
+            damage: DamageEffect { amount: 15. },
+            debuff: BuffEffect {
+                buff: Buff::Speared {
+                    start: world
+                        .get_resource::<Time>()
+                        .expect("failed to get time")
+                        .last_update()
+                        .expect("failed to get last update"),
+                },
+            },
+        }
+    }
 }

@@ -23,16 +23,14 @@ impl FireballBundle {
     }
 }
 
-impl From<FireballBundle> for FireballEffect {
-    fn from(bundle: FireballBundle) -> Self {
-        Self {
-            marker: EffectMarker,
-            target: bundle.common.target().into(),
-            damage: DamageEffect { amount: 30 },
-        }
-    }
-}
-
 impl ToEffect for FireballBundle {
     type Effect = FireballEffect;
+
+    fn to_effect(self, world: &World) -> Self::Effect {
+        FireballEffect {
+            marker: EffectMarker,
+            target: self.common.target().into(),
+            damage: DamageEffect { amount: 30. },
+        }
+    }
 }

@@ -1,5 +1,6 @@
 //! A categorization of the various effects which can be applied to characters.
 mod buff;
+mod control;
 mod damage;
 mod heal;
 mod interrupts;
@@ -10,10 +11,10 @@ use std::{fmt::Debug, hash::Hash};
 use bevy::prelude::*;
 
 pub use buff::*;
+pub use control::*;
 pub use damage::*;
 pub use heal::*;
 pub use interrupts::*;
-pub use target::*;
 pub use target::*;
 
 #[derive(Default)]
@@ -40,7 +41,8 @@ where
             .label(EFFECTS_LABEL)
             .with_system(damage_effect_apply.system())
             .with_system(health_effect_apply.system())
-            .with_system(interrupt_effect_apply.system());
+            .with_system(interrupt_effect_apply.system())
+            .with_system(control_effect_apply.system());
         app.add_system_set(system_set);
     }
 }

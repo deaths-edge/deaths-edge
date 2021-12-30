@@ -3,7 +3,7 @@ use thiserror::Error;
 
 use crate::{
     character::{CharacterCast, CharacterCastState, CharacterTarget},
-    effects::{DamageEffect, EffectMarker, EffectTarget},
+    effects::{BuffEffect, DamageEffect, EffectMarker, EffectTarget},
     spells::*,
 };
 
@@ -121,4 +121,5 @@ pub struct SpearEffect {
     pub marker: EffectMarker,
     pub target: EffectTarget,
     pub damage: DamageEffect,
+    pub debuff: BuffEffect,
 }

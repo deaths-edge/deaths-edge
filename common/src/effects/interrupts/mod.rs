@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::character::{CharacterCastState, InterruptState};
+use crate::character::{CharacterCastState, CharacterInterruptState};
 
 use super::{EffectMarker, EffectTarget};
 
@@ -18,7 +18,7 @@ pub struct InterruptEffect {
 pub fn interrupt_effect_apply(
     time: Res<Time>,
     interrupt_query: Query<(Entity, &InterruptEffect, &EffectTarget), With<EffectMarker>>,
-    mut character_query: Query<(&mut CharacterCastState, &mut InterruptState)>,
+    mut character_query: Query<(&mut CharacterCastState, &mut CharacterInterruptState)>,
     mut commands: Commands,
 ) {
     for (effect_entity, interrupt_effect, effect_target) in interrupt_query.iter() {

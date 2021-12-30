@@ -7,7 +7,9 @@ pub use fireball::*;
 pub use spear::*;
 
 pub trait ToEffect: Bundle + Sized {
-    type Effect: From<Self> + Bundle;
+    type Effect: Bundle;
+
+    fn to_effect(self, world: &World) -> Self::Effect;
 
     fn process_spell(id: Entity, world: &mut World) {
         let mut spell_entity_mut = world.entity_mut(id);
@@ -16,7 +18,7 @@ pub trait ToEffect: Bundle + Sized {
             .remove_bundle::<Self>()
             .expect("fireball bundle not found");
 
-        let effect: Self::Effect = bundle.into();
+        let effect: Self::Effect = bundle.to_effect(world);
         world.spawn().insert_bundle(effect);
     }
 }
