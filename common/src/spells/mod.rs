@@ -1,5 +1,4 @@
 mod impact;
-mod index;
 pub mod instances;
 mod marker;
 mod projectiles;
