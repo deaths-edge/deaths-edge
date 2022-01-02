@@ -4,13 +4,7 @@ use bevy::{core::Time, utils::Instant};
 
 pub const GLOBAL_COOLDOWN: Duration = Duration::from_secs(1);
 
-pub struct LastCastInstant(Instant);
-
-impl From<Instant> for LastCastInstant {
-    fn from(value: Instant) -> Self {
-        Self(value)
-    }
-}
+pub struct LastCastInstant(pub Instant);
 
 impl LastCastInstant {
     pub fn elapsed(&self, time: &Time) -> Duration {

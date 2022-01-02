@@ -103,7 +103,7 @@ impl CharacterBundle {
 
             cast_state: CastState::default(),
             interrupt_state: InterruptState::default(),
-            last_cast_instant: time.startup().into(),
+            last_cast_instant: LastCastInstant(time.startup()),
 
             target: Target::default(),
         }
