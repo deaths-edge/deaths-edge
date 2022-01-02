@@ -1,3 +1,4 @@
+pub mod abilities;
 pub mod character;
 pub mod effects;
 pub mod environment;
