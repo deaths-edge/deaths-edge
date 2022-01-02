@@ -2,7 +2,7 @@ mod confirm_button;
 mod cycle_button;
 
 use bevy::prelude::*;
-use common::character::CharacterClass;
+use common::character::Class;
 
 use crate::state::ClientState;
 
@@ -70,7 +70,7 @@ pub struct ClassSelectionText {
 }
 
 impl ClassSelectionText {
-    pub fn new(character_class: CharacterClass, fonts: &UIFonts) -> Self {
+    pub fn new(character_class: Class, fonts: &UIFonts) -> Self {
         Self {
             marker: CharacterSelectionTextMarker,
             text: TextBundle {
@@ -99,7 +99,7 @@ impl ClassSelectionText {
 pub struct CharacterSelectionPlugin;
 
 pub fn spawn_character_selection(
-    selected_char: Res<CharacterClass>,
+    selected_char: Res<Class>,
     fonts: Res<UIFonts>,
     root_materials: Res<CharacterSelectionMaterials>,
 
@@ -139,7 +139,7 @@ fn despawn_character_selection(
 }
 
 fn character_text_changed(
-    selected_char: Res<CharacterClass>,
+    selected_char: Res<Class>,
     mut text_query: Query<&mut Text, With<CharacterSelectionTextMarker>>,
 ) {
     if selected_char.is_changed() {
@@ -168,7 +168,7 @@ impl Plugin for CharacterSelectionPlugin {
         let character_class = SystemSet::on_update(ClientState::MainLobby)
             .with_system(character_text_changed.system());
 
-        app.insert_resource(CharacterClass::Heka)
+        app.insert_resource(Class::Heka)
             .init_resource::<CharacterSelectionMaterials>()
             .add_system_set(spawn_ui)
             .add_system_set(despawn_ui)

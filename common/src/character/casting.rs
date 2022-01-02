@@ -7,11 +7,11 @@ use super::CharacterMarker;
 use crate::spells::{check_in_front, check_line_of_sight, Spell};
 
 #[derive(Default, Debug)]
-pub struct CharacterCastState {
+pub struct CastState {
     cast: Option<CharacterCast>,
 }
 
-impl CharacterCastState {
+impl CastState {
     pub fn set_cast(&mut self, cast: CharacterCast) -> &mut Self {
         self.cast = Some(cast);
         self
@@ -47,7 +47,7 @@ impl CharacterCast {
 }
 
 fn complete_casting(
-    mut cast_query: Query<(&Transform, &mut CharacterCastState)>,
+    mut cast_query: Query<(&Transform, &mut CastState)>,
     target_query: Query<&Transform, With<CharacterMarker>>,
 
     physics_world: PhysicsWorld,

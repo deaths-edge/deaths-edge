@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use super::CharacterMarker;
 
 #[derive(Debug)]
-pub struct CharacterPower {
+pub struct Power {
     pub current: f32,
     pub total: f32,
 }
@@ -14,7 +14,7 @@ pub struct CharacterPowerRegen(pub f32);
 pub fn regenerate_power(
     time: Res<Time>,
 
-    mut query: Query<(&CharacterPowerRegen, &mut CharacterPower), With<CharacterMarker>>,
+    mut query: Query<(&CharacterPowerRegen, &mut Power), With<CharacterMarker>>,
 ) {
     let delta_time = time.delta_seconds();
 

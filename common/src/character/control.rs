@@ -7,4 +7,4 @@ pub enum Control {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct CharacterControls(pub Vec<Control>);
+pub struct Controls(pub Vec<Control>);

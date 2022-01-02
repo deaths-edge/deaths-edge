@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use thiserror::Error;
 
 use crate::{
-    character::{CharacterCast, CharacterCastState, CharacterTarget},
+    character::{CastState, CharacterCast, Target},
     effects::{BuffEffect, DamageEffect, EffectMarker, EffectTarget},
     spells::*,
 };
@@ -45,8 +45,8 @@ pub fn spear_ability(
 
     character_entity: Entity,
     character_transform: &Transform,
-    character_target: &CharacterTarget,
-    character_cast_state: &mut CharacterCastState,
+    character_target: &Target,
+    character_cast_state: &mut CastState,
 
     target_query: &Query<&Transform, With<CharacterMarker>>,
 ) -> Result<(), SpearAbilityError> {

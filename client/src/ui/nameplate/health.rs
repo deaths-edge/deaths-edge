@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use common::character::{CharacterHealth, CharacterMarker};
+use common::character::{CharacterMarker, Health};
 
 use super::{NameplateMarker, NameplateMaterials, NameplateParent};
 
@@ -33,7 +33,7 @@ impl HealthBarBundle {
 pub fn health_bar_update(
     mut healthbar_query: Query<(&Parent, &mut Style), With<HealthBarMarker>>,
     nameplate_query: Query<&NameplateParent, With<NameplateMarker>>,
-    character_query: Query<&CharacterHealth, (With<CharacterMarker>, Changed<CharacterHealth>)>,
+    character_query: Query<&Health, (With<CharacterMarker>, Changed<Health>)>,
 ) {
     for (healthbar_parent, mut healthbar_style) in healthbar_query.iter_mut() {
         if let Ok(nameplate_parent) = nameplate_query.get(healthbar_parent.0) {

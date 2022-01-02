@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use common::character::CharacterClass;
+use common::character::Class;
 
 pub struct CharacterMaterials {
     medea_material: Handle<ColorMaterial>,
@@ -18,8 +18,8 @@ impl FromWorld for CharacterMaterials {
 }
 
 impl CharacterMaterials {
-    pub fn handle(&self, class: CharacterClass) -> &Handle<ColorMaterial> {
-        use CharacterClass::*;
+    pub fn handle(&self, class: Class) -> &Handle<ColorMaterial> {
+        use Class::*;
         match class {
             Medea => &self.medea_material,
             Mars => &self.mars_material,

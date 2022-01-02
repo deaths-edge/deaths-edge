@@ -1,10 +1,10 @@
 #[derive(Debug)]
-pub struct CharacterHealth {
+pub struct Health {
     pub current: f32,
     pub total: f32,
 }
 
-impl CharacterHealth {
+impl Health {
     pub fn apply_damage(&mut self, damage: f32) -> &mut Self {
         self.current = (self.current - damage).max(0.);
         self

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use common::character::CharacterClass;
+use common::character::Class;
 
 use super::CharacterSelectionMaterials;
 
@@ -60,7 +60,7 @@ pub fn handle_click_left(
             With<CharacterCycleButtonMarkerLeft>,
         ),
     >,
-    mut selected_char: ResMut<CharacterClass>,
+    mut selected_char: ResMut<Class>,
 ) {
     for interaction in interaction_query.iter_mut() {
         match *interaction {
@@ -81,7 +81,7 @@ pub fn handle_click_right(
             With<CharacterCycleButtonMarkerRight>,
         ),
     >,
-    mut selected_char: ResMut<CharacterClass>,
+    mut selected_char: ResMut<Class>,
 ) {
     for interaction in interaction_query.iter_mut() {
         match *interaction {

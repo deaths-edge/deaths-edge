@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::character::{Buff, CharacterBuffs, CharacterMarker};
+use crate::character::{Buff, Buffs, CharacterMarker};
 
 use super::{EffectMarker, EffectTarget};
 
@@ -11,7 +11,7 @@ pub struct BuffEffect {
 
 pub fn buff_effect_apply(
     buff_query: Query<(Entity, &BuffEffect, &EffectTarget), With<EffectMarker>>,
-    mut character_query: Query<&mut CharacterBuffs, With<CharacterMarker>>,
+    mut character_query: Query<&mut Buffs, With<CharacterMarker>>,
     mut commands: Commands,
 ) {
     for (effect_entity, buff_effect, effect_target) in buff_query.iter() {

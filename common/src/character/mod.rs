@@ -40,10 +40,11 @@ pub struct CharacterMarker;
 pub struct CharacterBundle {
     index: CharacterIndex,
     marker: CharacterMarker,
-    class: CharacterClass,
+    class: Class,
+    team: Team,
 
     // Physics
-    speed_modifier: CharacterSpeedMultiplier,
+    speed_modifier: SpeedMultiplier,
     rigid_body: RigidBody,
     collision_shape: CollisionShape,
     collision_layers: CollisionLayers,
@@ -51,31 +52,32 @@ pub struct CharacterBundle {
     rotational_constraints: RotationConstraints,
 
     // Resources
-    health: CharacterHealth,
-    power: CharacterPower,
+    health: Health,
+    power: Power,
 
     // Buffs
-    buffs: CharacterBuffs,
-    controls: CharacterControls,
+    buffs: Buffs,
+    controls: Controls,
 
     // Casting
-    cast_state: CharacterCastState,
-    interrupt_state: CharacterInterruptState,
+    cast_state: CastState,
+    interrupt_state: InterruptState,
     last_cast_instant: LastCastInstant,
 
-    target: CharacterTarget,
+    target: Target,
 }
 
 impl CharacterBundle {
-    pub fn new(index: CharacterIndex, class: CharacterClass, time: &Time) -> Self {
+    pub fn new(index: CharacterIndex, class: Class, time: &Time) -> Self {
         let size = class.size();
         let health = class.health();
         Self {
             index,
             marker: CharacterMarker,
             class,
+            team: Team::Blue,
 
-            speed_modifier: CharacterSpeedMultiplier(1.),
+            speed_modifier: SpeedMultiplier(1.),
             rigid_body: RigidBody::Dynamic,
             collision_shape: CollisionShape::Cuboid {
                 half_extends: Vec2::new(size.width / 2., size.height / 2.).extend(0.),
@@ -87,27 +89,27 @@ impl CharacterBundle {
             velocity: Vec3::ZERO.into(),
             rotational_constraints: RotationConstraints::lock(),
 
-            power: CharacterPower {
+            power: Power {
                 current: 0.,
                 total: 100.,
             },
-            health: CharacterHealth {
+            health: Health {
                 current: health,
                 total: health,
             },
 
-            buffs: CharacterBuffs::default(),
-            controls: CharacterControls::default(),
+            buffs: Buffs::default(),
+            controls: Controls::default(),
 
-            cast_state: CharacterCastState::default(),
-            interrupt_state: CharacterInterruptState::default(),
+            cast_state: CastState::default(),
+            interrupt_state: InterruptState::default(),
             last_cast_instant: time.startup().into(),
 
-            target: CharacterTarget::default(),
+            target: Target::default(),
         }
     }
 
-    pub fn class(&self) -> CharacterClass {
+    pub fn class(&self) -> Class {
         self.class
     }
 }

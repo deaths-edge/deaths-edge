@@ -7,7 +7,7 @@ use crate::{character::Control, effects::ControlEffect};
 use super::CharacterMarker;
 
 #[derive(Debug, Default)]
-pub struct CharacterBuffs(pub Vec<Buff>);
+pub struct Buffs(pub Vec<Buff>);
 
 #[derive(Debug, Clone, Copy)]
 pub enum Buff {
@@ -19,7 +19,7 @@ pub const SPEARED_DURATION: Duration = Duration::from_secs(3);
 pub fn buff_lifecycle(
     time: Res<Time>,
 
-    buff_query: Query<(Entity, &CharacterBuffs), With<CharacterMarker>>,
+    buff_query: Query<(Entity, &Buffs), With<CharacterMarker>>,
 
     mut commands: Commands,
 ) {

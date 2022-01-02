@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    character::{Ability, CharacterClass, CharacterIndex, FocalAngle, Motion, SelectTarget},
+    character::{Ability, CharacterIndex, Class, FocalAngle, Motion, SelectTarget},
     environment::Map,
 };
 
@@ -73,7 +73,7 @@ impl ServerMessage {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SpawnCharacter {
     index: CharacterIndex,
-    class: CharacterClass,
+    class: Class,
     player: bool,
     position: Vec2,
     rotation: f32,
@@ -82,7 +82,7 @@ pub struct SpawnCharacter {
 impl SpawnCharacter {
     pub fn new(
         index: CharacterIndex,
-        class: CharacterClass,
+        class: Class,
         player: bool,
         position: Vec2,
         rotation: f32,
@@ -104,7 +104,7 @@ impl SpawnCharacter {
         self.player
     }
 
-    pub fn class(&self) -> CharacterClass {
+    pub fn class(&self) -> Class {
         self.class
     }
 

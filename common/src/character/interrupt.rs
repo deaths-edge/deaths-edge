@@ -1,11 +1,11 @@
 use bevy::utils::Instant;
 
 #[derive(Default)]
-pub struct CharacterInterruptState {
+pub struct InterruptState {
     interrupted_until: Option<Instant>,
 }
 
-impl CharacterInterruptState {
+impl InterruptState {
     pub fn interrupt_until(&mut self, instant: Instant) -> &mut Self {
         self.interrupted_until = Some(instant);
         self

@@ -4,9 +4,7 @@ use serde::{Deserialize, Serialize};
 use tracing::warn;
 
 use crate::{
-    character::{
-        CharacterCastState, CharacterClass, CharacterMarker, CharacterTarget, LastCastInstant,
-    },
+    character::{CastState, CharacterMarker, Class, LastCastInstant, Target},
     spells::instances::{fireball_ability, spear_ability},
 };
 
@@ -36,10 +34,10 @@ pub fn character_ability(
         (
             Entity,
             &Transform,
-            &CharacterClass,
+            &Class,
             &LastCastInstant,
-            &mut CharacterCastState,
-            &CharacterTarget,
+            &mut CastState,
+            &Target,
         ),
         With<CharacterMarker>,
     >,
@@ -60,7 +58,7 @@ pub fn character_ability(
 
         let ability = action.action();
         match character_class {
-            CharacterClass::Mars => match ability {
+            Class::Mars => match ability {
                 Ability::Ability1 => {
                     let result = spear_ability(
                         &time,
@@ -79,7 +77,7 @@ pub fn character_ability(
                 }
                 _ => todo!(),
             },
-            CharacterClass::Medea => match ability {
+            Class::Medea => match ability {
                 Ability::Ability1 => {
                     let result = fireball_ability(
                         &time,

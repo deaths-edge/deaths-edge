@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use common::character::{CharacterCastState, CharacterMarker};
+use common::character::{CastState, CharacterMarker};
 
 use super::{NameplateMarker, NameplateMaterials, NameplateParent};
 
@@ -34,7 +34,7 @@ pub fn cast_bar_update(
     time: Res<Time>,
     mut cast_bar_query: Query<(&Parent, &mut Style), With<CastBarMarker>>,
     nameplate_query: Query<&NameplateParent, With<NameplateMarker>>,
-    character_query: Query<&CharacterCastState, With<CharacterMarker>>,
+    character_query: Query<&CastState, With<CharacterMarker>>,
 ) {
     for (cast_bar_parent, mut cast_bar_style) in cast_bar_query.iter_mut() {
         if let Ok(nameplate_parent) = nameplate_query.get(cast_bar_parent.0) {

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::character::{CharacterControls, CharacterMarker, Control};
+use crate::character::{CharacterMarker, Control, Controls};
 
 use super::{EffectMarker, EffectTarget};
 
@@ -35,7 +35,7 @@ impl ControlEffect {
 
 pub fn control_effect_apply(
     damage_query: Query<(Entity, &ControlEffectType, &EffectTarget), With<EffectMarker>>,
-    mut character_query: Query<&mut CharacterControls, With<CharacterMarker>>,
+    mut character_query: Query<&mut Controls, With<CharacterMarker>>,
     mut commands: Commands,
 ) {
     for (effect_entity, control_effect, effect_target) in damage_query.iter() {

@@ -13,7 +13,7 @@ use bevy::{
 };
 
 use common::{
-    character::{CharacterClass, CharacterPlugin, CharacterTeam},
+    character::{CharacterPlugin, Class, Team},
     game::{ArenaPasscode, ArenaPermit, GameRoster},
     heron::PhysicsPlugin,
 };
@@ -27,13 +27,13 @@ fn main() {
     let permits = [
         ArenaPermit {
             passcode: ArenaPasscode(1234),
-            class: CharacterClass::Mars,
-            team: CharacterTeam::Red,
+            class: Class::Mars,
+            team: Team::Red,
         },
         ArenaPermit {
             passcode: ArenaPasscode(4321),
-            class: CharacterClass::Medea,
-            team: CharacterTeam::Red,
+            class: Class::Medea,
+            team: Team::Red,
         },
     ]
     .into_iter()

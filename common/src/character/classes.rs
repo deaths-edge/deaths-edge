@@ -4,7 +4,7 @@ use bevy::math::Size;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
-pub enum CharacterClass {
+pub enum Class {
     /// Melee: Damage + Survivability
     /// High sustained, medium health, escapes
     /// Warrior-like
@@ -40,9 +40,9 @@ pub enum CharacterClass {
     Rhea,
 }
 
-impl CharacterClass {
+impl Class {
     pub fn health(&self) -> f32 {
-        use CharacterClass::*;
+        use Class::*;
 
         match self {
             Mars => 200.,
@@ -52,7 +52,7 @@ impl CharacterClass {
     }
 
     pub fn cycle_right(self) -> Self {
-        use CharacterClass::*;
+        use Class::*;
         match self {
             Mars => Pluto,
             Pluto => Mammon,
@@ -67,7 +67,7 @@ impl CharacterClass {
     }
 
     pub fn cycle_left(self) -> Self {
-        use CharacterClass::*;
+        use Class::*;
         match self {
             Pluto => Mars,
             Mammon => Pluto,
@@ -82,9 +82,9 @@ impl CharacterClass {
     }
 }
 
-impl CharacterClass {
+impl Class {
     pub fn as_str(&self) -> &'static str {
-        use CharacterClass::*;
+        use Class::*;
         match self {
             Mars => "Mars",
             Pluto => "Pluto",
@@ -99,13 +99,13 @@ impl CharacterClass {
     }
 }
 
-impl fmt::Display for CharacterClass {
+impl fmt::Display for Class {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.as_str())
     }
 }
 
-impl CharacterClass {
+impl Class {
     pub fn size(&self) -> Size {
         Size::new(30., 30.)
     }

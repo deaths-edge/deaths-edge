@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use bevy_networking_turbulence::ConnectionHandle;
 use serde::{Deserialize, Serialize};
 
-use crate::character::{CharacterClass, CharacterTeam};
+use crate::character::{Class, Team};
 
 #[derive(Debug, Deserialize, Serialize, Hash, PartialEq, Eq, Clone, Copy)]
 pub struct ArenaPasscode(pub u64);
@@ -11,8 +11,8 @@ pub struct ArenaPasscode(pub u64);
 #[derive(Debug, Deserialize, Serialize, Hash, PartialEq, Eq, Clone)]
 pub struct ArenaPermit {
     pub passcode: ArenaPasscode,
-    pub class: CharacterClass,
-    pub team: CharacterTeam,
+    pub class: Class,
+    pub team: Team,
 }
 
 /// Sent by matchmaking server.

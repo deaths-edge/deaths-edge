@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use super::{EffectMarker, EffectTarget};
-use crate::character::{CharacterHealth, CharacterMarker};
+use crate::character::{CharacterMarker, Health};
 
 /// Applies healing to the target.
 pub struct HealEffect {
@@ -10,7 +10,7 @@ pub struct HealEffect {
 
 pub fn health_effect_apply(
     health_query: Query<(Entity, &HealEffect, &EffectTarget), With<EffectMarker>>,
-    mut character_query: Query<&mut CharacterHealth, With<CharacterMarker>>,
+    mut character_query: Query<&mut Health, With<CharacterMarker>>,
     mut commands: Commands,
 ) {
     for (effect_entity, effect_damage, effect_target) in health_query.iter() {

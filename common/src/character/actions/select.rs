@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::character::{CharacterIndex, CharacterMarker, CharacterTarget};
+use crate::character::{CharacterIndex, CharacterMarker, Target};
 
 use super::CharacterEntityAction;
 
@@ -13,7 +13,7 @@ pub fn character_target(
     // Target events
     mut events: EventReader<CharacterEntityAction<SelectTarget>>,
 
-    mut target_query: Query<&mut CharacterTarget, With<CharacterMarker>>,
+    mut target_query: Query<&mut Target, With<CharacterMarker>>,
     index_query: Query<(Entity, &CharacterIndex), With<CharacterMarker>>,
 ) {
     for action in events.iter() {
@@ -27,9 +27,9 @@ pub fn character_target(
                 .find(|(_, index)| **index == target_index)
                 .map(|(entity, _)| entity)
                 .expect("failed to find target");
-            *character_target = CharacterTarget(Some(target_entity));
+            *character_target = Target(Some(target_entity));
         } else {
-            *character_target = CharacterTarget(None);
+            *character_target = Target(None);
         }
     }
 }

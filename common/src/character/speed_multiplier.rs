@@ -1,6 +1,6 @@
-pub struct CharacterSpeedMultiplier(pub f32);
+pub struct SpeedMultiplier(pub f32);
 
-impl CharacterSpeedMultiplier {
+impl SpeedMultiplier {
     const BASE_SPEED: f32 = 300.;
 
     pub fn speed(&self) -> f32 {

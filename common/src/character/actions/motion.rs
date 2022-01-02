@@ -5,7 +5,7 @@ use tracing::info;
 
 use super::CharacterEntityAction;
 use crate::{
-    character::{CharacterMarker, CharacterSpeedMultiplier},
+    character::{CharacterMarker, SpeedMultiplier},
     effects::{EffectTarget, MovementInterruptBundle},
 };
 
@@ -63,12 +63,7 @@ pub fn character_movement(
 
     // CharacterIndex query
     mut character_query: Query<
-        (
-            Entity,
-            &CharacterSpeedMultiplier,
-            &mut Transform,
-            &mut Velocity,
-        ),
+        (Entity, &SpeedMultiplier, &mut Transform, &mut Velocity),
         With<CharacterMarker>,
     >,
 

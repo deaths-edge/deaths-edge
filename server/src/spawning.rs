@@ -3,9 +3,7 @@ use std::iter::once;
 use bevy::prelude::*;
 
 use common::{
-    character::{
-        CharacterBundle as CommonCharacterBundle, CharacterClass, CharacterIndex, CharacterMarker,
-    },
+    character::{CharacterBundle as CommonCharacterBundle, CharacterIndex, CharacterMarker, Class},
     game::GameRoster,
     network::{
         server::{GameAction, ServerMessage, SpawnCharacter},
@@ -43,10 +41,7 @@ pub fn spawn_characters(
     mut game_roster: ResMut<GameRoster>,
 
     character_address_query: Query<&ClientAddress, With<CharacterMarker>>,
-    character_existing_query: Query<
-        (&CharacterIndex, &CharacterClass, &Transform),
-        With<CharacterMarker>,
-    >,
+    character_existing_query: Query<(&CharacterIndex, &Class, &Transform), With<CharacterMarker>>,
     mut net: ResMut<NetworkResource>,
 
     mut commands: Commands,
