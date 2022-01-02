@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    character::{Ability, FocalAngle, Motion, Target},
+    character::{Ability, FocalAngle, Motion, SelectTarget},
     game::ArenaPermit,
 };
 
@@ -21,7 +21,7 @@ impl<T: Into<ClientAction>> From<T> for ClientMessage {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum ClientAction {
     Motion(Motion),
-    Target(Target),
+    Target(SelectTarget),
     Ability(Ability),
     Rotate(FocalAngle),
 }
@@ -32,8 +32,8 @@ impl From<Ability> for ClientAction {
     }
 }
 
-impl From<Target> for ClientAction {
-    fn from(target: Target) -> Self {
+impl From<SelectTarget> for ClientAction {
+    fn from(target: SelectTarget) -> Self {
         Self::Target(target)
     }
 }

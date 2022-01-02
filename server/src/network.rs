@@ -5,7 +5,7 @@ use bevy::{core::FixedTimestep, prelude::*};
 use common::{
     character::{
         Ability, CharacterEntityAction, CharacterIndex, CharacterMarker, FocalAngle, Motion,
-        Target, CHARACTER_COMMANDS,
+        SelectTarget, CHARACTER_COMMANDS,
     },
     environment::Map,
     game::{ArenaPermit, GameRoster},
@@ -93,7 +93,7 @@ fn handle_client_messages(
     char_query: Query<(Entity, &ClientAddress), With<CharacterMarker>>,
 
     mut motion_writer: EventWriter<CharacterEntityAction<Motion>>,
-    mut target_writer: EventWriter<CharacterEntityAction<Target>>,
+    mut target_writer: EventWriter<CharacterEntityAction<SelectTarget>>,
     mut ability_writer: EventWriter<CharacterEntityAction<Ability>>,
     mut focal_writer: EventWriter<CharacterEntityAction<FocalAngle>>,
 ) {
@@ -226,7 +226,7 @@ impl Plugin for NetworkServerPlugin {
             // NETWORK_HANDLE_LABEL writes CharacterEntityAction<Value> events
             .after(NETWORK_HANDLE_LABEL)
             .with_system(relay_character_commands::<Motion>.system())
-            .with_system(relay_character_commands::<Target>.system())
+            .with_system(relay_character_commands::<SelectTarget>.system())
             .with_system(relay_character_commands::<Ability>.system())
             .with_system(relay_character_commands::<FocalAngle>.system());
 

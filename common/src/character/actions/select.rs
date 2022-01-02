@@ -6,12 +6,12 @@ use crate::character::{CharacterIndex, CharacterMarker, CharacterTarget};
 use super::CharacterEntityAction;
 
 #[derive(Debug, Default, PartialEq, Clone, Copy, Deserialize, Serialize)]
-pub struct Target(pub Option<CharacterIndex>);
+pub struct SelectTarget(pub Option<CharacterIndex>);
 
 /// Receives an [`Target`] and performs targeting.
 pub fn character_target(
     // Target events
-    mut events: EventReader<CharacterEntityAction<Target>>,
+    mut events: EventReader<CharacterEntityAction<SelectTarget>>,
 
     mut target_query: Query<&mut CharacterTarget, With<CharacterMarker>>,
     index_query: Query<(Entity, &CharacterIndex), With<CharacterMarker>>,

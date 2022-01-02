@@ -16,7 +16,8 @@ use bevy::{
 
 pub use bindings::*;
 use common::character::{
-    Ability, CharacterEntityAction, CharacterIndex, FocalAngle, Motion, Target, CHARACTER_COMMANDS,
+    Ability, CharacterEntityAction, CharacterIndex, FocalAngle, Motion, SelectTarget,
+    CHARACTER_COMMANDS,
 };
 pub use keys::*;
 pub use mouse::*;
@@ -67,7 +68,7 @@ fn input_map(
     mut motion_events: EventWriter<PlayerInputAction<Motion>>,
     mut abilitys: EventWriter<PlayerInputAction<Ability>>,
     mut focal_holds: EventWriter<PlayerInputAction<FocalAngle>>,
-    mut target: EventWriter<PlayerInputAction<Target>>,
+    mut target: EventWriter<PlayerInputAction<SelectTarget>>,
 ) {
     let pressed_iter = keyboard_input
         .get_just_pressed()
@@ -122,7 +123,7 @@ fn input_map(
                 })
                 .map(|(index, _, _)| *index);
 
-            target.send(PlayerInputAction(Target(index_opt)));
+            target.send(PlayerInputAction(SelectTarget(index_opt)));
         }
         Some(MouseButtonInput {
             button: MouseButton::Right,
@@ -195,7 +196,7 @@ impl Plugin for InputMapPlugin {
             .with_system(input_map.system());
         app.init_resource::<Bindings>()
             .add_plugin(InputToCharPlugin::<Motion>::new())
-            .add_plugin(InputToCharPlugin::<Target>::new())
+            .add_plugin(InputToCharPlugin::<SelectTarget>::new())
             .add_plugin(InputToCharPlugin::<Ability>::new())
             .add_plugin(InputToCharPlugin::<FocalAngle>::new())
             .add_event::<SelectClick>()

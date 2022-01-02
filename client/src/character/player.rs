@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use super::*;
 
-use common::character::{CharacterEntityAction, CharacterIndex, CharacterMarker, Target};
+use common::character::{CharacterEntityAction, CharacterIndex, CharacterMarker, SelectTarget};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum PlayerState {
@@ -32,7 +32,7 @@ impl PlayerBundle {
 }
 
 pub fn player_select(
-    mut target_reader: EventReader<CharacterEntityAction<Target>>,
+    mut target_reader: EventReader<CharacterEntityAction<SelectTarget>>,
     player_query: Query<(), With<PlayerMarker>>,
     mut character_query: QuerySet<(
         Query<(Entity, &mut Selected)>,

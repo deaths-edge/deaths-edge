@@ -1,12 +1,12 @@
 mod ability;
 mod focal_angle;
 mod motion;
-mod target;
+mod select;
 
 pub use ability::*;
 pub use focal_angle::*;
 pub use motion::*;
-pub use target::*;
+pub use select::*;
 
 use std::{fmt::Debug, hash::Hash};
 
@@ -56,7 +56,7 @@ where
             .with_system(character_ability.system())
             .with_system(character_focal_rotate.system());
         app.add_event::<CharacterEntityAction<Motion>>()
-            .add_event::<CharacterEntityAction<Target>>()
+            .add_event::<CharacterEntityAction<SelectTarget>>()
             .add_event::<CharacterEntityAction<Ability>>()
             .add_event::<CharacterEntityAction<FocalAngle>>()
             .add_system_set(movement);

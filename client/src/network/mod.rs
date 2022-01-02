@@ -5,7 +5,7 @@ use std::net::SocketAddr;
 use bevy::prelude::*;
 
 use common::{
-    character::{Ability, CharacterClass, CharacterTeam, FocalAngle, Motion, Target},
+    character::{Ability, CharacterClass, CharacterTeam, FocalAngle, Motion, SelectTarget},
     game::{ArenaPasscode, ArenaPermit},
     network::{
         client::ClientMessage,
@@ -61,7 +61,7 @@ pub fn handle_server_messages(
     mut spawn_writer: EventWriter<SpawnCharacter>,
 
     mut motion_writer: EventWriter<CharacterNetworkAction<Motion>>,
-    mut target_writer: EventWriter<CharacterNetworkAction<Target>>,
+    mut target_writer: EventWriter<CharacterNetworkAction<SelectTarget>>,
     mut ability_writer: EventWriter<CharacterNetworkAction<Ability>>,
     mut focal_angle_writer: EventWriter<CharacterNetworkAction<FocalAngle>>,
 
@@ -172,7 +172,7 @@ impl Plugin for NetworkPlugin {
             .add_state(NetworkingState::Sleep)
             .add_plugin(NetworkingPlugin::default())
             .add_plugin(CharacterNetworkActionPlugin::<Motion>::new())
-            .add_plugin(CharacterNetworkActionPlugin::<Target>::new())
+            .add_plugin(CharacterNetworkActionPlugin::<SelectTarget>::new())
             .add_plugin(CharacterNetworkActionPlugin::<Ability>::new())
             .add_plugin(CharacterNetworkActionPlugin::<FocalAngle>::new())
             .add_system_set(setup)
