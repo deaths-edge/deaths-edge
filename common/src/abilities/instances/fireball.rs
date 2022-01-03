@@ -9,7 +9,11 @@ pub struct Fireball {
     power_cost: PowerCost,
 
     requires_target: RequiresTarget,
-    cast_duration: CastType,
+    requires_fov: RequiresFov,
+    requires_los: RequiresLoS,
+    max_range: MaximumRange,
+
+    cast_type: CastType,
 }
 
 // pub struct FireballImpact {
@@ -27,7 +31,11 @@ impl Fireball {
             power_cost: PowerCost(20.),
 
             requires_target: RequiresTarget::Enemy,
-            cast_duration: CastType::Cast(Duration::from_secs(1)),
+            requires_fov: RequiresFov,
+            requires_los: RequiresLoS,
+            max_range: MaximumRange(500.),
+
+            cast_type: CastType::Cast(Duration::from_secs(1)),
         }
     }
 }

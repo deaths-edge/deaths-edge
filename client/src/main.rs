@@ -63,9 +63,6 @@ fn main() {
         .insert_resource(window_description)
         // Default plugins
         .add_plugins(DefaultPlugins)
-        // .add_plugins_with(DefaultPlugins, |plugins| plugins.disable::<LogPlugin>())
-        // Debug plugins
-        // .add_plugin(debug_plugin)
         .add_state(ClientState::Splash)
         .add_plugin(StateTransitionPlugin)
         .add_plugin(SplashPlugin)

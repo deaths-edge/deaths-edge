@@ -66,11 +66,11 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let character_abilitys = SystemSet::on_update(PlayerState::Spawned)
+        let character_abilities = SystemSet::on_update(PlayerState::Spawned)
             .label(PLAYER_ACTIONS_LABEL)
             // TODO: Ordering
             .with_system(player_select.system());
         app.add_state(PlayerState::Waiting)
-            .add_system_set(character_abilitys);
+            .add_system_set(character_abilities);
     }
 }

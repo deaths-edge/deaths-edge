@@ -8,7 +8,10 @@ use super::{AbilityMarker, AbilitySource, Obstruction, UseObstructions};
 pub struct RequiresStationary;
 
 pub fn check_required_stationary(
-    mut ability_query: Query<(&AbilitySource, &mut UseObstructions), With<AbilityMarker>>,
+    mut ability_query: Query<
+        (&AbilitySource, &mut UseObstructions),
+        (With<AbilityMarker>, With<RequiresStationary>),
+    >,
     character_query: Query<&Velocity, (With<CharacterMarker>, Changed<Velocity>)>,
 ) {
     for (source, mut obstructions) in ability_query.iter_mut() {

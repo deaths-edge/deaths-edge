@@ -8,6 +8,7 @@ mod maximum_range;
 mod power_cost;
 mod projectile;
 mod requires_fov;
+mod requires_los;
 mod requires_stationary;
 mod requires_target;
 mod spell_type;
@@ -21,6 +22,7 @@ pub use instant_damage::*;
 pub use maximum_range::*;
 pub use power_cost::*;
 pub use requires_fov::*;
+pub use requires_los::*;
 pub use requires_stationary::*;
 pub use requires_target::*;
 pub use spell_type::*;
@@ -48,6 +50,7 @@ pub enum Obstruction {
     InsufficientPower,
     OutOfRange,
     OutOfFOV,
+    OutOfLoS,
     NoTarget,
     IncorrectTarget,
     Cooldown,
