@@ -8,7 +8,12 @@ pub struct Fireball {
     power_cost: PowerCost,
 
     requires_target: RequiresTarget,
-    cast_duration: CastDuration,
+    cast_duration: CastType,
+}
+
+pub struct FireballImpact {
+    marker: AbilityMarker,
+    target_damage: TargetDamage,
 }
 
 impl Fireball {
@@ -21,7 +26,7 @@ impl Fireball {
             power_cost: PowerCost(20.),
 
             requires_target: RequiresTarget::Enemy,
-            cast_duration: CastDuration(Duration::from_secs(1)),
+            cast_duration: CastType::Cast(Duration::from_secs(1)),
         }
     }
 }

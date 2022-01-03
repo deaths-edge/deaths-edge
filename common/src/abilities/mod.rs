@@ -1,17 +1,20 @@
-mod cast_duration;
+mod cast_type;
 mod cooldown;
+mod damage;
 mod global_cooldown;
 mod health_cost;
 mod instances;
 mod maximum_range;
 mod power_cost;
+mod projectile;
 mod requires_fov;
 mod requires_stationary;
 mod requires_target;
 mod spell_type;
 
-pub use cast_duration::*;
+pub use cast_type::*;
 pub use cooldown::*;
+pub use damage::*;
 pub use global_cooldown::*;
 pub use health_cost::*;
 pub use instances::*;
@@ -40,7 +43,7 @@ pub struct AbilitySource(pub Entity);
 // After the input (or network) event triggers an ability, a new "instance" of the ability is
 // created using the components below.
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub enum Obstruction {
     InsufficientPower,
     OutOfRange,
@@ -53,7 +56,10 @@ pub enum Obstruction {
     Locked,
 }
 
-pub struct UseObstructions(HashSet<Obstruction>);
+// pub struct AbilityInstance()
+
+#[derive(Debug)]
+pub struct UseObstructions(pub HashSet<Obstruction>);
 
 pub struct AbilityPlugin<T> {
     state: T,

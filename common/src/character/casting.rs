@@ -1,16 +1,9 @@
-use std::{fmt::Debug, hash::Hash};
+use std::fmt::Debug;
 
-use bevy::{core::Time, prelude::*, utils::Instant};
-use heron::rapier_plugin::PhysicsWorld;
-
-use crate::abilities::AbilitySource;
-
-use super::CharacterMarker;
+use bevy::{prelude::*, utils::Instant};
 
 #[derive(Default, Debug)]
-pub struct CastState {
-    pub ability_id: Option<Cast>,
-}
+pub struct CastState(pub Option<Cast>);
 
 #[derive(Debug)]
 pub struct Cast {

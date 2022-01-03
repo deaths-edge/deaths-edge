@@ -3,7 +3,12 @@ use heron::rapier_plugin::PhysicsWorld;
 use serde::{Deserialize, Serialize};
 use tracing::warn;
 
-use crate::character::{CastState, CharacterMarker, Class, LastCastInstant, Target};
+use crate::{
+    abilities::{
+        AbilityInstance, AbilityMarker, AbilitySource, CastType, RequiresTarget, UseObstructions,
+    },
+    character::{Cast, CastState, CharacterMarker, LastCastInstant},
+};
 
 use super::CharacterEntityAction;
 
@@ -22,48 +27,67 @@ pub enum Ability {
 /// Receives an [`Ability`] and performs the associated ability.
 pub fn character_ability(
     time: Res<Time>,
-    physics_world: PhysicsWorld,
 
     // Ability events
     mut events: EventReader<CharacterEntityAction<Ability>>,
 
     mut character_query: Query<
-        (
-            Entity,
-            &Transform,
-            &Class,
-            &LastCastInstant,
-            &mut CastState,
-            &Target,
-        ),
+        (Entity, &mut CastState, &mut LastCastInstant),
         With<CharacterMarker>,
     >,
+    ability_query: Query<
+        (
+            Entity,
+            &AbilitySource,
+            &CastType,
+            Option<&RequiresTarget>,
+            &UseObstructions,
+        ),
+        With<AbilityMarker>,
+    >,
 
-    target_query: Query<&Transform, With<CharacterMarker>>,
+    mut commands: Commands,
 ) {
+    let now = time.last_update().expect("failed to find last update");
+
     for action in events.iter() {
-        let (
-            character_entity,
-            character_transform,
-            character_class,
-            last_cast_instant,
-            mut character_cast_state,
-            character_target,
-        ) = character_query
+        let (character_id, mut cast, mut last_cast_instant) = character_query
             .get_mut(action.id())
             .expect("character not found");
 
-        let ability = action.action();
-        match character_class {
-            Class::Mars => match ability {
-                Ability::Ability1 => {}
-                _ => todo!(),
-            },
-            Class::Medea => match ability {
-                Ability::Ability1 => {}
-                _ => todo!(),
-            },
-            _ => todo!(),
+        // Find ability
+        // TODO: Shortcut this search?
+        let (ability_id, _, cast_type, requires_target, obstructions) = ability_query
+            .iter()
+            .find(|(_, source, _, _, _)| source.0 == character_id)
+            .expect("casted by unknown source");
+
+        if !obstructions.0.is_empty() {
+            warn!(message = "cannot use ability", ?obstructions);
+            continue;
+        }
+
+        // Create instance of ability
+        match cast_type {
+            CastType::Instant => {
+                // Update last cast instant
+                last_cast_instant.0 = now;
+
+                // requires_target
+
+                let entity_commands = commands.spawn().insert(AbilityInstance(ability_id));
+
+                if let Some(requires_target) = requires_target {
+                    // entity_commands.insert()
+                }
+            }
+            CastType::Cast(_) => {
+                cast.0 = Some(Cast {
+                    ability_id,
+                    start: now,
+                });
+            }
+            CastType::Channel(_) => todo!(),
         }
     }
 }
