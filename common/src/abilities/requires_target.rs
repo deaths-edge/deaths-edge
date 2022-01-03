@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::character::{CharacterMarker, Target, Team};
+use crate::character::{CharacterMarker, OptionalTarget, Team};
 
-use super::{AbilityMarker, AbilitySource, Obstruction, UseObstructions};
+use super::{AbilityInstance, AbilityMarker, AbilitySource, Obstruction, UseObstructions};
 
 /// Ability requires a target.
 pub enum RequiresTarget {
@@ -17,7 +17,10 @@ pub fn check_required_target(
         (&AbilitySource, &RequiresTarget, &mut UseObstructions),
         With<AbilityMarker>,
     >,
-    character_query: Query<(&Target, &Team), (With<CharacterMarker>, Changed<Target>)>,
+    character_query: Query<
+        (&OptionalTarget, &Team),
+        (With<CharacterMarker>, Changed<OptionalTarget>),
+    >,
     target_query: Query<&Team, With<CharacterMarker>>,
 ) {
     for (source, requires_target, mut obstructions) in ability_query.iter_mut() {
@@ -42,5 +45,31 @@ pub fn check_required_target(
                 obstructions.0.insert(Obstruction::NoTarget);
             }
         }
+    }
+}
+
+/// The target of the ability.
+pub struct Target(pub Entity);
+
+/// Adds current target to instance ability.
+pub fn adjoin_target(
+    instance_query: Query<(Entity, &AbilityInstance), Without<Target>>,
+    ability_query: Query<&AbilitySource, With<AbilityMarker>>,
+    character_query: Query<&OptionalTarget, With<CharacterMarker>>,
+
+    mut commands: Commands,
+) {
+    for (instance_id, ability_id) in instance_query.iter() {
+        let source = ability_query
+            .get(ability_id.0)
+            .expect("failed to find ability");
+
+        let opt_target = character_query
+            .get(source.0)
+            .expect("failed to find character");
+
+        commands.entity(instance_id).insert(Target(
+            opt_target.0.expect("this cannot be empty due to checks"),
+        ));
     }
 }

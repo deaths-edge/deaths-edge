@@ -1,12 +1,9 @@
 use bevy::{core::Time, prelude::*};
-use heron::rapier_plugin::PhysicsWorld;
 use serde::{Deserialize, Serialize};
 use tracing::warn;
 
 use crate::{
-    abilities::{
-        AbilityInstance, AbilityMarker, AbilitySource, CastType, RequiresTarget, UseObstructions,
-    },
+    abilities::{AbilityInstance, AbilityMarker, AbilitySource, CastType, UseObstructions},
     character::{Cast, CastState, CharacterMarker, LastCastInstant},
 };
 
@@ -36,13 +33,7 @@ pub fn character_ability(
         With<CharacterMarker>,
     >,
     ability_query: Query<
-        (
-            Entity,
-            &AbilitySource,
-            &CastType,
-            Option<&RequiresTarget>,
-            &UseObstructions,
-        ),
+        (Entity, &AbilitySource, &CastType, &UseObstructions),
         With<AbilityMarker>,
     >,
 
@@ -57,9 +48,9 @@ pub fn character_ability(
 
         // Find ability
         // TODO: Shortcut this search?
-        let (ability_id, _, cast_type, requires_target, obstructions) = ability_query
+        let (ability_id, _, cast_type, obstructions) = ability_query
             .iter()
-            .find(|(_, source, _, _, _)| source.0 == character_id)
+            .find(|(_, source, _, _)| source.0 == character_id)
             .expect("casted by unknown source");
 
         if !obstructions.0.is_empty() {
@@ -73,13 +64,7 @@ pub fn character_ability(
                 // Update last cast instant
                 last_cast_instant.0 = now;
 
-                // requires_target
-
-                let entity_commands = commands.spawn().insert(AbilityInstance(ability_id));
-
-                if let Some(requires_target) = requires_target {
-                    // entity_commands.insert()
-                }
+                commands.spawn().insert(AbilityInstance(ability_id));
             }
             CastType::Cast(_) => {
                 cast.0 = Some(Cast {

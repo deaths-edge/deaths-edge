@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use common::{
-    character::CharacterBundle as CommonCharacterBundle, network::server::SpawnCharacter,
-    state::ArenaState,
+    abilities::spawn_class_abilities, character::CharacterBundle as CommonCharacterBundle,
+    network::server::SpawnCharacter, state::ArenaState,
 };
 
 use crate::{
@@ -43,6 +43,7 @@ pub fn spawn_characters(
             commands.spawn_bundle(character_bundle).id()
         };
         setup_nameplate(id, &nameplate_materials, &mut commands);
+        spawn_class_abilities(id, &mut commands);
     }
 }
 

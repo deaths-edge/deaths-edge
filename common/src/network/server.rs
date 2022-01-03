@@ -18,7 +18,7 @@ pub enum ServerMessage {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum CharacterAction {
     Motion(CharacterNetworkAction<Motion>),
-    Target(CharacterNetworkAction<SelectTarget>),
+    OptionalTarget(CharacterNetworkAction<SelectTarget>),
     Ability(CharacterNetworkAction<Ability>),
     FocalAngle(CharacterNetworkAction<FocalAngle>),
 }
@@ -37,7 +37,7 @@ impl From<CharacterNetworkAction<Motion>> for CharacterAction {
 
 impl From<CharacterNetworkAction<SelectTarget>> for CharacterAction {
     fn from(value: CharacterNetworkAction<SelectTarget>) -> Self {
-        Self::Target(value)
+        Self::OptionalTarget(value)
     }
 }
 

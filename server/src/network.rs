@@ -60,7 +60,7 @@ where
     info!(message = "sending entity", ?action);
 
     let id = char_query_iter
-        .find(|(_, addr)| ***addr == connection_handle)
+        .find(|(_, addr)| addr.0 == connection_handle)
         .map(|(id, _)| id)
         .ok_or(CharacterNotFound)?;
     let motion_ability = CharacterEntityAction::new(id, action);
@@ -114,7 +114,7 @@ fn handle_client_messages(
                             motion,
                             &mut motion_writer,
                         ),
-                        ClientAction::Target(target) => process_command(
+                        ClientAction::OptionalTarget(target) => process_command(
                             *connection_handle,
                             char_query.iter(),
                             target,
@@ -181,7 +181,7 @@ pub fn relay_character_commands<T>(
                 action: action.action().clone(),
             };
             let message = ServerMessage::CharacterAction(network_command.into());
-            net.send_message(**addr, message)
+            net.send_message(addr.0, message)
                 .expect("failed to send CharacterAction");
         }
     }

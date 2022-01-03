@@ -1,9 +1,9 @@
 mod cast_type;
 mod cooldown;
-mod damage;
 mod global_cooldown;
 mod health_cost;
 mod instances;
+mod instant_damage;
 mod maximum_range;
 mod power_cost;
 mod projectile;
@@ -14,10 +14,10 @@ mod spell_type;
 
 pub use cast_type::*;
 pub use cooldown::*;
-pub use damage::*;
 pub use global_cooldown::*;
 pub use health_cost::*;
 pub use instances::*;
+pub use instant_damage::*;
 pub use maximum_range::*;
 pub use power_cost::*;
 pub use requires_fov::*;
@@ -56,9 +56,15 @@ pub enum Obstruction {
     Locked,
 }
 
-// pub struct AbilityInstance()
+pub fn spawn_class_abilities(character_id: Entity, commands: &mut Commands) {
+    commands
+        .spawn()
+        .insert(AbilitySource(character_id))
+        .insert_bundle(fireball::Fireball::new())
+        .insert(UseObstructions::default());
+}
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct UseObstructions(pub HashSet<Obstruction>);
 
 pub struct AbilityPlugin<T> {
@@ -86,11 +92,15 @@ where
             // .with_system()
             ;
 
+        let adjoin_instances = SystemSet::on_update(self.state).with_system(adjoin_target.system());
+
         let apply_cost = SystemSet::on_update(self.state)
             .with_system(apply_health_cost.system())
-            .with_system(apply_power_cost.system());
+            .with_system(apply_power_cost.system())
+            .with_system(apply_damage.system());
 
         app.add_system_set(ability_checks)
+            .add_system_set(adjoin_instances)
             .add_system_set(apply_cost);
     }
 }

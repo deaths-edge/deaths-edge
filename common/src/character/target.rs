@@ -1,15 +1,15 @@
 use bevy::prelude::*;
 
 #[derive(Default, Debug, Clone, Copy)]
-pub struct Target(pub Option<Entity>);
+pub struct OptionalTarget(pub Option<Entity>);
 
-impl From<Entity> for Target {
+impl From<Entity> for OptionalTarget {
     fn from(entity: Entity) -> Self {
         Self(Some(entity))
     }
 }
 
-impl Target {
+impl OptionalTarget {
     pub fn set_entity(&mut self, character: Entity) -> &mut Self {
         self.0 = Some(character);
         self

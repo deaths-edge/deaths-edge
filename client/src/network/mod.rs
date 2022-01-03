@@ -78,7 +78,7 @@ pub fn handle_server_messages(
                 },
                 ServerMessage::CharacterAction(action) => match action {
                     CharacterAction::Motion(motion) => motion_writer.send(motion),
-                    CharacterAction::Target(target) => target_writer.send(target),
+                    CharacterAction::OptionalTarget(target) => target_writer.send(target),
                     CharacterAction::Ability(ability) => ability_writer.send(ability),
                     CharacterAction::FocalAngle(angle) => focal_angle_writer.send(angle),
                 },

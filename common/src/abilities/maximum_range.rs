@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::character::{CharacterMarker, Target};
+use crate::character::{CharacterMarker, OptionalTarget};
 
 use super::{AbilityMarker, AbilitySource, Obstruction, UseObstructions};
 
@@ -12,7 +12,7 @@ pub fn check_maximum_range(
         (&AbilitySource, &MaximumRange, &mut UseObstructions),
         With<AbilityMarker>,
     >,
-    character_query: Query<(&Target, &Transform), With<CharacterMarker>>,
+    character_query: Query<(&OptionalTarget, &Transform), With<CharacterMarker>>,
     target_query: Query<&Transform, With<CharacterMarker>>,
 ) {
     for (source, maximum_range, mut obstructions) in ability_query.iter_mut() {

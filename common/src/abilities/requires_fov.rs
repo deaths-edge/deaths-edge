@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use bevy::prelude::*;
 
-use crate::character::{CharacterMarker, Target};
+use crate::character::{CharacterMarker, OptionalTarget};
 
 use super::{AbilityMarker, AbilitySource, Obstruction, UseObstructions};
 
@@ -27,7 +27,7 @@ pub fn check_required_fov(
         (&AbilitySource, &mut UseObstructions),
         (With<AbilityMarker>, With<RequiresFov>),
     >,
-    character_query: Query<(&Target, &Transform), With<CharacterMarker>>,
+    character_query: Query<(&OptionalTarget, &Transform), With<CharacterMarker>>,
     target_query: Query<&Transform, With<CharacterMarker>>,
 ) {
     for (source, mut obstructions) in ability_query.iter_mut() {

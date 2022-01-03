@@ -74,7 +74,7 @@ pub fn spawn_characters(
             // Send spawn to all existing characters and new character
             let iter = character_address_query
                 .iter()
-                .map(|address| **address)
+                .map(|address| address.0)
                 .chain(once(new_address));
             for address in iter {
                 let player = address == new_address;

@@ -1,5 +1,6 @@
 use crate::abilities::*;
 
+#[derive(Bundle)]
 pub struct Fireball {
     marker: AbilityMarker,
 
@@ -11,10 +12,10 @@ pub struct Fireball {
     cast_duration: CastType,
 }
 
-pub struct FireballImpact {
-    marker: AbilityMarker,
-    target_damage: TargetDamage,
-}
+// pub struct FireballImpact {
+//     marker: AbilityMarker,
+//     target_damage: InstantDamage,
+// }
 
 impl Fireball {
     pub fn new() -> Self {

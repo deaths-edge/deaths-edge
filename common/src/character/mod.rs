@@ -59,7 +59,7 @@ pub struct CharacterBundle {
     interrupts: Interrupts,
     last_cast_instant: LastCastInstant,
 
-    target: Target,
+    target: OptionalTarget,
 }
 
 impl CharacterBundle {
@@ -98,7 +98,7 @@ impl CharacterBundle {
             interrupts: Interrupts::default(),
             last_cast_instant: LastCastInstant(time.startup()),
 
-            target: Target::default(),
+            target: OptionalTarget::default(),
         }
     }
 
@@ -119,7 +119,6 @@ where
     fn build(&self, app: &mut AppBuilder) {
         let regenerate = SystemSet::on_update(self.state).with_system(regenerate_power.system());
         app.add_system_set(regenerate)
-            // .add_plugin(CastingPlugin::new(self.state))
             .add_plugin(CharacterEntityActionPlugin::new(self.state));
     }
 }
