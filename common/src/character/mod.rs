@@ -63,14 +63,15 @@ pub struct CharacterBundle {
 }
 
 impl CharacterBundle {
-    pub fn new(index: CharacterIndex, class: Class, time: &Time) -> Self {
+    pub fn new(index: CharacterIndex, class: Class, team: Team, time: &Time) -> Self {
         let size = class.size();
         let health = class.health();
+
         Self {
             index,
             marker: CharacterMarker,
             class,
-            team: Team::Blue,
+            team,
 
             speed_modifier: SpeedMultiplier(1.),
             rigid_body: RigidBody::Dynamic,

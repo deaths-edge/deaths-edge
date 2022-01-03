@@ -71,6 +71,12 @@ pub struct AbilityPlugin<T> {
     state: T,
 }
 
+impl<T> AbilityPlugin<T> {
+    pub fn new(state: T) -> Self {
+        Self { state }
+    }
+}
+
 impl<T> Plugin for AbilityPlugin<T>
 where
     T: Send + Sync + 'static,

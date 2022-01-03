@@ -43,10 +43,16 @@ impl GameServer {
 
 fn request_arena_entry(mut net: ResMut<NetworkResource>, class: Res<Class>, opts: Res<Opt>) {
     info!("sending arena permit");
+    // TODO: Don't do this
+    let team = match *class {
+        Class::Mars => Team::Red,
+        _ => Team::Blue,
+    };
+
     let message = ClientMessage::Permit(ArenaPermit {
         passcode: ArenaPasscode(opts.passcode),
         class: *class,
-        team: Team::Red,
+        team,
     });
     net.broadcast_message(message);
 }

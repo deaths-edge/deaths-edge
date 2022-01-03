@@ -10,7 +10,8 @@ pub fn spawn_character_base<F>(
     F: FnMut(CharacterBundle, &SpawnCharacter),
 {
     for spawn_event in spawn_reader.iter() {
-        let common = CharacterBundle::new(spawn_event.index(), spawn_event.class(), time);
+        let common =
+            CharacterBundle::new(spawn_event.index, spawn_event.class, spawn_event.team, time);
         f(common, spawn_event);
     }
 }

@@ -3,7 +3,10 @@ use std::iter::once;
 use bevy::prelude::*;
 
 use common::{
-    character::{CharacterBundle as CommonCharacterBundle, CharacterIndex, CharacterMarker, Class},
+    abilities::spawn_class_abilities,
+    character::{
+        CharacterBundle as CommonCharacterBundle, CharacterIndex, CharacterMarker, Class, Team,
+    },
     game::GameRoster,
     network::{
         server::{GameAction, ServerMessage, SpawnCharacter},
@@ -41,7 +44,10 @@ pub fn spawn_characters(
     mut game_roster: ResMut<GameRoster>,
 
     character_address_query: Query<&ClientAddress, With<CharacterMarker>>,
-    character_existing_query: Query<(&CharacterIndex, &Class, &Transform), With<CharacterMarker>>,
+    character_existing_query: Query<
+        (&CharacterIndex, &Class, &Team, &Transform),
+        With<CharacterMarker>,
+    >,
     mut net: ResMut<NetworkResource>,
 
     mut commands: Commands,
@@ -50,26 +56,29 @@ pub fn spawn_characters(
         for (new_address, permit) in game_roster.drain() {
             let position = Vec2::new(0., 0.); // TODO
 
-            let common_bundle = CommonCharacterBundle::new(*next_index, permit.class, &time);
+            let common_bundle =
+                CommonCharacterBundle::new(*next_index, permit.class, permit.team, &time);
             let transform = Transform::from_xyz(position.x, position.y, 0.);
             let character_bundle =
                 CharacterBundle::new(transform, common_bundle, ClientAddress(new_address));
 
             // Send all existing characters to new character
-            for (index, class, transform) in character_existing_query.iter() {
-                let message = SpawnCharacter::new(
-                    *index,
-                    *class,
-                    false,
-                    transform.translation.truncate(),
-                    transform.rotation.z,
-                );
+            for (index, class, team, transform) in character_existing_query.iter() {
+                let message = SpawnCharacter {
+                    index: *index,
+                    class: *class,
+                    player: false,
+                    team: *team,
+                    position: transform.translation.truncate(),
+                    rotation: transform.rotation.z,
+                };
                 let message = ServerMessage::GameAction(GameAction::SpawnCharacter(message));
                 net.send_message(new_address, message)
                     .expect("failed to send SpawnCharacter to new character");
             }
 
-            commands.spawn_bundle(character_bundle);
+            let id = commands.spawn_bundle(character_bundle).id();
+            spawn_class_abilities(id, &mut commands);
 
             // Send spawn to all existing characters and new character
             let iter = character_address_query
@@ -78,7 +87,14 @@ pub fn spawn_characters(
                 .chain(once(new_address));
             for address in iter {
                 let player = address == new_address;
-                let message = SpawnCharacter::new(*next_index, permit.class, player, position, 0.);
+                let message = SpawnCharacter {
+                    index: *next_index,
+                    class: permit.class,
+                    player,
+                    position,
+                    team: permit.team,
+                    rotation: 0.,
+                };
                 let message = ServerMessage::GameAction(GameAction::SpawnCharacter(message));
 
                 net.send_message(address, message)

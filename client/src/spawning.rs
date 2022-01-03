@@ -25,13 +25,17 @@ pub fn spawn_characters(
     mut commands: Commands,
 ) {
     for spawn_event in spawn_reader.iter() {
-        let common_bundle =
-            CommonCharacterBundle::new(spawn_event.index(), spawn_event.class(), &time);
-        let position = spawn_event.position();
+        let common_bundle = CommonCharacterBundle::new(
+            spawn_event.index,
+            spawn_event.class,
+            spawn_event.team,
+            &time,
+        );
+        let position = spawn_event.position;
         let transform = Transform::from_xyz(position.x, position.y, 0.);
 
         let character_bundle = CharacterBundle::new(transform, common_bundle, &character_materials);
-        let id = if spawn_event.player() {
+        let id = if spawn_event.player {
             info!("spawned player");
             let player_bundle = PlayerBundle::new(character_bundle);
             player_state

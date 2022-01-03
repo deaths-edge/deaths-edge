@@ -42,7 +42,7 @@ fn process_permit(
             ServerMessage::GameAction(GameAction::Setup(arena_spawn)),
         ));
     } else {
-        error!("fraudulent permit");
+        error!(message = "fraudulent permit", ?client_permit);
     }
 }
 
