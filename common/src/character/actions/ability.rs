@@ -3,10 +3,7 @@ use heron::rapier_plugin::PhysicsWorld;
 use serde::{Deserialize, Serialize};
 use tracing::warn;
 
-use crate::{
-    character::{CastState, CharacterMarker, Class, LastCastInstant, Target},
-    spells::instances::{fireball_ability, spear_ability},
-};
+use crate::character::{CastState, CharacterMarker, Class, LastCastInstant, Target};
 
 use super::CharacterEntityAction;
 
@@ -59,41 +56,11 @@ pub fn character_ability(
         let ability = action.action();
         match character_class {
             Class::Mars => match ability {
-                Ability::Ability1 => {
-                    let result = spear_ability(
-                        &time,
-                        &physics_world,
-                        last_cast_instant,
-                        character_entity,
-                        character_transform,
-                        character_target,
-                        &mut character_cast_state,
-                        &target_query,
-                    );
-
-                    if let Err(error) = result {
-                        warn!(message = "failed to cast fireball", %error)
-                    }
-                }
+                Ability::Ability1 => {}
                 _ => todo!(),
             },
             Class::Medea => match ability {
-                Ability::Ability1 => {
-                    let result = fireball_ability(
-                        &time,
-                        &physics_world,
-                        last_cast_instant,
-                        character_entity,
-                        character_transform,
-                        character_target,
-                        &mut character_cast_state,
-                        &target_query,
-                    );
-
-                    if let Err(error) = result {
-                        warn!(message = "failed to cast fireball", %error)
-                    }
-                }
+                Ability::Ability1 => {}
                 _ => todo!(),
             },
             _ => todo!(),

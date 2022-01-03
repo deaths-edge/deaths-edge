@@ -4,10 +4,7 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use super::CharacterEntityAction;
-use crate::{
-    character::{CharacterMarker, SpeedMultiplier},
-    effects::{EffectTarget, MovementInterruptBundle},
-};
+use crate::character::{CharacterMarker, SpeedMultiplier};
 
 const FORWARD_SPEED: f32 = 1.0;
 const STRAFE_SPEED: f32 = 0.8;
@@ -82,10 +79,6 @@ pub fn character_movement(
             // Normalize
             let mag = direction.length().max(1.);
             direction /= mag;
-
-            commands
-                .spawn()
-                .insert_bundle(MovementInterruptBundle::new(EffectTarget(character_entity)));
         }
 
         let direction = transform.rotation * (direction.extend(0.));

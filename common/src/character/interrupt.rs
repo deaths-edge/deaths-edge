@@ -1,13 +1,12 @@
-use bevy::utils::Instant;
+use bevy::utils::{HashMap, Instant};
+
+use crate::abilities::SpellType;
 
 #[derive(Default)]
-pub struct InterruptState {
-    interrupted_until: Option<Instant>,
-}
+pub struct Interrupts(pub HashMap<SpellType, Instant>);
 
-impl InterruptState {
-    pub fn interrupt_until(&mut self, instant: Instant) -> &mut Self {
-        self.interrupted_until = Some(instant);
-        self
+impl Interrupts {
+    pub fn is_locked(&self, spell_type: &SpellType) -> bool {
+        self.0.contains_key(&spell_type)
     }
 }

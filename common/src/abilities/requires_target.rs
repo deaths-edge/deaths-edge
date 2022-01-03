@@ -11,7 +11,8 @@ pub enum RequiresTarget {
     Both,
 }
 
-fn check_required_target(
+/// Checks the required target is correct.
+pub fn check_required_target(
     mut ability_query: Query<
         (&AbilitySource, &RequiresTarget, &mut UseObstructions),
         With<AbilityMarker>,
