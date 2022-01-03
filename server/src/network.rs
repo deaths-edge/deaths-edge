@@ -114,7 +114,7 @@ fn handle_client_messages(
                             motion,
                             &mut motion_writer,
                         ),
-                        ClientAction::OptionalTarget(target) => process_command(
+                        ClientAction::Target(target) => process_command(
                             *connection_handle,
                             char_query.iter(),
                             target,

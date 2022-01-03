@@ -21,7 +21,7 @@ impl<T: Into<ClientAction>> From<T> for ClientMessage {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum ClientAction {
     Motion(Motion),
-    OptionalTarget(SelectTarget),
+    Target(SelectTarget),
     Ability(Ability),
     Rotate(FocalAngle),
 }
@@ -34,7 +34,7 @@ impl From<Ability> for ClientAction {
 
 impl From<SelectTarget> for ClientAction {
     fn from(target: SelectTarget) -> Self {
-        Self::OptionalTarget(target)
+        Self::Target(target)
     }
 }
 
