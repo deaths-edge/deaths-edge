@@ -66,6 +66,7 @@ impl CharacterBundle {
     pub fn new(index: CharacterIndex, class: Class, team: Team, time: &Time) -> Self {
         let size = class.size();
         let health = class.health();
+        let power = class.power();
 
         Self {
             index,
@@ -86,10 +87,7 @@ impl CharacterBundle {
             rotational_constraints: RotationConstraints::lock(),
             controls: Controls::default(),
 
-            power: Power {
-                current: 0.,
-                total: 100.,
-            },
+            power,
             health: Health {
                 current: health,
                 total: health,

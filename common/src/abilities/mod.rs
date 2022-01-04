@@ -27,7 +27,7 @@ pub use requires_stationary::*;
 pub use requires_target::*;
 pub use spell_type::*;
 
-use std::{fmt::Debug, hash::Hash, time::Duration};
+use std::{fmt::Debug, hash::Hash};
 
 use bevy::{prelude::*, utils::HashSet};
 
@@ -41,10 +41,7 @@ pub struct AbilityMarker;
 #[derive(Debug)]
 pub struct AbilitySource(pub Entity);
 
-////
-// After the input (or network) event triggers an ability, a new "instance" of the ability is
-// created using the components below.
-
+/// An obstruction preventing a specific ability from being used.
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub enum Obstruction {
     InsufficientPower,
@@ -57,6 +54,12 @@ pub enum Obstruction {
     GlobalCooldown,
     NonStationary,
     Locked,
+}
+
+pub fn remove_instance(query: Query<Entity, With<AbilityInstance>>, mut commands: Commands) {
+    for id in query.iter() {
+        commands.entity(id).despawn();
+    }
 }
 
 pub fn spawn_class_abilities(character_id: Entity, commands: &mut Commands) {
@@ -103,13 +106,21 @@ where
 
         let adjoin_instances = SystemSet::on_update(self.state).with_system(adjoin_target.system());
 
-        let apply_cost = SystemSet::on_update(self.state)
+        const ABILITY_APPLICATION: &str = "ability-application";
+
+        let application = SystemSet::on_update(self.state)
+            .label(ABILITY_APPLICATION)
             .with_system(apply_health_cost.system())
             .with_system(apply_power_cost.system())
             .with_system(apply_damage.system());
 
+        let removal = SystemSet::on_update(self.state)
+            .after(ABILITY_APPLICATION)
+            .with_system(remove_instance.system());
+
         app.add_system_set(ability_checks)
             .add_system_set(adjoin_instances)
-            .add_system_set(apply_cost);
+            .add_system_set(application)
+            .add_system_set(removal);
     }
 }

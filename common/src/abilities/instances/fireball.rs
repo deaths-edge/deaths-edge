@@ -13,6 +13,8 @@ pub struct Fireball {
     requires_los: RequiresLoS,
     max_range: MaximumRange,
 
+    instant_damage: InstantDamage,
+
     cast_type: CastType,
 }
 
@@ -35,7 +37,10 @@ impl Fireball {
             requires_los: RequiresLoS,
             max_range: MaximumRange(500.),
 
-            cast_type: CastType::Cast(Duration::from_secs(1)),
+            instant_damage: InstantDamage(25.),
+
+            // cast_type: CastType::Cast(Duration::from_secs(1)),
+            cast_type: CastType::Instant,
         }
     }
 }

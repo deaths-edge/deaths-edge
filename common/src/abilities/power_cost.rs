@@ -38,6 +38,7 @@ pub fn apply_power_cost(
             .expect("missing character");
 
         power.current -= cost.0;
-        assert!(power.current > 0.);
+        info!(current_power = ?power.current);
+        // assert!(power.current > 0.);
     }
 }

@@ -3,6 +3,8 @@ use std::fmt;
 use bevy::math::Size;
 use serde::{Deserialize, Serialize};
 
+use super::Power;
+
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub enum Class {
     /// Melee: Damage + Survivability
@@ -41,12 +43,32 @@ pub enum Class {
 }
 
 impl Class {
+    pub fn size(&self) -> Size {
+        Size::new(30., 30.)
+    }
+
     pub fn health(&self) -> f32 {
         use Class::*;
 
         match self {
             Mars => 200.,
             Medea => 150.,
+            _ => todo!(),
+        }
+    }
+
+    pub fn power(&self) -> Power {
+        use Class::*;
+
+        match self {
+            Mars => Power {
+                current: 0.,
+                total: 100.,
+            },
+            Medea => Power {
+                current: 0.,
+                total: 100.,
+            },
             _ => todo!(),
         }
     }
@@ -102,11 +124,5 @@ impl Class {
 impl fmt::Display for Class {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.as_str())
-    }
-}
-
-impl Class {
-    pub fn size(&self) -> Size {
-        Size::new(30., 30.)
     }
 }
