@@ -18,11 +18,6 @@ pub struct Fireball {
     cast_type: CastType,
 }
 
-// pub struct FireballImpact {
-//     marker: AbilityMarker,
-//     target_damage: InstantDamage,
-// }
-
 impl Fireball {
     pub fn new() -> Self {
         Self {

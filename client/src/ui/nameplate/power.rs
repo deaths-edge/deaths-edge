@@ -38,7 +38,6 @@ pub fn power_bar_update(
         if let Ok(nameplate_parent) = nameplate_query.get(power_bar_parent.0) {
             if let Ok(character_power) = character_query.get(nameplate_parent.0) {
                 let percent = 100. * character_power.current as f32 / character_power.total as f32;
-                info!(%percent, current = ?powerbar_style.margin.right);
                 powerbar_style.size.width = Val::Percent(percent);
             }
         }

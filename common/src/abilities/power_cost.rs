@@ -28,7 +28,7 @@ pub fn check_power_cost(
 
 // Looks for instances of the ability and then applies the power cost to the character.
 pub fn apply_power_cost(
-    instance_query: Query<&AbilityInstance>,
+    instance_query: Query<&AbilityInstance, Changed<AbilityInstance>>,
     ability_query: Query<(&AbilitySource, &PowerCost), With<AbilityMarker>>,
     mut character_query: Query<&mut Power, With<CharacterMarker>>,
 ) {

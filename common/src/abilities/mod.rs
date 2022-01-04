@@ -56,9 +56,23 @@ pub enum Obstruction {
     Locked,
 }
 
-pub fn remove_instance(query: Query<Entity, With<AbilityInstance>>, mut commands: Commands) {
+pub fn remove_instance(
+    query: Query<Entity, (With<AbilityInstance>, With<RemoveAbilityInstance>)>,
+    mut commands: Commands,
+) {
     for id in query.iter() {
         commands.entity(id).despawn();
+    }
+}
+
+pub struct RemoveAbilityInstance;
+
+pub fn mark_instance(
+    query: Query<Entity, (With<AbilityInstance>, Without<RemoveAbilityInstance>)>,
+    mut commands: Commands,
+) {
+    for id in query.iter() {
+        commands.entity(id).insert(RemoveAbilityInstance);
     }
 }
 
@@ -116,6 +130,7 @@ where
 
         let removal = SystemSet::on_update(self.state)
             .after(ABILITY_APPLICATION)
+            .with_system(mark_instance.system())
             .with_system(remove_instance.system());
 
         app.add_system_set(ability_checks)
