@@ -1,9 +1,14 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 use heron::Velocity;
 
-use crate::character::CharacterMarker;
+use crate::character::{CastState, CharacterEntityAction, CharacterMarker, Motion};
 
-use super::{AbilityMarker, AbilitySource, Obstruction, UseObstructions};
+use super::{
+    AbilityInstance, AbilityMarker, AbilitySource, Casting, Failed, InstantInterrupt, Obstruction,
+    UseObstructions,
+};
 
 pub struct RequiresStationary;
 
@@ -23,4 +28,14 @@ pub fn check_required_stationary(
             }
         }
     }
+}
+
+pub fn motion_interrupt(
+    mut motion: EventReader<CharacterEntityAction<Motion>>,
+
+    mut commands: Commands,
+) {
+    // commands
+    //     .spawn()
+    //     .insert(InstantInterrupt(Duration::default()))
 }

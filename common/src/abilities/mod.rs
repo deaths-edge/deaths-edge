@@ -4,6 +4,7 @@ mod global_cooldown;
 mod health_cost;
 mod instances;
 mod instant_damage;
+mod instant_interrupt;
 mod lifecycle;
 mod maximum_range;
 mod power_cost;
@@ -20,6 +21,7 @@ pub use global_cooldown::*;
 pub use health_cost::*;
 pub use instances::*;
 pub use instant_damage::*;
+pub use instant_interrupt::*;
 pub use lifecycle::*;
 pub use maximum_range::*;
 pub use power_cost::*;
@@ -106,17 +108,24 @@ where
             .label(INSTANCE_PREPARATION)
             .with_system(adjoin_target.system());
 
-        const ABILITY_APPLICATION: &str = "ability-application";
+        const CASTING_INSTANCES: &str = "casting-instances";
+
+        let casting_instances = SystemSet::on_update(self.state)
+            .label(CASTING_INSTANCES)
+            .with_system(motion_interrupt.system());
+
+        const COMPLETE_INSTANCES: &str = "complete-instances";
 
         let complete_instances = SystemSet::on_update(self.state)
-            .label(ABILITY_APPLICATION)
+            .label(COMPLETE_INSTANCES)
             .with_system(apply_health_cost.system())
             .with_system(apply_power_cost.system())
             .with_system(apply_damage.system())
             .with_system(apply_global_cooldown.system());
 
         let lifecycle = SystemSet::on_update(self.state)
-            .before(ABILITY_APPLICATION)
+            .before(COMPLETE_INSTANCES)
+            .before(CASTING_INSTANCES)
             .with_system(initialize_cast.system())
             .with_system(complete_casting.system())
             .with_system(remove_instance.system());
@@ -124,6 +133,7 @@ where
         app.add_system_set(lifecycle)
             .add_system_set(ability_checks)
             .add_system_set(prepare_instances)
+            .add_system_set(casting_instances)
             .add_system_set(complete_instances);
     }
 }

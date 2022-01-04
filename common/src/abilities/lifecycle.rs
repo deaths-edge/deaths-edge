@@ -4,12 +4,6 @@ use crate::character::{Cast, CastState, CharacterMarker};
 
 use super::{AbilityInstance, AbilityMarker, AbilitySource, CastType};
 
-// pub enum Lifecycle {
-//     Preparing,
-//     Casting,
-//     Complete,
-// }
-
 pub struct Preparing;
 
 /// If the ability is a cast, then switches from [`Preparing`] to [`Casting`] and sets character
@@ -28,7 +22,6 @@ pub fn initialize_cast(
     let start = time.last_update().expect("failed to find last update");
 
     for (instance_id, ability_id) in instance_query.iter() {
-        error!("instance found");
         let (source, cast_type) = ability_query
             .get(ability_id.0)
             .expect("failed to find ability");
@@ -63,7 +56,10 @@ pub struct Casting;
 pub fn complete_casting(
     time: Res<Time>,
 
-    instance_query: Query<(Entity, &AbilityInstance), (With<Casting>, Without<Complete>)>,
+    instance_query: Query<
+        (Entity, &AbilityInstance),
+        (With<Casting>, Without<Complete>, Without<Failed>),
+    >,
     ability_query: Query<(&AbilitySource, &CastType), With<AbilityMarker>>,
     mut character_query: Query<&mut CastState, With<CharacterMarker>>,
 
@@ -103,11 +99,15 @@ pub fn complete_casting(
     }
 }
 
+/// Cast has completed successfully.
 pub struct Complete;
 
-/// Removes ability instances which is [`Complete`].
+/// Cast has failed.
+pub struct Failed;
+
+/// Removes ability instances which is [`Complete`] or [`Failed`].
 pub fn remove_instance(
-    query: Query<Entity, (With<AbilityInstance>, With<Complete>)>,
+    query: Query<Entity, (With<AbilityInstance>, Or<(With<Complete>, With<Failed>)>)>,
     mut commands: Commands,
 ) {
     for id in query.iter() {

@@ -46,6 +46,12 @@ pub struct Motion {
     pub normal: Option<NormalMotion>,
 }
 
+impl Motion {
+    pub fn is_stationary(&self) -> bool {
+        self.parallel.is_none() && self.normal.is_none()
+    }
+}
+
 impl Into<Vec2> for Motion {
     fn into(self) -> Vec2 {
         let parallel: Vec2 = self.parallel.map(Into::into).unwrap_or_default();
@@ -60,14 +66,12 @@ pub fn character_movement(
 
     // CharacterIndex query
     mut character_query: Query<
-        (Entity, &SpeedMultiplier, &mut Transform, &mut Velocity),
+        (&SpeedMultiplier, &mut Transform, &mut Velocity),
         With<CharacterMarker>,
     >,
-
-    mut commands: Commands,
 ) {
     for action in motion_events.iter() {
-        let (character_entity, speed_multiplier, transform, mut velocity) = character_query
+        let (speed_multiplier, transform, mut velocity) = character_query
             .get_mut(action.id())
             .expect("failed to find character");
 

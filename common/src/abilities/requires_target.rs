@@ -2,7 +2,9 @@ use bevy::prelude::*;
 
 use crate::character::{CharacterMarker, OptionalTarget, Team};
 
-use super::{AbilityInstance, AbilityMarker, AbilitySource, Obstruction, UseObstructions};
+use super::{
+    AbilityInstance, AbilityMarker, AbilitySource, Obstruction, Preparing, UseObstructions,
+};
 
 /// Ability requires a target.
 pub enum RequiresTarget {
@@ -53,7 +55,7 @@ pub struct Target(pub Entity);
 
 /// Adds current target to instance ability.
 pub fn adjoin_target(
-    instance_query: Query<(Entity, &AbilityInstance), Without<Target>>,
+    instance_query: Query<(Entity, &AbilityInstance), With<Preparing>>,
     ability_query: Query<&AbilitySource, With<AbilityMarker>>,
     character_query: Query<&OptionalTarget, With<CharacterMarker>>,
 
