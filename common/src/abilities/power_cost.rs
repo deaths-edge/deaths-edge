@@ -16,10 +16,11 @@ pub fn check_power_cost(
 ) {
     for (source, cost, mut obstructions) in ability_query.iter_mut() {
         if let Ok(power) = character_query.get(source.0) {
-            if power.current > cost.0 {
-                obstructions.0.insert(Obstruction::InsufficientPower);
-            } else {
+            if power.current >= cost.0 {
                 obstructions.0.remove(&Obstruction::InsufficientPower);
+            } else {
+                warn!(message = "insufficient power", current_power = ?power.current, cost = %cost.0);
+                obstructions.0.insert(Obstruction::InsufficientPower);
             }
         }
     }

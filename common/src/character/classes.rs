@@ -66,7 +66,7 @@ impl Class {
                 total: 100.,
             },
             Medea => Power {
-                current: 0.,
+                current: 100.,
                 total: 100.,
             },
             _ => todo!(),
