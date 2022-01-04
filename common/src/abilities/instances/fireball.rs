@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::abilities::*;
 
 #[derive(Bundle)]
@@ -33,7 +35,6 @@ impl Fireball {
             max_range: MaximumRange(500.),
 
             instant_damage: InstantDamage(25.),
-
             // cast_type: CastType::Cast(Duration::from_secs(1)),
             cast_type: CastType::Instant,
         }

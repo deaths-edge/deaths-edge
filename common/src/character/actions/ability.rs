@@ -28,10 +28,7 @@ pub fn character_ability(
     // Ability events
     mut events: EventReader<CharacterEntityAction<Ability>>,
 
-    mut character_query: Query<
-        (Entity, &mut CastState, &mut LastCastInstant),
-        With<CharacterMarker>,
-    >,
+    mut character_query: Query<(Entity, &mut CastState), With<CharacterMarker>>,
     ability_query: Query<
         (Entity, &AbilitySource, &CastType, &UseObstructions),
         With<AbilityMarker>,
@@ -39,10 +36,8 @@ pub fn character_ability(
 
     mut commands: Commands,
 ) {
-    let now = time.last_update().expect("failed to find last update");
-
     for action in events.iter() {
-        let (character_id, mut cast, mut last_cast_instant) = character_query
+        let (character_id, mut cast) = character_query
             .get_mut(action.id())
             .expect("character not found");
 
@@ -61,16 +56,13 @@ pub fn character_ability(
         // Create instance of ability
         match cast_type {
             CastType::Instant => {
-                // Update last cast instant
-                last_cast_instant.0 = now;
-
                 commands.spawn().insert(AbilityInstance(ability_id));
             }
             CastType::Cast(_) => {
-                cast.0 = Some(Cast {
-                    ability_id,
-                    start: now,
-                });
+                // cast.0 = Some(Cast {
+                //     ability_id,
+                //     start: now,
+                // });
             }
             CastType::Channel(_) => todo!(),
         }

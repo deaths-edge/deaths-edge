@@ -126,7 +126,8 @@ where
             .label(ABILITY_APPLICATION)
             .with_system(apply_health_cost.system())
             .with_system(apply_power_cost.system())
-            .with_system(apply_damage.system());
+            .with_system(apply_damage.system())
+            .with_system(apply_global_cooldown.system());
 
         let removal = SystemSet::on_update(self.state)
             .after(ABILITY_APPLICATION)

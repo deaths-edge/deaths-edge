@@ -47,7 +47,7 @@ pub fn cast_bar_update(
                     cast_bar_style.display = Display::Flex;
 
                     let cast_type = ability_query
-                        .get(character_cast.ability_id)
+                        .get(character_cast.cast_id)
                         .expect("could not find ability");
 
                     match cast_type {
