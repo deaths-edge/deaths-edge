@@ -108,7 +108,7 @@ where
 
         const ABILITY_APPLICATION: &str = "ability-application";
 
-        let application = SystemSet::on_update(self.state)
+        let complete_instances = SystemSet::on_update(self.state)
             .label(ABILITY_APPLICATION)
             .with_system(apply_health_cost.system())
             .with_system(apply_power_cost.system())
@@ -116,12 +116,14 @@ where
             .with_system(apply_global_cooldown.system());
 
         let lifecycle = SystemSet::on_update(self.state)
+            .before(ABILITY_APPLICATION)
             .with_system(initialize_cast.system())
             .with_system(complete_casting.system())
             .with_system(remove_instance.system());
 
-        app.add_system_set(ability_checks)
+        app.add_system_set(lifecycle)
+            .add_system_set(ability_checks)
             .add_system_set(prepare_instances)
-            .add_system_set(application);
+            .add_system_set(complete_instances);
     }
 }

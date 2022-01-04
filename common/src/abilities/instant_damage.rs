@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
-use super::{AbilityInstance, AbilityMarker, Target};
+use super::{AbilityInstance, AbilityMarker, Complete, Target};
 use crate::character::{CharacterMarker, Health};
 
 pub struct InstantDamage(pub f32);
 
 pub fn apply_damage(
-    instance_query: Query<(&AbilityInstance, &Target)>,
+    instance_query: Query<(&AbilityInstance, &Target), With<Complete>>,
     ability_query: Query<&InstantDamage, With<AbilityMarker>>,
     mut character_query: Query<&mut Health, With<CharacterMarker>>,
 ) {

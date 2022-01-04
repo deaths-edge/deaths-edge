@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use super::{AbilityInstance, AbilityMarker, AbilitySource, Obstruction, UseObstructions};
+use super::{
+    AbilityInstance, AbilityMarker, AbilitySource, Complete, Obstruction, UseObstructions,
+};
 use crate::character::{CharacterMarker, Power};
 
 /// Ability costs power.
@@ -28,7 +30,7 @@ pub fn check_power_cost(
 
 // Looks for instances of the ability and then applies the power cost to the character.
 pub fn apply_power_cost(
-    instance_query: Query<&AbilityInstance, Changed<AbilityInstance>>,
+    instance_query: Query<&AbilityInstance, With<Complete>>,
     ability_query: Query<(&AbilitySource, &PowerCost), With<AbilityMarker>>,
     mut character_query: Query<&mut Power, With<CharacterMarker>>,
 ) {

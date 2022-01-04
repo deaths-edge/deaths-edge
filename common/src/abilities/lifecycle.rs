@@ -28,6 +28,7 @@ pub fn initialize_cast(
     let start = time.last_update().expect("failed to find last update");
 
     for (instance_id, ability_id) in instance_query.iter() {
+        error!("instance found");
         let (source, cast_type) = ability_query
             .get(ability_id.0)
             .expect("failed to find ability");
@@ -64,7 +65,7 @@ pub fn complete_casting(
 
     instance_query: Query<(Entity, &AbilityInstance), (With<Casting>, Without<Complete>)>,
     ability_query: Query<(&AbilitySource, &CastType), With<AbilityMarker>>,
-    mut character_query: Query<&CastState, With<CharacterMarker>>,
+    mut character_query: Query<&mut CastState, With<CharacterMarker>>,
 
     mut commands: Commands,
 ) {
@@ -78,8 +79,8 @@ pub fn complete_casting(
         match cast_type {
             CastType::Instant => unreachable!("cannot be Casting as an instant"),
             CastType::Cast(duration) => {
-                let cast_state = character_query
-                    .get(source.0)
+                let mut cast_state = character_query
+                    .get_mut(source.0)
                     .expect("failed to find character");
 
                 let cast = cast_state.0.as_ref().expect("must be casting");
@@ -93,6 +94,8 @@ pub fn complete_casting(
                         .entity(instance_id)
                         .insert(Complete)
                         .remove::<Casting>();
+
+                    cast_state.0 = None;
                 }
             }
             CastType::Channel(_) => todo!(),
