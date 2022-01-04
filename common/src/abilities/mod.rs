@@ -4,6 +4,7 @@ mod global_cooldown;
 mod health_cost;
 mod instances;
 mod instant_damage;
+mod lifecycle;
 mod maximum_range;
 mod power_cost;
 mod projectile;
@@ -19,6 +20,7 @@ pub use global_cooldown::*;
 pub use health_cost::*;
 pub use instances::*;
 pub use instant_damage::*;
+pub use lifecycle::*;
 pub use maximum_range::*;
 pub use power_cost::*;
 pub use requires_fov::*;
@@ -54,26 +56,6 @@ pub enum Obstruction {
     GlobalCooldown,
     NonStationary,
     Locked,
-}
-
-pub fn remove_instance(
-    query: Query<Entity, (With<AbilityInstance>, With<RemoveAbilityInstance>)>,
-    mut commands: Commands,
-) {
-    for id in query.iter() {
-        commands.entity(id).despawn();
-    }
-}
-
-pub struct RemoveAbilityInstance;
-
-pub fn mark_instance(
-    query: Query<Entity, (With<AbilityInstance>, Without<RemoveAbilityInstance>)>,
-    mut commands: Commands,
-) {
-    for id in query.iter() {
-        commands.entity(id).insert(RemoveAbilityInstance);
-    }
 }
 
 pub fn spawn_class_abilities(character_id: Entity, commands: &mut Commands) {
@@ -118,7 +100,11 @@ where
             // .with_system()
             ;
 
-        let adjoin_instances = SystemSet::on_update(self.state).with_system(adjoin_target.system());
+        const INSTANCE_PREPARATION: &str = "instance-preparation";
+
+        let prepare_instances = SystemSet::on_update(self.state)
+            .label(INSTANCE_PREPARATION)
+            .with_system(adjoin_target.system());
 
         const ABILITY_APPLICATION: &str = "ability-application";
 
@@ -129,14 +115,13 @@ where
             .with_system(apply_damage.system())
             .with_system(apply_global_cooldown.system());
 
-        let removal = SystemSet::on_update(self.state)
-            .after(ABILITY_APPLICATION)
-            .with_system(mark_instance.system())
+        let lifecycle = SystemSet::on_update(self.state)
+            .with_system(initialize_cast.system())
+            .with_system(complete_casting.system())
             .with_system(remove_instance.system());
 
         app.add_system_set(ability_checks)
-            .add_system_set(adjoin_instances)
-            .add_system_set(application)
-            .add_system_set(removal);
+            .add_system_set(prepare_instances)
+            .add_system_set(application);
     }
 }

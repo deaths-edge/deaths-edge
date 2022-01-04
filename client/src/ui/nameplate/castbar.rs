@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use common::{
-    abilities::{AbilityMarker, CastType},
+    abilities::{AbilityInstance, AbilityMarker, CastType},
     character::{CastState, CharacterMarker},
 };
 
@@ -36,37 +36,47 @@ impl CastBarBundle {
 pub fn cast_bar_update(
     time: Res<Time>,
     mut cast_bar_query: Query<(&Parent, &mut Style), With<CastBarMarker>>,
+    instance_query: Query<&AbilityInstance>,
     ability_query: Query<&CastType, With<AbilityMarker>>,
     nameplate_query: Query<&NameplateParent, With<NameplateMarker>>,
     character_query: Query<&CastState, With<CharacterMarker>>,
 ) {
     for (cast_bar_parent, mut cast_bar_style) in cast_bar_query.iter_mut() {
-        if let Ok(nameplate_parent) = nameplate_query.get(cast_bar_parent.0) {
-            if let Ok(character_cast_state) = character_query.get(nameplate_parent.0) {
-                if let Some(character_cast) = &character_cast_state.0 {
-                    cast_bar_style.display = Display::Flex;
+        let character_cast = nameplate_query
+            .get(cast_bar_parent.0)
+            .and_then(|nameplate_parent| character_query.get(nameplate_parent.0))
+            .map(|character_cast_state| character_cast_state.0.as_ref());
 
-                    let cast_type = ability_query
-                        .get(character_cast.cast_id)
-                        .expect("could not find ability");
+        match character_cast {
+            Ok(Some(character_cast)) => {
+                cast_bar_style.display = Display::Flex;
 
-                    match cast_type {
-                        CastType::Instant => continue,
-                        CastType::Cast(cast_total_duration) => {
-                            let now = time.last_update().expect("last update not found");
-                            let current_duration = now - character_cast.start;
+                let ability_id = instance_query
+                    .get(character_cast.instance_id)
+                    .expect("failed to find instance");
 
-                            let percent = 100. * current_duration.as_secs_f32()
-                                / cast_total_duration.as_secs_f32();
+                let cast_type = ability_query
+                    .get(ability_id.0)
+                    .expect("could not find ability");
 
-                            cast_bar_style.size.width = Val::Percent(percent);
-                        }
-                        CastType::Channel(_) => todo!(),
+                match cast_type {
+                    CastType::Instant => continue,
+                    CastType::Cast(cast_total_duration) => {
+                        let now = time.last_update().expect("last update not found");
+                        let current_duration = now - character_cast.start;
+
+                        let percent = 100. * current_duration.as_secs_f32()
+                            / cast_total_duration.as_secs_f32();
+
+                        cast_bar_style.size.width = Val::Percent(percent);
                     }
-                } else {
-                    cast_bar_style.display = Display::None;
+                    CastType::Channel(_) => todo!(),
                 }
             }
+            Ok(None) => {
+                cast_bar_style.display = Display::None;
+            }
+            _ => (),
         }
     }
 }
