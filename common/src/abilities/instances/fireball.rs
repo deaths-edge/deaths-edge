@@ -11,6 +11,7 @@ pub struct Fireball {
     power_cost: PowerCost,
 
     requires_target: RequiresTarget,
+    requires_stationary: RequiresStationary,
     requires_fov: RequiresFov,
     requires_los: RequiresLoS,
     max_range: MaximumRange,
@@ -30,6 +31,7 @@ impl Fireball {
             power_cost: PowerCost(20.),
 
             requires_target: RequiresTarget::Enemy,
+            requires_stationary: RequiresStationary,
             requires_fov: RequiresFov,
             requires_los: RequiresLoS,
             max_range: MaximumRange(500.),

@@ -31,11 +31,41 @@ pub fn check_required_stationary(
 }
 
 pub fn motion_interrupt(
-    mut motion: EventReader<CharacterEntityAction<Motion>>,
+    mut motion_events: EventReader<CharacterEntityAction<Motion>>,
+
+    cast_instance_query: Query<(Entity, &AbilityInstance), With<Casting>>,
+    cast_ability_query: Query<(), (With<AbilityMarker>, With<RequiresStationary>)>,
+
+    mut character_query: Query<&mut CastState, With<CharacterMarker>>,
 
     mut commands: Commands,
 ) {
-    // commands
-    //     .spawn()
-    //     .insert(InstantInterrupt(Duration::default()))
+    for motion in motion_events.iter() {
+        if !motion.action.is_stationary() {
+            let mut cast_state = character_query
+                .get_mut(motion.id)
+                .expect("failed to find character");
+            let instance_id_opt = if let Some(cast) = &cast_state.0 {
+                let (instance_id, ability_id) = cast_instance_query
+                    .get(cast.instance_id)
+                    .expect("failed to find ability instance");
+                if cast_ability_query.get(ability_id.0).is_ok() {
+                    Some(instance_id)
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+
+            if let Some(instance_id) = instance_id_opt {
+                commands
+                    .entity(instance_id)
+                    .remove::<Casting>()
+                    .insert(Failed);
+
+                cast_state.0 = None;
+            }
+        }
+    }
 }
