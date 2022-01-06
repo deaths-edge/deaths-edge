@@ -2,10 +2,10 @@ use bevy::prelude::*;
 
 use crate::character::{CharacterMarker, Interrupts};
 
-use super::{AbilityMarker, AbilitySource, Obstruction, UseObstructions};
+use super::{AbilityMarker, CharacterId, Obstruction, UseObstructions};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum SpellType {
+pub enum MagicType {
     Fire,
     Frost,
     Nature,
@@ -16,10 +16,7 @@ pub enum SpellType {
 }
 
 pub fn check_lock(
-    mut ability_query: Query<
-        (&AbilitySource, &SpellType, &mut UseObstructions),
-        With<AbilityMarker>,
-    >,
+    mut ability_query: Query<(&CharacterId, &MagicType, &mut UseObstructions), With<AbilityMarker>>,
     character_query: Query<&Interrupts, (With<CharacterMarker>, Changed<Interrupts>)>,
 ) {
     for (source, spell_type, mut obstructions) in ability_query.iter_mut() {

@@ -5,11 +5,10 @@ use heron::{
 };
 
 use crate::{
+    abilities::{AbilityMarker, CharacterId, Obstruction, UseObstructions},
     character::{CharacterMarker, OptionalTarget},
     physics::WorldLayer,
 };
-
-use super::{AbilityMarker, AbilitySource, Obstruction, UseObstructions};
 
 pub struct RequiresLoS;
 
@@ -51,7 +50,7 @@ pub fn check_required_los(
     physics_world: PhysicsWorld,
 
     mut ability_query: Query<
-        (&AbilitySource, &mut UseObstructions),
+        (&CharacterId, &mut UseObstructions),
         (With<AbilityMarker>, With<RequiresLoS>),
     >,
     character_query: Query<(&OptionalTarget, &Transform), With<CharacterMarker>>,

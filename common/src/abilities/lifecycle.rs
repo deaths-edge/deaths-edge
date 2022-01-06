@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::character::{Cast, CastState, CharacterMarker};
 
-use super::{AbilityId, AbilityMarker, AbilitySource, CastType};
+use super::{AbilityId, AbilityMarker, CastType, CharacterId};
 
 pub struct Preparing;
 
@@ -14,7 +14,7 @@ pub fn initialize_cast(
     time: Res<Time>,
 
     instance_query: Query<(Entity, &AbilityId), (With<Preparing>, Without<Casting>)>,
-    ability_query: Query<(&AbilitySource, &CastType), With<AbilityMarker>>,
+    ability_query: Query<(&CharacterId, &CastType), With<AbilityMarker>>,
     mut character_query: Query<&mut CastState, With<CharacterMarker>>,
 
     mut commands: Commands,
@@ -60,7 +60,7 @@ pub fn complete_casting(
         (Entity, &AbilityId),
         (With<Casting>, Without<Complete>, Without<Failed>),
     >,
-    ability_query: Query<(&AbilitySource, &CastType), With<AbilityMarker>>,
+    ability_query: Query<(&CharacterId, &CastType), With<AbilityMarker>>,
     mut character_query: Query<&mut CastState, With<CharacterMarker>>,
 
     mut commands: Commands,

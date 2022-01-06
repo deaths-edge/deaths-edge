@@ -2,9 +2,10 @@ use std::f32::consts::PI;
 
 use bevy::prelude::*;
 
-use crate::character::{CharacterMarker, OptionalTarget};
-
-use super::{AbilityMarker, AbilitySource, Obstruction, UseObstructions};
+use crate::{
+    abilities::{AbilityMarker, CharacterId, Obstruction, UseObstructions},
+    character::{CharacterMarker, OptionalTarget},
+};
 
 /// Requires that target is in Field of View.
 pub struct RequiresFov;
@@ -24,7 +25,7 @@ fn check_fov(source: &Transform, target: Vec3) -> Result<f32, OutOfFieldOfView> 
 
 pub fn check_required_fov(
     mut ability_query: Query<
-        (&AbilitySource, &mut UseObstructions),
+        (&CharacterId, &mut UseObstructions),
         (With<AbilityMarker>, With<RequiresFov>),
     >,
     character_query: Query<(&OptionalTarget, &Transform), With<CharacterMarker>>,

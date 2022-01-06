@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::character::{CastState, CharacterMarker, Interrupts};
 
-use super::{AbilityId, AbilityMarker, Casting, Complete, Failed, SpellType, Target};
+use super::{AbilityId, AbilityMarker, Casting, Complete, Failed, MagicType, Target};
 
 pub struct InstantInterrupt(pub Duration);
 
@@ -15,7 +15,7 @@ pub fn apply_interrupt(
     interrupt_ability_query: Query<&InstantInterrupt, With<AbilityMarker>>,
 
     cast_instance_query: Query<(Entity, &AbilityId), With<Casting>>,
-    cast_ability_query: Query<&SpellType, With<AbilityMarker>>,
+    cast_ability_query: Query<&MagicType, With<AbilityMarker>>,
 
     mut character_query: Query<(&mut CastState, &mut Interrupts), With<CharacterMarker>>,
 

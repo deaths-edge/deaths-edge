@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use tracing::warn;
 
 use crate::{
-    abilities::{AbilityId, AbilityMarker, AbilitySource, Preparing, UseObstructions},
+    abilities::{AbilityId, AbilityMarker, CharacterId, Preparing, UseObstructions},
     character::CharacterMarker,
 };
 
@@ -27,7 +27,7 @@ pub fn character_ability(
     mut events: EventReader<CharacterEntityAction<Ability>>,
 
     mut character_query: Query<Entity, With<CharacterMarker>>,
-    ability_query: Query<(Entity, &AbilitySource, &UseObstructions), With<AbilityMarker>>,
+    ability_query: Query<(Entity, &CharacterId, &UseObstructions), With<AbilityMarker>>,
 
     mut commands: Commands,
 ) {

@@ -1,35 +1,27 @@
 mod cast_type;
-mod cooldown;
-mod global_cooldown;
-mod health_cost;
+mod cooldowns;
+mod cost;
 mod instances;
 mod instant_damage;
 mod instant_interrupt;
 mod lifecycle;
-mod maximum_range;
-mod power_cost;
+mod magic_type;
 mod projectile;
-mod requires_fov;
-mod requires_los;
 mod requires_stationary;
 mod requires_target;
-mod spell_type;
+mod spatial;
 
 pub use cast_type::*;
-pub use cooldown::*;
-pub use global_cooldown::*;
-pub use health_cost::*;
+pub use cooldowns::*;
+pub use cost::*;
 pub use instances::*;
 pub use instant_damage::*;
 pub use instant_interrupt::*;
 pub use lifecycle::*;
-pub use maximum_range::*;
-pub use power_cost::*;
-pub use requires_fov::*;
-pub use requires_los::*;
+pub use magic_type::*;
 pub use requires_stationary::*;
 pub use requires_target::*;
-pub use spell_type::*;
+pub use spatial::*;
 
 use std::{fmt::Debug, hash::Hash};
 
@@ -37,13 +29,13 @@ use bevy::{prelude::*, utils::HashSet};
 
 ////
 // These components will be in the platonic "ability"
-// They are attached to each character via `AbilitySource`.
+// They are attached to each character via `CharacterId`.
 
 pub struct AbilityMarker;
 
 /// The character which the ability originates from.
 #[derive(Debug)]
-pub struct AbilitySource(pub Entity);
+pub struct CharacterId(pub Entity);
 
 /// An obstruction preventing a specific ability from being used.
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -63,7 +55,7 @@ pub enum Obstruction {
 pub fn spawn_class_abilities(character_id: Entity, commands: &mut Commands) {
     commands
         .spawn()
-        .insert(AbilitySource(character_id))
+        .insert(CharacterId(character_id))
         .insert_bundle(fireball::Fireball::new())
         .insert(UseObstructions::default());
 }

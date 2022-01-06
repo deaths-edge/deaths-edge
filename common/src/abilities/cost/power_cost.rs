@@ -1,17 +1,16 @@
 use bevy::prelude::*;
 
-use super::{AbilityId, AbilityMarker, AbilitySource, Complete, Obstruction, UseObstructions};
-use crate::character::{CharacterMarker, Power};
+use crate::{
+    abilities::{AbilityId, AbilityMarker, CharacterId, Complete, Obstruction, UseObstructions},
+    character::{CharacterMarker, Power},
+};
 
 /// Ability costs power.
 pub struct PowerCost(pub f32);
 
 /// Check whether character has sufficient power.
 pub fn check_power_cost(
-    mut ability_query: Query<
-        (&AbilitySource, &PowerCost, &mut UseObstructions),
-        With<AbilityMarker>,
-    >,
+    mut ability_query: Query<(&CharacterId, &PowerCost, &mut UseObstructions), With<AbilityMarker>>,
     character_query: Query<&Power, (With<CharacterMarker>, Changed<Power>)>,
 ) {
     for (source, cost, mut obstructions) in ability_query.iter_mut() {
@@ -29,7 +28,7 @@ pub fn check_power_cost(
 // Looks for instances of the ability and then applies the power cost to the character.
 pub fn apply_power_cost(
     instance_query: Query<&AbilityId, With<Complete>>,
-    ability_query: Query<(&AbilitySource, &PowerCost), With<AbilityMarker>>,
+    ability_query: Query<(&CharacterId, &PowerCost), With<AbilityMarker>>,
     mut character_query: Query<&mut Power, With<CharacterMarker>>,
 ) {
     for AbilityId(id) in instance_query.iter() {

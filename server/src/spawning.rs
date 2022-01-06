@@ -62,7 +62,9 @@ pub fn spawn_characters(
                 permit.team,
                 time.startup(),
             );
-            let server_character_bundle = ServerCharacterBundle::new(ClientAddress(new_address));
+            let server_character_bundle = ServerCharacterBundle {
+                address: ClientAddress(new_address),
+            };
 
             // Send all existing characters to new character
             for (index, class, team, transform) in character_existing_query.iter() {

@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 
-use crate::character::{CharacterMarker, LastCastInstant, GLOBAL_COOLDOWN};
-
-use super::{
-    AbilityId, AbilityMarker, AbilitySource, CastType, Complete, Obstruction, UseObstructions,
+use crate::{
+    abilities::{
+        AbilityId, AbilityMarker, CastType, CharacterId, Complete, Obstruction, UseObstructions,
+    },
+    character::{CharacterMarker, LastCastInstant, GLOBAL_COOLDOWN},
 };
 
 /// Ability obeys global cooldown.
@@ -12,7 +13,7 @@ pub struct GlobalCooldown;
 pub fn check_global_cooldown(
     time: Res<Time>,
     mut ability_query: Query<
-        (&AbilitySource, &mut UseObstructions),
+        (&CharacterId, &mut UseObstructions),
         (With<AbilityMarker>, With<GlobalCooldown>),
     >,
     character_query: Query<&LastCastInstant, With<CharacterMarker>>,
@@ -36,7 +37,7 @@ pub fn apply_global_cooldown(
 
     instance_query: Query<&AbilityId, With<Complete>>,
     ability_query: Query<
-        (Entity, &AbilitySource, &CastType),
+        (Entity, &CharacterId, &CastType),
         (With<AbilityMarker>, With<GlobalCooldown>),
     >,
     mut character_query: Query<&mut LastCastInstant, With<CharacterMarker>>,

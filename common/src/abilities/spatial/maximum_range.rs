@@ -1,15 +1,16 @@
 use bevy::prelude::*;
 
-use crate::character::{CharacterMarker, OptionalTarget};
-
-use super::{AbilityMarker, AbilitySource, Obstruction, UseObstructions};
+use crate::{
+    abilities::{AbilityMarker, CharacterId, Obstruction, UseObstructions},
+    character::{CharacterMarker, OptionalTarget},
+};
 
 /// Ability has a maximum range.
 pub struct MaximumRange(pub f32);
 
 pub fn check_maximum_range(
     mut ability_query: Query<
-        (&AbilitySource, &MaximumRange, &mut UseObstructions),
+        (&CharacterId, &MaximumRange, &mut UseObstructions),
         With<AbilityMarker>,
     >,
     character_query: Query<(&OptionalTarget, &Transform), With<CharacterMarker>>,
