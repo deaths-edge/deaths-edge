@@ -9,39 +9,29 @@ pub use player::*;
 pub use reconcile::*;
 
 use common::{
-    character::{
-        CharacterBundle as CommonCharacterBundle, CharacterPlugin as CommonCharacterPlugin,
-    },
+    character::{CharacterBundle, CharacterPlugin as CommonCharacterPlugin},
     network::server::Reconcile,
 };
 
 use crate::{network::NETWORK_HANDLE_LABEL, state::ClientState, ui::selected::Selected};
 
 #[derive(Bundle)]
-pub struct CharacterBundle {
+pub struct ClientCharacterBundle {
     #[bundle]
     sprite: SpriteBundle,
-    #[bundle]
-    common: CommonCharacterBundle,
     selected: Selected,
 }
 
-impl CharacterBundle {
-    pub fn new(
-        transform: Transform,
-        common: CommonCharacterBundle,
-        materials: &CharacterMaterials,
-    ) -> Self {
+impl ClientCharacterBundle {
+    pub fn new(common: &CharacterBundle, materials: &CharacterMaterials) -> Self {
         let size = common.class().size();
 
         Self {
             sprite: SpriteBundle {
                 material: materials.handle(common.class()).clone(),
-                transform,
                 sprite: Sprite::new(Vec2::new(size.width, size.width)),
                 ..Default::default()
             },
-            common,
             selected: Selected::default(),
         }
     }

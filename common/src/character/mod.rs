@@ -11,7 +11,7 @@ mod speed_multiplier;
 mod target;
 mod team;
 
-use std::{fmt::Debug, hash::Hash};
+use std::{fmt::Debug, hash::Hash, time::Instant};
 
 use bevy::prelude::*;
 use heron::prelude::*;
@@ -42,6 +42,8 @@ pub struct CharacterBundle {
     team: Team,
 
     // Physics
+    transform: Transform,
+    global_transform: GlobalTransform,
     speed_modifier: SpeedMultiplier,
     rigid_body: RigidBody,
     collision_shape: CollisionShape,
@@ -63,7 +65,13 @@ pub struct CharacterBundle {
 }
 
 impl CharacterBundle {
-    pub fn new(index: CharacterIndex, class: Class, team: Team, time: &Time) -> Self {
+    pub fn new(
+        index: CharacterIndex,
+        transform: Transform,
+        class: Class,
+        team: Team,
+        last_cast_instant: Instant,
+    ) -> Self {
         let size = class.size();
         let health = class.health();
         let power = class.power();
@@ -74,6 +82,8 @@ impl CharacterBundle {
             class,
             team,
 
+            transform,
+            global_transform: GlobalTransform::default(),
             speed_modifier: SpeedMultiplier(1.),
             rigid_body: RigidBody::Dynamic,
             collision_shape: CollisionShape::Cuboid {
@@ -95,7 +105,7 @@ impl CharacterBundle {
 
             cast_state: CastState::default(),
             interrupts: Interrupts::default(),
-            last_cast_instant: LastCastInstant(time.startup()),
+            last_cast_instant: LastCastInstant(last_cast_instant),
 
             target: OptionalTarget::default(),
         }

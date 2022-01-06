@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
 use common::{
-    abilities::spawn_class_abilities, character::CharacterBundle as CommonCharacterBundle,
-    network::server::SpawnCharacter, state::ArenaState,
+    abilities::spawn_class_abilities, character::CharacterBundle, network::server::SpawnCharacter,
+    state::ArenaState,
 };
 
 use crate::{
-    character::{CharacterBundle, CharacterMaterials, PlayerBundle, PlayerState},
+    character::{CharacterMaterials, ClientCharacterBundle, PlayerMarker, PlayerState},
     network::NETWORK_HANDLE_LABEL,
     ui::nameplate::{setup_nameplate, NameplateMaterials},
 };
@@ -25,26 +25,31 @@ pub fn spawn_characters(
     mut commands: Commands,
 ) {
     for spawn_event in spawn_reader.iter() {
-        let common_bundle = CommonCharacterBundle::new(
-            spawn_event.index,
-            spawn_event.class,
-            spawn_event.team,
-            &time,
-        );
         let position = spawn_event.position;
         let transform = Transform::from_xyz(position.x, position.y, 0.);
 
-        let character_bundle = CharacterBundle::new(transform, common_bundle, &character_materials);
+        let common_character_bundle = CharacterBundle::new(
+            spawn_event.index,
+            transform,
+            spawn_event.class,
+            spawn_event.team,
+            time.startup(),
+        );
+        let client_character_bundle =
+            ClientCharacterBundle::new(&common_character_bundle, &character_materials);
+
+        let mut entity_commands = commands.spawn_bundle(client_character_bundle);
+        entity_commands.insert_bundle(common_character_bundle);
+
         let id = if spawn_event.player {
             info!("spawned player");
-            let player_bundle = PlayerBundle::new(character_bundle);
             player_state
                 .set(PlayerState::Spawned)
                 .expect("this can't happen twice");
-            commands.spawn_bundle(player_bundle).id()
+            entity_commands.insert(PlayerMarker).id()
         } else {
             info!("spawned character");
-            commands.spawn_bundle(character_bundle).id()
+            entity_commands.id()
         };
         setup_nameplate(id, &nameplate_materials, &mut commands);
         spawn_class_abilities(id, &mut commands);

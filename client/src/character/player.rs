@@ -15,22 +15,6 @@ pub enum PlayerState {
 
 pub struct PlayerMarker;
 
-#[derive(Bundle)]
-pub struct PlayerBundle {
-    player_marker: PlayerMarker,
-    #[bundle]
-    character_bundle: CharacterBundle,
-}
-
-impl PlayerBundle {
-    pub fn new(character_bundle: CharacterBundle) -> Self {
-        Self {
-            player_marker: PlayerMarker,
-            character_bundle,
-        }
-    }
-}
-
 pub fn player_select(
     mut target_reader: EventReader<CharacterEntityAction<SelectTarget>>,
     player_query: Query<(), With<PlayerMarker>>,
