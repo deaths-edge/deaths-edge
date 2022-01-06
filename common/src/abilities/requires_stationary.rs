@@ -6,7 +6,7 @@ use heron::Velocity;
 use crate::character::{CastState, CharacterEntityAction, CharacterMarker, Motion};
 
 use super::{
-    AbilityInstance, AbilityMarker, AbilitySource, Casting, Failed, InstantInterrupt, Obstruction,
+    AbilityId, AbilityMarker, AbilitySource, Casting, Failed, InstantInterrupt, Obstruction,
     UseObstructions,
 };
 
@@ -33,7 +33,7 @@ pub fn check_required_stationary(
 pub fn motion_interrupt(
     mut motion_events: EventReader<CharacterEntityAction<Motion>>,
 
-    cast_instance_query: Query<(Entity, &AbilityInstance), With<Casting>>,
+    cast_instance_query: Query<(Entity, &AbilityId), With<Casting>>,
     cast_ability_query: Query<(), (With<AbilityMarker>, With<RequiresStationary>)>,
 
     mut character_query: Query<&mut CastState, With<CharacterMarker>>,

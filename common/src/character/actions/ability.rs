@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use tracing::warn;
 
 use crate::{
-    abilities::{AbilityInstance, AbilityMarker, AbilitySource, Preparing, UseObstructions},
+    abilities::{AbilityId, AbilityMarker, AbilitySource, Preparing, UseObstructions},
     character::CharacterMarker,
 };
 
@@ -51,7 +51,7 @@ pub fn character_ability(
         // Create instance of ability
         commands
             .spawn()
-            .insert(AbilityInstance(ability_id))
+            .insert(AbilityId(ability_id))
             .insert(Preparing);
     }
 }
