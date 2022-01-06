@@ -2,9 +2,10 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::character::{CastState, CharacterMarker, Interrupts};
-
-use super::{AbilityId, AbilityMarker, Casting, Complete, Failed, MagicType, Target};
+use crate::{
+    abilities::{AbilityId, AbilityMarker, Casting, Complete, Failed, MagicType, Target},
+    character::{CastState, CharacterMarker, Interrupts},
+};
 
 pub struct InstantInterrupt(pub Duration);
 

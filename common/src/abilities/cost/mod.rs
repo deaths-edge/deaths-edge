@@ -1,5 +1,5 @@
-mod health_cost;
-mod power_cost;
+mod health;
+mod power;
 
-pub use health_cost::*;
-pub use power_cost::*;
+pub use health::*;
+pub use power::*;

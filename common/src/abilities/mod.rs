@@ -2,8 +2,7 @@ mod cast_type;
 mod cooldowns;
 mod cost;
 mod instances;
-mod instant_damage;
-mod instant_interrupt;
+mod instant;
 mod lifecycle;
 mod magic_type;
 mod projectile;
@@ -15,10 +14,10 @@ pub use cast_type::*;
 pub use cooldowns::*;
 pub use cost::*;
 pub use instances::*;
-pub use instant_damage::*;
-pub use instant_interrupt::*;
+pub use instant::*;
 pub use lifecycle::*;
 pub use magic_type::*;
+pub use projectile::*;
 pub use requires_stationary::*;
 pub use requires_target::*;
 pub use spatial::*;
@@ -27,10 +26,9 @@ use std::{fmt::Debug, hash::Hash};
 
 use bevy::{prelude::*, utils::HashSet};
 
-////
-// These components will be in the platonic "ability"
-// They are attached to each character via `CharacterId`.
+use crate::abilities::projectile::spawn_projectile;
 
+#[derive(Default, Debug)]
 pub struct AbilityMarker;
 
 /// The character which the ability originates from.
@@ -113,7 +111,8 @@ where
             .with_system(apply_health_cost.system())
             .with_system(apply_power_cost.system())
             .with_system(apply_damage.system())
-            .with_system(apply_global_cooldown.system());
+            .with_system(apply_global_cooldown.system())
+            .with_system(spawn_projectile.system());
 
         let lifecycle = SystemSet::on_update(self.state)
             .before(COMPLETE_INSTANCES)

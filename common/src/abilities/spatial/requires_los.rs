@@ -10,6 +10,8 @@ use crate::{
     physics::WorldLayer,
 };
 
+/// Requires that the target is in LoS.
+#[derive(Default, Debug)]
 pub struct RequiresLoS;
 
 #[derive(Debug)]

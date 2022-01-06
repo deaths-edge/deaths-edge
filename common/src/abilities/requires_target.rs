@@ -11,6 +11,12 @@ pub enum RequiresTarget {
     Both,
 }
 
+impl Default for RequiresTarget {
+    fn default() -> Self {
+        Self::Enemy
+    }
+}
+
 /// Checks the required target is correct.
 pub fn check_required_target(
     mut ability_query: Query<

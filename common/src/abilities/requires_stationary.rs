@@ -1,15 +1,12 @@
-use std::time::Duration;
-
 use bevy::prelude::*;
 use heron::Velocity;
 
 use crate::character::{CastState, CharacterEntityAction, CharacterMarker, Motion};
 
-use super::{
-    AbilityId, AbilityMarker, Casting, CharacterId, Failed, InstantInterrupt, Obstruction,
-    UseObstructions,
-};
+use super::{AbilityId, AbilityMarker, Casting, CharacterId, Failed, Obstruction, UseObstructions};
 
+/// Requires that target is stationary while casting.
+#[derive(Default, Debug)]
 pub struct RequiresStationary;
 
 pub fn check_required_stationary(

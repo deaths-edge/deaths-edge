@@ -1,8 +1,11 @@
 use bevy::prelude::*;
 
-use super::{AbilityId, AbilityMarker, Complete, Target};
-use crate::character::{CharacterMarker, Health};
+use crate::{
+    abilities::{AbilityId, AbilityMarker, Complete, Target},
+    character::{CharacterMarker, Health},
+};
 
+#[derive(Default, Debug)]
 pub struct InstantDamage(pub f32);
 
 pub fn apply_damage(

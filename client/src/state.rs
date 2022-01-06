@@ -3,6 +3,7 @@ use std::net::SocketAddr;
 use bevy::prelude::*;
 
 use crate::{
+    abilities::AbilityPlugin,
     character::CharacterPlugin,
     game_camera::GameCameraPlugin,
     input_mapping::InputMapPlugin,
@@ -12,9 +13,7 @@ use crate::{
     ui::{splash::SplashUIPlugin, UIPlugin},
 };
 
-use common::{
-    abilities::AbilityPlugin, heron::PhysicsPlugin, network::server::ArenaSetup, state::ArenaState,
-};
+use common::{heron::PhysicsPlugin, network::server::ArenaSetup, state::ArenaState};
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum ClientState {
@@ -108,7 +107,7 @@ impl Plugin for ArenaPlugin {
             .add_plugin(UIPlugin)
             .add_plugin(SpawnPlugin)
             .add_plugin(InputMapPlugin)
-            .add_plugin(AbilityPlugin::new(ClientState::Arena))
+            .add_plugin(AbilityPlugin)
             .add_plugin(PhysicsPlugin::default())
             .add_plugin(GameCameraPlugin);
     }

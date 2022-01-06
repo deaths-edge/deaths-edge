@@ -6,6 +6,7 @@ use crate::{
 };
 
 /// Ability costs power.
+#[derive(Default, Debug)]
 pub struct PowerCost(pub f32);
 
 /// Check whether character has sufficient power.
