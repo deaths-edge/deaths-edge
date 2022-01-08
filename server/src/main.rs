@@ -1,7 +1,6 @@
 mod character;
 mod network;
 mod spawning;
-mod spells;
 mod state;
 
 use std::time::Duration;
@@ -33,7 +32,7 @@ fn main() {
         ArenaPermit {
             passcode: ArenaPasscode(4321),
             class: Class::Medea,
-            team: Team::Red,
+            team: Team::Blue,
         },
     ]
     .into_iter()

@@ -8,6 +8,13 @@ pub struct Power {
     pub total: f32,
 }
 
+impl Power {
+    pub fn subtract(&mut self, cost: f32) {
+        self.current -= cost;
+        self.current = self.current.min(0.);
+    }
+}
+
 pub struct CharacterPowerRegen(pub f32);
 
 /// Regenerates power over time.

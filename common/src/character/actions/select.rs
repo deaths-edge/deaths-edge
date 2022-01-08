@@ -1,19 +1,19 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::character::{CharacterIndex, CharacterMarker, Target};
+use crate::character::{CharacterIndex, CharacterMarker, OptionalTarget};
 
 use super::CharacterEntityAction;
 
 #[derive(Debug, Default, PartialEq, Clone, Copy, Deserialize, Serialize)]
 pub struct SelectTarget(pub Option<CharacterIndex>);
 
-/// Receives an [`Target`] and performs targeting.
+/// Receives an [`OptionalTarget`] and performs targeting.
 pub fn character_target(
-    // Target events
+    // OptionalTarget events
     mut events: EventReader<CharacterEntityAction<SelectTarget>>,
 
-    mut target_query: Query<&mut Target, With<CharacterMarker>>,
+    mut target_query: Query<&mut OptionalTarget, With<CharacterMarker>>,
     index_query: Query<(Entity, &CharacterIndex), With<CharacterMarker>>,
 ) {
     for action in events.iter() {
@@ -27,9 +27,9 @@ pub fn character_target(
                 .find(|(_, index)| **index == target_index)
                 .map(|(entity, _)| entity)
                 .expect("failed to find target");
-            *character_target = Target(Some(target_entity));
+            *character_target = OptionalTarget(Some(target_entity));
         } else {
-            *character_target = Target(None);
+            *character_target = OptionalTarget(None);
         }
     }
 }

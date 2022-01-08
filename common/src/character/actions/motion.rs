@@ -4,10 +4,7 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use super::CharacterEntityAction;
-use crate::{
-    character::{CharacterMarker, SpeedMultiplier},
-    effects::{EffectTarget, MovementInterruptBundle},
-};
+use crate::character::{CharacterMarker, SpeedMultiplier};
 
 const FORWARD_SPEED: f32 = 1.0;
 const STRAFE_SPEED: f32 = 0.8;
@@ -49,6 +46,12 @@ pub struct Motion {
     pub normal: Option<NormalMotion>,
 }
 
+impl Motion {
+    pub fn is_stationary(&self) -> bool {
+        self.parallel.is_none() && self.normal.is_none()
+    }
+}
+
 impl Into<Vec2> for Motion {
     fn into(self) -> Vec2 {
         let parallel: Vec2 = self.parallel.map(Into::into).unwrap_or_default();
@@ -63,14 +66,12 @@ pub fn character_movement(
 
     // CharacterIndex query
     mut character_query: Query<
-        (Entity, &SpeedMultiplier, &mut Transform, &mut Velocity),
+        (&SpeedMultiplier, &mut Transform, &mut Velocity),
         With<CharacterMarker>,
     >,
-
-    mut commands: Commands,
 ) {
     for action in motion_events.iter() {
-        let (character_entity, speed_multiplier, transform, mut velocity) = character_query
+        let (speed_multiplier, transform, mut velocity) = character_query
             .get_mut(action.id())
             .expect("failed to find character");
 
@@ -82,10 +83,6 @@ pub fn character_movement(
             // Normalize
             let mag = direction.length().max(1.);
             direction /= mag;
-
-            commands
-                .spawn()
-                .insert_bundle(MovementInterruptBundle::new(EffectTarget(character_entity)));
         }
 
         let direction = transform.rotation * (direction.extend(0.));

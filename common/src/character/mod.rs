@@ -1,5 +1,4 @@
 mod actions;
-mod buffs;
 mod casting;
 mod classes;
 mod control;
@@ -12,7 +11,7 @@ mod speed_multiplier;
 mod target;
 mod team;
 
-use std::{fmt::Debug, hash::Hash};
+use std::{fmt::Debug, hash::Hash, time::Instant};
 
 use bevy::prelude::*;
 use heron::prelude::*;
@@ -20,7 +19,6 @@ use heron::prelude::*;
 use crate::physics::WorldLayer;
 
 pub use actions::*;
-pub use buffs::*;
 pub use casting::*;
 pub use classes::*;
 pub use control::*;
@@ -44,39 +42,48 @@ pub struct CharacterBundle {
     team: Team,
 
     // Physics
+    transform: Transform,
+    global_transform: GlobalTransform,
     speed_modifier: SpeedMultiplier,
     rigid_body: RigidBody,
     collision_shape: CollisionShape,
     collision_layers: CollisionLayers,
     velocity: Velocity,
     rotational_constraints: RotationConstraints,
+    controls: Controls,
 
     // Resources
     health: Health,
     power: Power,
 
-    // Buffs
-    buffs: Buffs,
-    controls: Controls,
-
     // Casting
     cast_state: CastState,
-    interrupt_state: InterruptState,
+    interrupts: Interrupts,
     last_cast_instant: LastCastInstant,
 
-    target: Target,
+    target: OptionalTarget,
 }
 
 impl CharacterBundle {
-    pub fn new(index: CharacterIndex, class: Class, time: &Time) -> Self {
+    pub fn new(
+        index: CharacterIndex,
+        transform: Transform,
+        class: Class,
+        team: Team,
+        last_cast_instant: Instant,
+    ) -> Self {
         let size = class.size();
         let health = class.health();
+        let power = class.power();
+
         Self {
             index,
             marker: CharacterMarker,
             class,
-            team: Team::Blue,
+            team,
 
+            transform,
+            global_transform: GlobalTransform::default(),
             speed_modifier: SpeedMultiplier(1.),
             rigid_body: RigidBody::Dynamic,
             collision_shape: CollisionShape::Cuboid {
@@ -88,24 +95,19 @@ impl CharacterBundle {
                 .with_mask(WorldLayer::Environment),
             velocity: Vec3::ZERO.into(),
             rotational_constraints: RotationConstraints::lock(),
+            controls: Controls::default(),
 
-            power: Power {
-                current: 0.,
-                total: 100.,
-            },
+            power,
             health: Health {
                 current: health,
                 total: health,
             },
 
-            buffs: Buffs::default(),
-            controls: Controls::default(),
-
             cast_state: CastState::default(),
-            interrupt_state: InterruptState::default(),
-            last_cast_instant: LastCastInstant(time.startup()),
+            interrupts: Interrupts::default(),
+            last_cast_instant: LastCastInstant(last_cast_instant),
 
-            target: Target::default(),
+            target: OptionalTarget::default(),
         }
     }
 
@@ -126,7 +128,6 @@ where
     fn build(&self, app: &mut AppBuilder) {
         let regenerate = SystemSet::on_update(self.state).with_system(regenerate_power.system());
         app.add_system_set(regenerate)
-            .add_plugin(CastingPlugin::new(self.state))
             .add_plugin(CharacterEntityActionPlugin::new(self.state));
     }
 }

@@ -1,11 +1,10 @@
+mod abilities;
 mod character;
-mod debug;
 mod game_camera;
 mod input_mapping;
 mod music;
 mod network;
 mod spawning;
-mod spells;
 mod state;
 mod ui;
 mod window;
@@ -13,7 +12,6 @@ mod window;
 use std::{net::SocketAddr, time::Duration};
 
 use bevy::prelude::*;
-// use bevy_mod_debugdump::schedule_graph::schedule_graph_dot;
 
 use structopt::StructOpt;
 
@@ -28,15 +26,6 @@ pub struct Opt {
     #[structopt(short, long, default_value = "1234")]
     passcode: u64,
 }
-
-// pub fn save_schedule_graph(app: &mut AppBuilder) -> Result<(), io::Error> {
-//     const PATH: &str = "./schedule.dot";
-
-//     let mut schedule_graph = File::create(PATH)?;
-//     schedule_graph.write(schedule_graph_dot(&app.app.schedule).as_bytes())?;
-
-//     Ok(())
-// }
 
 fn state_transition(
     time: Res<Time>,
@@ -60,17 +49,6 @@ fn main() {
 
     let opt = Opt::from_args();
 
-    ////
-    // Debug plugin
-    // const FPS_COLLECTION_INTERVAL: Duration = Duration::from_secs(1);
-    // const RENDER_UPDATE_INTERVAL: Duration = Duration::from_millis(1_000);
-    // const ENV_FILTER: &str = concat!(env!("CARGO_PKG_NAME"), "=trace,common=trace");
-    // let debug_plugin = debug::DebugTerminalPlugin::new(
-    //     ENV_FILTER,
-    //     FPS_COLLECTION_INTERVAL,
-    //     RENDER_UPDATE_INTERVAL,
-    // );
-
     let state_transitions = SystemSet::new()
         .before("state-transitions")
         .with_system(state_transition.system());
@@ -86,9 +64,6 @@ fn main() {
         .insert_resource(window_description)
         // Default plugins
         .add_plugins(DefaultPlugins)
-        // .add_plugins_with(DefaultPlugins, |plugins| plugins.disable::<LogPlugin>())
-        // Debug plugins
-        // .add_plugin(debug_plugin)
         .add_state(ClientState::Splash)
         .add_plugin(StateTransitionPlugin)
         .add_plugin(SplashPlugin)

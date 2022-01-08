@@ -42,7 +42,7 @@ fn process_permit(
             ServerMessage::GameAction(GameAction::Setup(arena_spawn)),
         ));
     } else {
-        error!("fraudulent permit");
+        error!(message = "fraudulent permit", ?client_permit);
     }
 }
 
@@ -60,7 +60,7 @@ where
     info!(message = "sending entity", ?action);
 
     let id = char_query_iter
-        .find(|(_, addr)| ***addr == connection_handle)
+        .find(|(_, addr)| addr.0 == connection_handle)
         .map(|(id, _)| id)
         .ok_or(CharacterNotFound)?;
     let motion_ability = CharacterEntityAction::new(id, action);
@@ -181,7 +181,7 @@ pub fn relay_character_commands<T>(
                 action: action.action().clone(),
             };
             let message = ServerMessage::CharacterAction(network_command.into());
-            net.send_message(**addr, message)
+            net.send_message(addr.0, message)
                 .expect("failed to send CharacterAction");
         }
     }

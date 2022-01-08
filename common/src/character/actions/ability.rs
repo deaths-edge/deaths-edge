@@ -1,11 +1,12 @@
-use bevy::{core::Time, prelude::*};
-use heron::rapier_plugin::PhysicsWorld;
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use tracing::warn;
 
 use crate::{
-    character::{CastState, CharacterMarker, Class, LastCastInstant, Target},
-    spells::instances::{fireball_ability, spear_ability},
+    abilities::{
+        AbilityId, AbilityInstanceMarker, AbilityMarker, CharacterId, Preparing, UseObstructions,
+    },
+    character::CharacterMarker,
 };
 
 use super::CharacterEntityAction;
@@ -22,81 +23,46 @@ pub enum Ability {
     Ability8,
 }
 
+#[derive(Debug, Bundle)]
+pub struct BaseAbilityInstance {
+    marker: AbilityInstanceMarker,
+    ability_id: AbilityId,
+}
+
 /// Receives an [`Ability`] and performs the associated ability.
 pub fn character_ability(
-    time: Res<Time>,
-    physics_world: PhysicsWorld,
-
     // Ability events
     mut events: EventReader<CharacterEntityAction<Ability>>,
 
-    mut character_query: Query<
-        (
-            Entity,
-            &Transform,
-            &Class,
-            &LastCastInstant,
-            &mut CastState,
-            &Target,
-        ),
-        With<CharacterMarker>,
-    >,
+    mut character_query: Query<Entity, With<CharacterMarker>>,
+    ability_query: Query<(Entity, &CharacterId, &UseObstructions), With<AbilityMarker>>,
 
-    target_query: Query<&Transform, With<CharacterMarker>>,
+    mut commands: Commands,
 ) {
     for action in events.iter() {
-        let (
-            character_entity,
-            character_transform,
-            character_class,
-            last_cast_instant,
-            mut character_cast_state,
-            character_target,
-        ) = character_query
+        let character_id = character_query
             .get_mut(action.id())
             .expect("character not found");
 
-        let ability = action.action();
-        match character_class {
-            Class::Mars => match ability {
-                Ability::Ability1 => {
-                    let result = spear_ability(
-                        &time,
-                        &physics_world,
-                        last_cast_instant,
-                        character_entity,
-                        character_transform,
-                        character_target,
-                        &mut character_cast_state,
-                        &target_query,
-                    );
+        // Find ability
+        // TODO: Shortcut this search?
+        let (ability_id, _, obstructions) = ability_query
+            .iter()
+            .find(|(_, source, _)| source.0 == character_id)
+            .expect("casted by unknown source");
 
-                    if let Err(error) = result {
-                        warn!(message = "failed to cast fireball", %error)
-                    }
-                }
-                _ => todo!(),
-            },
-            Class::Medea => match ability {
-                Ability::Ability1 => {
-                    let result = fireball_ability(
-                        &time,
-                        &physics_world,
-                        last_cast_instant,
-                        character_entity,
-                        character_transform,
-                        character_target,
-                        &mut character_cast_state,
-                        &target_query,
-                    );
-
-                    if let Err(error) = result {
-                        warn!(message = "failed to cast fireball", %error)
-                    }
-                }
-                _ => todo!(),
-            },
-            _ => todo!(),
+        if !obstructions.0.is_empty() {
+            warn!(message = "cannot use ability", ?obstructions);
+            continue;
         }
+
+        // Create instance of ability
+        commands
+            .spawn()
+            .insert_bundle(BaseAbilityInstance {
+                marker: AbilityInstanceMarker,
+                ability_id: AbilityId(ability_id),
+            })
+            .insert(Preparing);
     }
 }

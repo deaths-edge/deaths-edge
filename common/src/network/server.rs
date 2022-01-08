@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    character::{Ability, CharacterIndex, Class, FocalAngle, Motion, SelectTarget},
+    character::{Ability, CharacterIndex, Class, FocalAngle, Motion, SelectTarget, Team},
     environment::Map,
 };
 
@@ -18,7 +18,7 @@ pub enum ServerMessage {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum CharacterAction {
     Motion(CharacterNetworkAction<Motion>),
-    Target(CharacterNetworkAction<SelectTarget>),
+    OptionalTarget(CharacterNetworkAction<SelectTarget>),
     Ability(CharacterNetworkAction<Ability>),
     FocalAngle(CharacterNetworkAction<FocalAngle>),
 }
@@ -37,7 +37,7 @@ impl From<CharacterNetworkAction<Motion>> for CharacterAction {
 
 impl From<CharacterNetworkAction<SelectTarget>> for CharacterAction {
     fn from(value: CharacterNetworkAction<SelectTarget>) -> Self {
-        Self::Target(value)
+        Self::OptionalTarget(value)
     }
 }
 
@@ -72,43 +72,10 @@ impl ServerMessage {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SpawnCharacter {
-    index: CharacterIndex,
-    class: Class,
-    player: bool,
-    position: Vec2,
-    rotation: f32,
-}
-
-impl SpawnCharacter {
-    pub fn new(
-        index: CharacterIndex,
-        class: Class,
-        player: bool,
-        position: Vec2,
-        rotation: f32,
-    ) -> Self {
-        Self {
-            index,
-            class,
-            player,
-            position,
-            rotation,
-        }
-    }
-
-    pub fn index(&self) -> CharacterIndex {
-        self.index
-    }
-
-    pub fn player(&self) -> bool {
-        self.player
-    }
-
-    pub fn class(&self) -> Class {
-        self.class
-    }
-
-    pub fn position(&self) -> Vec2 {
-        self.position
-    }
+    pub index: CharacterIndex,
+    pub class: Class,
+    pub player: bool,
+    pub position: Vec2,
+    pub rotation: f32,
+    pub team: Team,
 }

@@ -1,12 +1,10 @@
 use bevy::prelude::*;
 
-use common::{
-    character::CastingPlugin, effects::EffectPlugin, heron::PhysicsPlugin, state::ArenaState,
-};
+use common::{heron::PhysicsPlugin, state::ArenaState};
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub struct ServerState;
 
-use crate::{network::NETWORK_HANDLE_LABEL, spells::SpellPlugin};
+use crate::network::NETWORK_HANDLE_LABEL;
 
 pub const STATE_TRANSITION_LABEL: &str = "state-transition";
 
@@ -41,9 +39,10 @@ pub struct RunningPlugin;
 
 impl Plugin for RunningPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_plugin(CastingPlugin::new(ServerState))
-            .add_plugin(SpellPlugin)
-            .add_plugin(EffectPlugin::new(ServerState))
+        app
+            // .add_plugin(CastingPlugin::new(ServerState))
+            // .add_plugin(SpellPlugin)
+            // .add_plugin(EffectPlugin::new(ServerState))
             .add_plugin(PhysicsPlugin::default());
     }
 }

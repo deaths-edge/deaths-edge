@@ -40,7 +40,6 @@ pub fn health_bar_update(
             if let Ok(character_health) = character_query.get(nameplate_parent.0) {
                 let percent =
                     100. * character_health.current as f32 / character_health.total as f32;
-                info!(%percent, current = ?healthbar_style.margin.right);
                 healthbar_style.size.width = Val::Percent(percent);
             }
         }
