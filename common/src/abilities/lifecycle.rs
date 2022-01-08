@@ -140,7 +140,13 @@ pub struct Failed;
 
 /// Removes ability instances which is [`Complete`] or [`Failed`].
 pub fn remove_instance(
-    query: Query<Entity, (With<AbilityId>, Or<(With<Complete>, With<Failed>)>)>,
+    query: Query<
+        Entity,
+        (
+            With<AbilityInstanceMarker>,
+            Or<(With<Complete>, With<Failed>)>,
+        ),
+    >,
     mut commands: Commands,
 ) {
     for id in query.iter() {

@@ -27,9 +27,9 @@ pub fn adjoin_projectile_target(
 ) {
     for (projectile_id, instance_id) in projectile_query.iter() {
         error!("found preparing projectile");
-        let (instance_id, ability_id, target) = instance_query
-            .get(instance_id.0)
-            .expect("failed to find instance");
+        // let (instance_id, ability_id, target) = instance_query
+        //     .get(instance_id.0)
+        //     .expect("failed to find instance");
     }
 }
 
