@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    abilities::{AbilityId, AbilityMarker, Complete, Target},
+    abilities::{AbilityId, AbilityInstanceMarker, AbilityMarker, Complete, Target},
     character::{CharacterMarker, Health},
 };
 
@@ -9,7 +9,7 @@ use crate::{
 pub struct InstantDamage(pub f32);
 
 pub fn apply_damage(
-    instance_query: Query<(&AbilityId, &Target), With<Complete>>,
+    instance_query: Query<(&AbilityId, &Target), (With<Complete>, With<AbilityInstanceMarker>)>,
     ability_query: Query<&InstantDamage, With<AbilityMarker>>,
     mut character_query: Query<&mut Health, With<CharacterMarker>>,
 ) {

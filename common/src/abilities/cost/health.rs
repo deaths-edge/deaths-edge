@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    abilities::{AbilityId, AbilityMarker, CharacterId, Complete},
+    abilities::{AbilityId, AbilityInstanceMarker, AbilityMarker, CharacterId, Complete},
     character::{CharacterMarker, Power},
 };
 
@@ -10,7 +10,7 @@ pub struct HealthCost(pub f32);
 
 // Looks for instances of the ability and then applies the health cost to the character.
 pub fn apply_health_cost(
-    instance_query: Query<&AbilityId, With<Complete>>,
+    instance_query: Query<&AbilityId, (With<Complete>, With<AbilityInstanceMarker>)>,
     ability_query: Query<(&CharacterId, &HealthCost), With<AbilityMarker>>,
     mut character_query: Query<&mut Power, With<CharacterMarker>>,
 ) {

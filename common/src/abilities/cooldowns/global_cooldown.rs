@@ -2,7 +2,8 @@ use bevy::prelude::*;
 
 use crate::{
     abilities::{
-        AbilityId, AbilityMarker, CastType, CharacterId, Complete, Obstruction, UseObstructions,
+        AbilityId, AbilityInstanceMarker, AbilityMarker, CastType, CharacterId, Complete,
+        Obstruction, UseObstructions,
     },
     character::{CharacterMarker, LastCastInstant, GLOBAL_COOLDOWN},
 };
@@ -36,7 +37,7 @@ pub fn check_global_cooldown(
 pub fn apply_global_cooldown(
     time: Res<Time>,
 
-    instance_query: Query<&AbilityId, With<Complete>>,
+    instance_query: Query<&AbilityId, (With<Complete>, With<AbilityInstanceMarker>)>,
     ability_query: Query<
         (Entity, &CharacterId, &CastType),
         (With<AbilityMarker>, With<GlobalCooldown>),

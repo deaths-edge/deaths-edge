@@ -3,7 +3,10 @@ use heron::Velocity;
 
 use crate::character::{CastState, CharacterEntityAction, CharacterMarker, Motion};
 
-use super::{AbilityId, AbilityMarker, Casting, CharacterId, Failed, Obstruction, UseObstructions};
+use super::{
+    AbilityId, AbilityInstanceMarker, AbilityMarker, Casting, CharacterId, Failed, Obstruction,
+    UseObstructions,
+};
 
 /// Requires that target is stationary while casting.
 #[derive(Default, Debug)]
@@ -30,7 +33,7 @@ pub fn check_required_stationary(
 pub fn motion_interrupt(
     mut motion_events: EventReader<CharacterEntityAction<Motion>>,
 
-    cast_instance_query: Query<(Entity, &AbilityId), With<Casting>>,
+    cast_instance_query: Query<(Entity, &AbilityId), (With<Casting>, With<AbilityInstanceMarker>)>,
     cast_ability_query: Query<(), (With<AbilityMarker>, With<RequiresStationary>)>,
 
     mut character_query: Query<&mut CastState, With<CharacterMarker>>,

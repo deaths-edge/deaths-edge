@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use common::{
-    abilities::{AbilityId, AbilityMarker, CastType},
+    abilities::{AbilityId, AbilityInstanceMarker, AbilityMarker, CastType},
     character::{CastState, CharacterMarker},
 };
 
@@ -36,7 +36,7 @@ impl CastBarBundle {
 pub fn cast_bar_update(
     time: Res<Time>,
     mut cast_bar_query: Query<(&Parent, &mut Style), With<CastBarMarker>>,
-    instance_query: Query<&AbilityId>,
+    instance_query: Query<&AbilityId, With<AbilityInstanceMarker>>,
     ability_query: Query<&CastType, With<AbilityMarker>>,
     nameplate_query: Query<&NameplateParent, With<NameplateMarker>>,
     character_query: Query<&CastState, With<CharacterMarker>>,

@@ -3,7 +3,10 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::{
-    abilities::{AbilityId, AbilityMarker, Casting, Complete, Failed, MagicType, Target},
+    abilities::{
+        AbilityId, AbilityInstanceMarker, AbilityMarker, Casting, Complete, Failed, MagicType,
+        Target,
+    },
     character::{CastState, CharacterMarker, Interrupts},
 };
 
@@ -12,10 +15,13 @@ pub struct InstantInterrupt(pub Duration);
 pub fn apply_interrupt(
     time: Res<Time>,
 
-    interrupt_instance_query: Query<(&AbilityId, &Target), With<Complete>>,
+    interrupt_instance_query: Query<
+        (&AbilityId, &Target),
+        (With<Complete>, With<AbilityInstanceMarker>),
+    >,
     interrupt_ability_query: Query<&InstantInterrupt, With<AbilityMarker>>,
 
-    cast_instance_query: Query<(Entity, &AbilityId), With<Casting>>,
+    cast_instance_query: Query<(Entity, &AbilityId), (With<Casting>, With<AbilityInstanceMarker>)>,
     cast_ability_query: Query<&MagicType, With<AbilityMarker>>,
 
     mut character_query: Query<(&mut CastState, &mut Interrupts), With<CharacterMarker>>,

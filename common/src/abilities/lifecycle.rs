@@ -2,7 +2,10 @@ use bevy::prelude::*;
 
 use crate::character::{Cast, CastState, CharacterMarker};
 
-use super::{AbilityId, AbilityMarker, CastType, CharacterId};
+use super::{
+    AbilityId, AbilityInstanceMarker, AbilityMarker, CastType, CharacterId, ProjectileMarker,
+    SpawnProjectile,
+};
 
 pub struct Preparing;
 
@@ -13,7 +16,14 @@ pub struct Preparing;
 pub fn initialize_cast(
     time: Res<Time>,
 
-    instance_query: Query<(Entity, &AbilityId), (With<Preparing>, Without<Casting>)>,
+    instance_query: Query<
+        (Entity, &AbilityId),
+        (
+            With<Preparing>,
+            Without<Casting>,
+            With<AbilityInstanceMarker>,
+        ),
+    >,
     ability_query: Query<(&CharacterId, &CastType), With<AbilityMarker>>,
     mut character_query: Query<&mut CastState, With<CharacterMarker>>,
 
@@ -50,6 +60,24 @@ pub fn initialize_cast(
     }
 }
 
+#[derive(Default, Debug)]
+pub struct InFlight;
+
+/// Switches projectile from [`Preparing`] to [`InFlight`].
+pub fn initialize_projectile(
+    projectile_query: Query<Entity, (With<Preparing>, With<ProjectileMarker>)>,
+
+    mut commands: Commands,
+) {
+    for instance_id in projectile_query.iter() {
+        error!("found preparing projectile");
+        commands
+            .entity(instance_id)
+            .remove::<Preparing>()
+            .insert(InFlight);
+    }
+}
+
 pub struct Casting;
 
 /// Waits until casts are complete then switches from [`Casting`] to [`Complete`].
@@ -58,7 +86,12 @@ pub fn complete_casting(
 
     instance_query: Query<
         (Entity, &AbilityId),
-        (With<Casting>, Without<Complete>, Without<Failed>),
+        (
+            With<Casting>,
+            Without<Complete>,
+            Without<Failed>,
+            With<AbilityInstanceMarker>,
+        ),
     >,
     ability_query: Query<(&CharacterId, &CastType), With<AbilityMarker>>,
     mut character_query: Query<&mut CastState, With<CharacterMarker>>,

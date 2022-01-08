@@ -3,7 +3,9 @@ use serde::{Deserialize, Serialize};
 use tracing::warn;
 
 use crate::{
-    abilities::{AbilityId, AbilityMarker, CharacterId, Preparing, UseObstructions},
+    abilities::{
+        AbilityId, AbilityInstanceMarker, AbilityMarker, CharacterId, Preparing, UseObstructions,
+    },
     character::CharacterMarker,
 };
 
@@ -19,6 +21,12 @@ pub enum Ability {
     Ability6,
     Ability7,
     Ability8,
+}
+
+#[derive(Debug, Bundle)]
+pub struct BaseAbilityInstance {
+    marker: AbilityInstanceMarker,
+    ability_id: AbilityId,
 }
 
 /// Receives an [`Ability`] and performs the associated ability.
@@ -51,7 +59,10 @@ pub fn character_ability(
         // Create instance of ability
         commands
             .spawn()
-            .insert(AbilityId(ability_id))
+            .insert_bundle(BaseAbilityInstance {
+                marker: AbilityInstanceMarker,
+                ability_id: AbilityId(ability_id),
+            })
             .insert(Preparing);
     }
 }

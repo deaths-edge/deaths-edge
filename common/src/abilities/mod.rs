@@ -92,39 +92,56 @@ where
             // .with_system()
             ;
 
-        const INSTANCE_PREPARATION: &str = "instance-preparation";
-
+        const INSTANCE_PREPARATION_LABEL: &str = "instance-preparation";
         let prepare_instances = SystemSet::on_update(self.state)
-            .label(INSTANCE_PREPARATION)
+            .label(INSTANCE_PREPARATION_LABEL)
+            .after(LIFECYCLE_LABEL)
             .with_system(adjoin_target.system());
 
-        const CASTING_INSTANCES: &str = "casting-instances";
+        const PROJECTILE_PREPARATION_LABEL: &str = "instance-preparation";
+        let prepare_projectiles = SystemSet::on_update(self.state)
+            .label(PROJECTILE_PREPARATION_LABEL)
+            .after(LIFECYCLE_LABEL)
+            .with_system(adjoin_projectile_target.system());
 
+        const CASTING_INSTANCES_LABEL: &str = "casting-instances";
         let casting_instances = SystemSet::on_update(self.state)
-            .label(CASTING_INSTANCES)
+            .label(CASTING_INSTANCES_LABEL)
+            .after(LIFECYCLE_LABEL)
             .with_system(motion_interrupt.system());
 
-        const COMPLETE_INSTANCES: &str = "complete-instances";
-
+        const COMPLETE_INSTANCES_LABEL: &str = "complete-instances";
         let complete_instances = SystemSet::on_update(self.state)
-            .label(COMPLETE_INSTANCES)
+            .label(COMPLETE_INSTANCES_LABEL)
+            .after(LIFECYCLE_LABEL)
             .with_system(apply_health_cost.system())
             .with_system(apply_power_cost.system())
             .with_system(apply_damage.system())
             .with_system(apply_global_cooldown.system())
             .with_system(spawn_projectile.system());
 
+        let inflight_projectiles =
+            SystemSet::on_update(self.state).with_system(projectile_tracking.system());
+
+        const LIFECYCLE_LABEL: &str = "lifecycle";
         let lifecycle = SystemSet::on_update(self.state)
-            .before(COMPLETE_INSTANCES)
-            .before(CASTING_INSTANCES)
+            .label(LIFECYCLE_LABEL)
             .with_system(initialize_cast.system())
-            .with_system(complete_casting.system())
+            .with_system(initialize_projectile.system())
+            .with_system(complete_casting.system());
+
+        let cleanup = SystemSet::on_update(self.state)
+            .after(COMPLETE_INSTANCES_LABEL)
+            .after(PROJECTILE_PREPARATION_LABEL)
             .with_system(remove_instance.system());
 
         app.add_system_set(lifecycle)
             .add_system_set(ability_checks)
             .add_system_set(prepare_instances)
+            .add_system_set(prepare_projectiles)
             .add_system_set(casting_instances)
-            .add_system_set(complete_instances);
+            .add_system_set(complete_instances)
+            .add_system_set(inflight_projectiles)
+            .add_system_set(cleanup);
     }
 }
