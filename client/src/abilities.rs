@@ -12,12 +12,12 @@ pub fn adjoin_projectile_sprite_bundle(
     mut commands: Commands,
 ) {
     for (id, transform) in query.iter() {
-        error!("spawned sprite projectile");
+        info!(message = "spawned sprite projectile", ?transform);
 
-        commands.entity(id).insert(SpriteBundle {
+        commands.entity(id).insert_bundle(SpriteBundle {
             transform: *transform,
-            material: materials.add(Color::rgb(0., 0., 0.).into()),
-            sprite: Sprite::new(Vec2::new(30., 30.)),
+            material: materials.add(Color::rgb(0.5, 1.0, 0.5).into()),
+            sprite: Sprite::new(Vec2::new(15., 15.)),
             ..Default::default()
         });
     }

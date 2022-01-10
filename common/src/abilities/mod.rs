@@ -18,6 +18,7 @@ pub use instant::*;
 pub use lifecycle::*;
 pub use magic_type::*;
 pub use projectile::*;
+pub use projectile::*;
 pub use requires_stationary::*;
 pub use requires_target::*;
 pub use spatial::*;
@@ -25,8 +26,6 @@ pub use spatial::*;
 use std::{fmt::Debug, hash::Hash};
 
 use bevy::{prelude::*, utils::HashSet};
-
-use crate::abilities::projectile::spawn_projectile;
 
 #[derive(Default, Debug)]
 pub struct AbilityMarker;
@@ -73,13 +72,15 @@ impl<T> AbilityPlugin<T> {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AbilityLabels {
+    Checks,
     InstanceLifecycle,
     InstancePreparation,
+    CastingUpdates,
     InstanceComplete,
     ProjectileLifecycle,
     ProjectilePreparation,
     ProjectileInflight,
-    CastingUpdates,
+    Cleanup,
 }
 
 impl SystemLabel for AbilityLabels {
@@ -95,6 +96,7 @@ where
 {
     fn build(&self, app: &mut AppBuilder) {
         let ability_checks = SystemSet::on_update(self.state)
+            .label(AbilityLabels::Checks)
             // Geometric obstructions
             .with_system(check_required_target.system())
             .with_system(check_required_fov.system())
@@ -113,10 +115,6 @@ where
             .label(AbilityLabels::InstancePreparation)
             .with_system(adjoin_target.system());
 
-        let prepare_projectiles = SystemSet::on_update(self.state)
-            .label(AbilityLabels::ProjectilePreparation)
-            .with_system(adjoin_projectile_target.system());
-
         let casting_instances = SystemSet::on_update(self.state)
             .label(AbilityLabels::CastingUpdates)
             .with_system(motion_interrupt.system());
@@ -129,19 +127,28 @@ where
             .with_system(apply_global_cooldown.system())
             .with_system(spawn_projectile.system());
 
-        let inflight_projectiles =
-            SystemSet::on_update(self.state).with_system(projectile_tracking.system());
+        let prepare_projectiles = SystemSet::on_update(self.state)
+            .label(AbilityLabels::ProjectilePreparation)
+            .with_system(adjoin_projectile_target.system());
+
+        let inflight_projectiles = SystemSet::on_update(self.state)
+            .label(AbilityLabels::ProjectileInflight)
+            .with_system(projectile_tracking.system())
+            .with_system(move_projectile.system());
+
+        let projectile_lifecycle = SystemSet::on_update(self.state)
+            .label(AbilityLabels::ProjectileLifecycle)
+            .with_system(initialize_projectile.system());
 
         let instance_lifecycle = SystemSet::on_update(self.state)
             .label(AbilityLabels::InstanceLifecycle)
             .with_system(initialize_cast.system())
             .with_system(complete_casting.system());
 
-        let projectile_lifecycle = SystemSet::on_update(self.state)
-            .label(AbilityLabels::ProjectileLifecycle)
-            .with_system(initialize_projectile.system());
-
-        let cleanup = SystemSet::on_update(self.state).with_system(remove_instance.system());
+        let cleanup = SystemSet::on_update(self.state)
+            .label(AbilityLabels::Cleanup)
+            .after(AbilityLabels::InstanceComplete)
+            .with_system(remove_instance.system());
 
         app.add_system_set(ability_checks)
             .add_system_set(instance_lifecycle)

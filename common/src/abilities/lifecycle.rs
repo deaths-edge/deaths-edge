@@ -1,12 +1,15 @@
+use std::collections::HashSet;
+
 use bevy::prelude::*;
 
 use crate::character::{Cast, CastState, CharacterMarker};
 
 use super::{
-    AbilityId, AbilityInstanceMarker, AbilityMarker, CastType, CharacterId, ProjectileMarker,
-    SpawnProjectile,
+    AbilityId, AbilityInstanceId, AbilityInstanceMarker, AbilityMarker, CastType, CharacterId,
+    ProjectileMarker,
 };
 
+#[derive(Debug)]
 pub struct Preparing;
 
 /// If the ability is a cast, then switches from [`Preparing`] to [`Casting`] and sets character
@@ -64,20 +67,35 @@ pub fn initialize_cast(
 pub struct InFlight;
 
 /// Switches projectile from [`Preparing`] to [`InFlight`].
+///
+/// Remove [`DeleteObstruction::WaitingForProjectile`] from [`DeleteObstructions`] on instance.
 pub fn initialize_projectile(
-    projectile_query: Query<Entity, (With<Preparing>, With<ProjectileMarker>)>,
-
+    projectile_query: Query<
+        (Entity, &AbilityInstanceId),
+        (With<Preparing>, With<ProjectileMarker>),
+    >,
+    mut instance_query: Query<&mut DeleteObstructions, With<AbilityInstanceMarker>>,
     mut commands: Commands,
 ) {
-    for instance_id in projectile_query.iter() {
-        error!("found preparing projectile");
+    for (projectile_id, instance_id) in projectile_query.iter() {
+        // Switch from `Preparing` to `InFlight`
+        info!(message = "projectile", from = ?Preparing, to = ?InFlight);
         commands
-            .entity(instance_id)
+            .entity(projectile_id)
             .remove::<Preparing>()
             .insert(InFlight);
+
+        // Remove `WaitingForProjectile` obstruction.
+        let mut delete_obstructions = instance_query
+            .get_mut(instance_id.0)
+            .expect("instance not found");
+        delete_obstructions
+            .0
+            .remove(&DeleteObstruction::WaitingForProjectile);
     }
 }
 
+#[derive(Debug)]
 pub struct Casting;
 
 /// Waits until casts are complete then switches from [`Casting`] to [`Complete`].
@@ -119,10 +137,10 @@ pub fn complete_casting(
                 let start = cast.start;
 
                 if start + *duration < now {
-                    commands
-                        .entity(instance_id)
-                        .insert(Complete)
-                        .remove::<Casting>();
+                    let mut entity_commands = commands.entity(instance_id);
+                    entity_commands.remove::<Casting>().insert(Complete);
+
+                    info!(message = "ability instance", from = ?Casting, to = ?Complete);
 
                     cast_state.0 = None;
                 }
@@ -132,24 +150,58 @@ pub fn complete_casting(
     }
 }
 
+/// Waiting for projectile
+#[derive(Debug)]
+pub struct WaitingForProjectile;
+
 /// Cast has completed successfully.
+#[derive(Debug)]
 pub struct Complete;
 
 /// Cast has failed.
+#[derive(Debug)]
 pub struct Failed;
 
-/// Removes ability instances which is [`Complete`] or [`Failed`].
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub enum DeleteObstruction {
+    WaitingForProjectile,
+}
+
+/// Prevents the ability from being immediately cleaned up.
+#[derive(Debug, Default)]
+pub struct DeleteObstructions(pub HashSet<DeleteObstruction>);
+
+pub struct MarkDeletion;
+
+/// Removes ability instances which is [`MarkDeletion`].
 pub fn remove_instance(
     query: Query<
-        Entity,
+        (Entity, &DeleteObstructions, Option<&MarkDeletion>),
         (
             With<AbilityInstanceMarker>,
-            Or<(With<Complete>, With<Failed>)>,
+            Or<(Or<(With<Complete>, With<Failed>)>, With<MarkDeletion>)>,
         ),
     >,
     mut commands: Commands,
 ) {
-    for id in query.iter() {
-        commands.entity(id).despawn();
+    for (instance_id, obstructions, marked) in query.iter() {
+        // If `Complete`/`Failed` and yet to be marked then do so
+        if marked.is_none() {
+            info!(message = "trimming instance", components = ?(Complete, Failed));
+            commands
+                .entity(instance_id)
+                .remove::<Complete>()
+                .remove::<Failed>()
+                .insert(MarkDeletion);
+        }
+        // Check whether there are existing obstructions to deletion
+        if !obstructions.0.is_empty() {
+            // Do not despawn if obstructions exist
+            warn!(message = "delete obstructions", ?obstructions);
+            continue;
+        }
+
+        info!(message = "despawning ability instance");
+        commands.entity(instance_id).despawn();
     }
 }

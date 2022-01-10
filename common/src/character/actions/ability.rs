@@ -4,7 +4,8 @@ use tracing::warn;
 
 use crate::{
     abilities::{
-        AbilityId, AbilityInstanceMarker, AbilityMarker, CharacterId, Preparing, UseObstructions,
+        AbilityId, AbilityInstanceMarker, AbilityMarker, CharacterId, DeleteObstructions,
+        Preparing, UseObstructions,
     },
     character::CharacterMarker,
 };
@@ -27,6 +28,7 @@ pub enum Ability {
 pub struct BaseAbilityInstance {
     marker: AbilityInstanceMarker,
     ability_id: AbilityId,
+    delete_obstructions: DeleteObstructions,
 }
 
 /// Receives an [`Ability`] and performs the associated ability.
@@ -62,6 +64,7 @@ pub fn character_ability(
             .insert_bundle(BaseAbilityInstance {
                 marker: AbilityInstanceMarker,
                 ability_id: AbilityId(ability_id),
+                delete_obstructions: DeleteObstructions::default(),
             })
             .insert(Preparing);
     }

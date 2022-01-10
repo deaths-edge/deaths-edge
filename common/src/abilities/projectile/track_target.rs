@@ -1,37 +1,16 @@
-use std::ops::Mul;
-
 use bevy::prelude::*;
 
 use heron::Velocity;
 
 use crate::{
-    abilities::{AbilityId, AbilityInstanceMarker, Complete, InFlight, Preparing, Target},
+    abilities::{InFlight, Target},
     character::CharacterMarker,
 };
 
-use super::{AbilityInstanceId, ProjectileMarker};
+use super::ProjectileMarker;
 
 #[derive(Debug, Default)]
 pub struct ProjectileTrackTarget;
-
-/// Adds [`Target`] to a projectile from it's parent ability instance.
-pub fn adjoin_projectile_target(
-    mut projectile_query: Query<
-        (Entity, &AbilityInstanceId),
-        (With<Preparing>, With<ProjectileMarker>),
-    >,
-    instance_query: Query<
-        (Entity, &AbilityId, &Target),
-        (With<Complete>, With<AbilityInstanceMarker>),
-    >,
-) {
-    for (projectile_id, instance_id) in projectile_query.iter() {
-        error!("found preparing projectile");
-        // let (instance_id, ability_id, target) = instance_query
-        //     .get(instance_id.0)
-        //     .expect("failed to find instance");
-    }
-}
 
 /// Alters [`Velocity`] so that projectiles to track targets.
 pub fn projectile_tracking(
@@ -40,17 +19,25 @@ pub fn projectile_tracking(
         (With<InFlight>, With<ProjectileMarker>),
     >,
 
-    character_query: Query<&Transform, With<CharacterMarker>>,
+    character_query: Query<&Transform, (With<CharacterMarker>, Changed<Transform>)>,
 ) {
     for (projectile_transform, mut velocity, target) in projectile_query.iter_mut() {
-        let target_transform = character_query
-            .get(target.0)
-            .expect("failed to find target");
+        info!("tracking projectile");
+        if let Ok(target_transform) = character_query.get(target.0) {
+            let direction = (target_transform.translation - projectile_transform.translation)
+                .normalize_or_zero();
+            let speed = velocity.linear.length();
 
-        let direction =
-            (target_transform.translation - projectile_transform.translation).normalize_or_zero();
-        let speed = velocity.linear.length();
+            *velocity.linear = *(direction);
+        }
+    }
+}
 
-        *velocity.linear = *(speed * direction);
+pub fn move_projectile(
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &Velocity), With<ProjectileMarker>>,
+) {
+    for (mut transform, velocity) in query.iter_mut() {
+        *transform.translation = *(time.delta().as_secs_f32() * velocity.linear);
     }
 }

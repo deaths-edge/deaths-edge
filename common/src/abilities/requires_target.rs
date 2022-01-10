@@ -58,6 +58,7 @@ pub fn check_required_target(
 }
 
 /// The target of the ability.
+#[derive(Debug, Clone, Copy)]
 pub struct Target(pub Entity);
 
 /// Adds current target to instance ability.

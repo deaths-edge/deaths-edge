@@ -17,8 +17,9 @@ pub struct Fireball {
     max_range: MaximumRange,
 
     include_projectile: SpawnProjectile,
+    projectile_target: ProjectileTarget,
     projectile_track_target: ProjectileTrackTarget,
-
+    // projectile_speed: ProjectileSpeed,
     instant_damage: InstantDamage,
 
     cast_type: CastType,
