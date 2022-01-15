@@ -1,8 +1,11 @@
-use bevy::utils::{HashMap, Instant};
+use bevy::{
+    prelude::*,
+    utils::{HashMap, Instant},
+};
 
 use crate::abilities::MagicType;
 
-#[derive(Default)]
+#[derive(Default, Debug, Component)]
 pub struct Interrupts(pub HashMap<MagicType, Instant>);
 
 impl Interrupts {

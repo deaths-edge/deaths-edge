@@ -1,4 +1,6 @@
-#[derive(Debug)]
+use bevy::prelude::Component;
+
+#[derive(Debug, Component)]
 pub struct Health {
     pub current: f32,
     pub total: f32,

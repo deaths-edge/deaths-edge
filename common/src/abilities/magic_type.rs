@@ -4,7 +4,7 @@ use crate::character::{CharacterMarker, Interrupts};
 
 use super::{AbilityMarker, CharacterId, Obstruction, UseObstructions};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Component)]
 pub enum MagicType {
     Fire,
     Frost,

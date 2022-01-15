@@ -32,7 +32,7 @@ pub const STATE_TRANSITIONS_LABEL: &str = "state-transitions";
 pub struct StateTransitionPlugin;
 
 impl Plugin for StateTransitionPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let state_transitions = SystemSet::new()
             .label(STATE_TRANSITIONS_LABEL)
             // TODO: Ordering
@@ -57,7 +57,6 @@ fn state_transitions(
     mut network_state: ResMut<State<NetworkingState>>,
     mut arena_state: ResMut<State<ArenaState>>,
 
-    mut materials: ResMut<Assets<ColorMaterial>>,
     mut commands: Commands,
 ) {
     if let Some(event) = transition_events.iter().next() {
@@ -84,7 +83,7 @@ fn state_transitions(
                 arena_state
                     .set(ArenaState::Waiting)
                     .expect("state transition failed");
-                setup.map.spawn_environment(&mut commands, &mut materials);
+                setup.map.spawn_environment(&mut commands);
             }
         }
     }
@@ -93,7 +92,7 @@ fn state_transitions(
 pub struct SplashPlugin;
 
 impl Plugin for SplashPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.add_plugin(SplashUIPlugin).add_plugin(SplashMusicPlugin);
     }
 }
@@ -101,7 +100,7 @@ impl Plugin for SplashPlugin {
 pub struct ArenaPlugin;
 
 impl Plugin for ArenaPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.add_state(ArenaState::Inactive)
             .add_plugin(CharacterPlugin)
             .add_plugin(UIPlugin)

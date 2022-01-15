@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Default, Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy, Component)]
 pub struct OptionalTarget(pub Option<Entity>);
 
 impl From<Entity> for OptionalTarget {

@@ -19,7 +19,7 @@ pub fn window_to_local_position(
     let p = window_position - size / 2.0;
 
     let pos_wld = camera_transform.compute_matrix() * p.extend(0.0).extend(1.0);
-    Vec2::from(pos_wld)
+    pos_wld.truncate().truncate()
 }
 
 pub fn local_to_window_position(
@@ -41,9 +41,7 @@ pub fn world_mouse(
 ) {
     let mut mouse_pos_reader = mouse_motion_events.get_reader();
     if let Some(mouse_position) = mouse_pos_reader.iter(&mouse_motion_events).last() {
-        let camera_transform = camera_query
-            .single()
-            .expect("there must be a player camera");
+        let camera_transform = camera_query.single();
 
         let primary_window = windows.get_primary().expect("no monitor");
         let position =
@@ -58,7 +56,7 @@ pub const WORLD_MOUSE_LABEL: &str = "world-mouse";
 pub struct WorldMousePlugin;
 
 impl Plugin for WorldMousePlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let world_mouse = SystemSet::on_update(ClientState::Arena)
             .label(WORLD_MOUSE_LABEL)
             .with_system(world_mouse.system());

@@ -8,6 +8,7 @@ use crate::{
 };
 
 /// Ability has a cooldown (distinct from [`GlobalCooldown`](super::GlobalCooldown)).
+#[derive(Debug, Component)]
 pub struct Cooldown(pub Duration);
 
 pub fn check_cooldown(

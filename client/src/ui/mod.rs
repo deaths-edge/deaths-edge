@@ -27,7 +27,7 @@ impl FromWorld for UIFonts {
 pub struct UIPlugin;
 
 impl Plugin for UIPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.init_resource::<UIFonts>()
             .add_plugin(camera::UICameraPlugin)
             .add_plugin(mouse::WorldMousePlugin)

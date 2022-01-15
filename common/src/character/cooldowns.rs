@@ -1,9 +1,10 @@
 use std::time::Duration;
 
-use bevy::{core::Time, utils::Instant};
+use bevy::{prelude::*, utils::Instant};
 
 pub const GLOBAL_COOLDOWN: Duration = Duration::from_secs(1);
 
+#[derive(Debug, Component)]
 pub struct LastCastInstant(pub Instant);
 
 impl LastCastInstant {

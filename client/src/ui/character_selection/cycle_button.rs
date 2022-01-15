@@ -1,16 +1,16 @@
 use bevy::prelude::*;
 use common::character::Class;
 
-use super::CharacterSelectionMaterials;
-
+#[derive(Default, Debug, Component)]
 pub struct CharacterCycleButtonMarkerLeft;
 
+#[derive(Default, Debug, Component)]
 pub struct CharacterCycleButtonMarkerRight;
 
 #[derive(Bundle)]
 pub struct CharacterCycleButton<T>
 where
-    T: Send + Sync + 'static,
+    T: Component + Send + Sync + 'static,
 {
     marker: T,
     #[bundle]
@@ -19,9 +19,9 @@ where
 
 impl<T> CharacterCycleButton<T>
 where
-    T: Send + Sync + 'static,
+    T: Component,
 {
-    pub fn new(marker: T, materials: &CharacterSelectionMaterials) -> Self {
+    pub fn new(marker: T) -> Self {
         Self {
             marker,
             button: ButtonBundle {
@@ -32,7 +32,7 @@ where
                     // align_items: AlignItems::Center,
                     ..Default::default()
                 },
-                material: materials.cycle_button.clone(),
+                color: Color::CRIMSON.into(),
                 ..Default::default()
             },
         }
@@ -40,14 +40,14 @@ where
 }
 
 impl CharacterCycleButton<CharacterCycleButtonMarkerLeft> {
-    pub fn new_left(materials: &CharacterSelectionMaterials) -> Self {
-        Self::new(CharacterCycleButtonMarkerLeft, materials)
+    pub fn new_left() -> Self {
+        Self::new(CharacterCycleButtonMarkerLeft)
     }
 }
 
 impl CharacterCycleButton<CharacterCycleButtonMarkerRight> {
-    pub fn new_right(materials: &CharacterSelectionMaterials) -> Self {
-        Self::new(CharacterCycleButtonMarkerRight, materials)
+    pub fn new_right() -> Self {
+        Self::new(CharacterCycleButtonMarkerRight)
     }
 }
 

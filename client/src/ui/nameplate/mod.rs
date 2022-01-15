@@ -1,6 +1,5 @@
 mod castbar;
 mod health;
-mod materials;
 mod parent;
 mod power;
 mod setup;
@@ -11,7 +10,6 @@ use bevy::prelude::*;
 
 pub use castbar::*;
 pub use health::*;
-pub use materials::*;
 pub use parent::*;
 pub use power::*;
 pub use setup::*;
@@ -26,22 +24,21 @@ pub const NAMEPLATE_LABEL: &str = "nameplate";
 pub struct NameplatePlugin;
 
 impl Plugin for NameplatePlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let nameplate_system_set = SystemSet::on_update(ClientState::Arena)
             .label(NAMEPLATE_LABEL)
             .with_system(update_nameplate_position.system())
             .with_system(health_bar_update.system())
             .with_system(power_bar_update.system())
             .with_system(cast_bar_update.system());
-        app.init_resource::<NameplateMaterials>()
-            .add_system_set(nameplate_system_set);
+        app.add_system_set(nameplate_system_set);
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default, Component)]
 pub struct NameplateMarker;
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 pub struct NameplateOffset(Size<Val>);
 
 impl Deref for NameplateOffset {
@@ -68,7 +65,7 @@ pub struct NameplateBundle {
 }
 
 impl NameplateBundle {
-    pub fn new(parent: NameplateParent, nameplate_materials: &NameplateMaterials) -> Self {
+    pub fn new(parent: NameplateParent) -> Self {
         let width_pct = 8.;
         let height_pct = 2.5;
         let size = Size::new(Val::Percent(width_pct), Val::Percent(height_pct));
@@ -87,10 +84,9 @@ impl NameplateBundle {
                     position_type: PositionType::Absolute,
                     flex_direction: FlexDirection::Column,
                     align_self: AlignSelf::Center,
-                    // justify_content: JustifyContent::FlexStart,
                     ..Default::default()
                 },
-                material: nameplate_materials.none.clone(),
+                color: Color::rgba(0., 0., 0., 0.5).into(),
                 ..Default::default()
             },
         }
@@ -109,9 +105,7 @@ pub fn update_nameplate_position(
 
     camera_query: Query<&Transform, With<UICameraMarker>>,
 ) {
-    let camera_transform = camera_query
-        .single()
-        .expect("there must be a player camera");
+    let camera_transform = camera_query.single();
 
     for (nameplate_parent, node_offset, mut node_style) in nameplate_query.iter_mut() {
         if let Ok(character_transform) = character_query.get(nameplate_parent.0) {

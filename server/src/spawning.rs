@@ -23,7 +23,7 @@ pub const SPAWNER_LABEL: &str = "spawner";
 pub struct SpawnPlugin;
 
 impl Plugin for SpawnPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let spawner = SystemSet::on_update(ArenaState::Waiting)
             .label(SPAWNER_LABEL)
             // NETWORK_HANDLE_LABEL sends [`SpawnCharacter`] events

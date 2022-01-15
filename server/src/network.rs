@@ -213,7 +213,7 @@ pub fn startup(mut net: ResMut<NetworkResource>) {
 pub struct NetworkServerPlugin;
 
 impl Plugin for NetworkServerPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let handle_client = SystemSet::new()
             .label(NETWORK_HANDLE_LABEL)
             // CHARACTER_COMMANDS reads CharacterEntityAction<Value> events

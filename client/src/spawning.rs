@@ -6,9 +6,9 @@ use common::{
 };
 
 use crate::{
-    character::{CharacterMaterials, ClientCharacterBundle, PlayerMarker, PlayerState},
+    character::{ClientCharacterBundle, PlayerMarker, PlayerState},
     network::NETWORK_HANDLE_LABEL,
-    ui::nameplate::{setup_nameplate, NameplateMaterials},
+    ui::nameplate::setup_nameplate,
 };
 
 pub const SPAWN_CHARACTER_LABEL: &str = "spawn-characters";
@@ -16,8 +16,6 @@ pub const SPAWN_CHARACTER_LABEL: &str = "spawn-characters";
 /// Listen for [`SpawnCharacter`] event, adding characters
 pub fn spawn_characters(
     time: Res<Time>,
-    character_materials: Res<CharacterMaterials>,
-    nameplate_materials: Res<NameplateMaterials>,
 
     mut spawn_reader: EventReader<SpawnCharacter>,
 
@@ -35,8 +33,7 @@ pub fn spawn_characters(
             spawn_event.team,
             time.startup(),
         );
-        let client_character_bundle =
-            ClientCharacterBundle::new(&common_character_bundle, &character_materials);
+        let client_character_bundle = ClientCharacterBundle::new(&common_character_bundle);
 
         let mut entity_commands = commands.spawn_bundle(client_character_bundle);
         entity_commands.insert_bundle(common_character_bundle);
@@ -51,7 +48,7 @@ pub fn spawn_characters(
             info!("spawned character");
             entity_commands.id()
         };
-        setup_nameplate(id, &nameplate_materials, &mut commands);
+        setup_nameplate(id, &mut commands);
         spawn_class_abilities(id, &mut commands);
     }
 }
@@ -60,12 +57,12 @@ pub fn spawn_characters(
 pub struct SpawnPlugin;
 
 impl Plugin for SpawnPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let spawner = SystemSet::on_update(ArenaState::Waiting)
             .label(SPAWN_CHARACTER_LABEL)
             // NETWORK_HANDLE_LABEL writes SpawnCharacter events.
             .after(NETWORK_HANDLE_LABEL)
-            .with_system(spawn_characters.system());
+            .with_system(spawn_characters);
 
         app.add_event::<SpawnCharacter>().add_system_set(spawner);
     }

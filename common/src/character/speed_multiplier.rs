@@ -1,3 +1,6 @@
+use bevy::prelude::Component;
+
+#[derive(Debug, Component)]
 pub struct SpeedMultiplier(pub f32);
 
 impl SpeedMultiplier {

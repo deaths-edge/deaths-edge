@@ -6,6 +6,7 @@ use crate::{
 };
 
 /// Ability costs health.
+#[derive(Debug, Component)]
 pub struct HealthCost(pub f32);
 
 // Looks for instances of the ability and then applies the health cost to the character.

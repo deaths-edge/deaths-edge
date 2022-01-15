@@ -9,7 +9,7 @@ use crate::{
 };
 
 /// Ability obeys global cooldown.
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Component)]
 pub struct GlobalCooldown;
 
 pub fn check_global_cooldown(

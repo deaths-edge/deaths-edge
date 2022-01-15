@@ -4,19 +4,7 @@ use crate::state::ClientState;
 
 use super::UIFonts;
 
-pub struct SplashMaterials {
-    background: Handle<ColorMaterial>,
-}
-
-impl FromWorld for SplashMaterials {
-    fn from_world(world: &mut World) -> Self {
-        let mut materials = world.get_resource_mut::<Assets<ColorMaterial>>().unwrap();
-        Self {
-            background: materials.add(Color::BLACK.into()),
-        }
-    }
-}
-
+#[derive(Debug, Component)]
 pub struct SplashMarker;
 
 #[derive(Bundle)]
@@ -27,7 +15,7 @@ pub struct SplashScreenRootBundle {
 }
 
 impl SplashScreenRootBundle {
-    pub fn new(materials: &SplashMaterials) -> Self {
+    pub fn new() -> Self {
         Self {
             marker: SplashMarker,
             node: NodeBundle {
@@ -38,16 +26,16 @@ impl SplashScreenRootBundle {
                     align_items: AlignItems::FlexEnd,
                     ..Default::default()
                 },
-                material: materials.background.clone(),
+                color: Color::BLACK.into(),
                 ..Default::default()
             },
         }
     }
 }
 
-pub fn setup_splash(mut commands: Commands, fonts: Res<UIFonts>, materials: Res<SplashMaterials>) {
+pub fn setup_splash(mut commands: Commands, fonts: Res<UIFonts>) {
     commands
-        .spawn_bundle(SplashScreenRootBundle::new(&materials))
+        .spawn_bundle(SplashScreenRootBundle::new())
         .with_children(|parent| {
             parent.spawn_bundle(TextBundle {
                 style: Style {
@@ -72,17 +60,16 @@ pub fn setup_splash(mut commands: Commands, fonts: Res<UIFonts>, materials: Res<
 }
 
 pub fn remove_splash(mut commands: Commands, query: Query<Entity, With<SplashMarker>>) {
-    let node = query.single().expect("splash root node not found");
+    let node = query.single();
     commands.entity(node).despawn_recursive();
 }
 
 pub struct SplashUIPlugin;
 
 impl Plugin for SplashUIPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let teardown = SystemSet::on_exit(ClientState::Splash).with_system(remove_splash.system());
-        app.init_resource::<SplashMaterials>()
-            .add_startup_system(setup_splash.system())
+        app.add_startup_system(setup_splash.system())
             .add_system_set(teardown);
     }
 }

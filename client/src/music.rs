@@ -25,7 +25,7 @@ fn fade_splash(asset_server: Res<Music>, audio: Res<Audio>) {
 pub struct SplashMusicPlugin;
 
 impl Plugin for SplashMusicPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let splash_music =
             SystemSet::on_enter(ClientState::Arena).with_system(fade_splash.system());
         app.init_resource::<Music>()

@@ -55,7 +55,7 @@ fn main() {
 
     ////
     // App construction
-    let mut app = App::build();
+    let mut app = App::new();
 
     app
         // Settings

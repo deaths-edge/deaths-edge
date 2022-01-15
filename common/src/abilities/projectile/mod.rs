@@ -19,13 +19,13 @@ pub use speed::*;
 pub use target::*;
 pub use track_target::*;
 
-#[derive(Default)]
+#[derive(Default, Debug, Component)]
 pub struct ProjectileMarker;
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Component)]
 pub struct SpawnProjectile;
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 pub struct AbilityInstanceId(pub Entity);
 
 #[derive(Bundle)]

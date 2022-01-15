@@ -52,7 +52,7 @@ where
     T: Clone,
     T: Into<ClientMessage>,
 {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let broadcast_inputs = SystemSet::on_update(PlayerState::Spawned)
             .label(CHARACTER_NETWORK_COMMAND_LABEL)
             // INPUT_TO_CHARACTER_LABEL sends PlayerInputAction<Value> events

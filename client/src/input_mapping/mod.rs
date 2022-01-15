@@ -32,7 +32,7 @@ fn input_to_character<Value>(
 ) where
     Value: Clone + Send + Sync + 'static,
 {
-    let entity = player_query.single().expect("missing player");
+    let entity = player_query.single();
     command_motion.send_batch(
         input_motion
             .iter()
@@ -117,7 +117,7 @@ fn input_map(
                         mouse_position.position.extend(0.),
                         SELECT_SIZE.into(),
                         char_transform.translation,
-                        char_sprite.size,
+                        char_sprite.custom_size.expect("this is fine for now"),
                     )
                     .is_some()
                 })
@@ -137,7 +137,7 @@ fn input_map(
     }
 
     if *mouse_right_state == MouseRightElementState::Pressed {
-        let transform = transform_query.single().expect("could not find player");
+        let transform = transform_query.single();
         let translation = transform.translation.truncate();
 
         let diff = mouse_position.position - translation;
@@ -169,7 +169,7 @@ where
     T: Send + Sync + 'static,
     T: Clone,
 {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let input_to_character = SystemSet::on_update(PlayerState::Spawned)
             .label(INPUT_TO_CHARACTER_LABEL)
             // INPUT_MAPPING_LABEL sends PlayerInputAction<Value> event
@@ -186,7 +186,7 @@ where
 pub struct InputMapPlugin;
 
 impl Plugin for InputMapPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let system_set = SystemSet::on_update(PlayerState::Spawned)
             .label(INPUT_MAPPING_LABEL)
             // WORLD_MOUSE_LABEL sets WorldMousePosition

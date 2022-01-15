@@ -1,7 +1,9 @@
 use std::time::Duration;
 
+use bevy::prelude::*;
+
 /// Ability requires casting duration.
-#[derive(Debug)]
+#[derive(Debug, Component)]
 pub enum CastType {
     Instant,
     Cast(Duration),

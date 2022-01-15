@@ -31,6 +31,7 @@ pub use speed_multiplier::*;
 pub use target::*;
 pub use team::*;
 
+#[derive(Debug, Default, Component)]
 pub struct CharacterMarker;
 
 // TODO: Stratify into base vs full (base only including that which should be reconciled over the internet)
@@ -125,7 +126,7 @@ where
     T: Send + Sync + 'static,
     T: Clone + Copy + Eq + Hash + Debug,
 {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let regenerate = SystemSet::on_update(self.state).with_system(regenerate_power.system());
         app.add_system_set(regenerate)
             .add_plugin(CharacterEntityActionPlugin::new(self.state));

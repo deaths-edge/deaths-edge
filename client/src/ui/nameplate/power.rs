@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use common::character::{CharacterMarker, Power};
 
-use super::{NameplateMarker, NameplateMaterials, NameplateParent};
+use super::{NameplateMarker, NameplateParent};
 
-#[derive(Debug)]
+#[derive(Debug, Default, Component)]
 pub struct PowerBarMarker;
 
 #[derive(Debug, Bundle)]
@@ -14,7 +14,7 @@ pub struct PowerBarBundle {
 }
 
 impl PowerBarBundle {
-    pub fn new(nameplate_materials: &NameplateMaterials) -> Self {
+    pub fn new() -> Self {
         Self {
             marker: PowerBarMarker,
             node: NodeBundle {
@@ -22,7 +22,7 @@ impl PowerBarBundle {
                     size: Size::new(Val::Percent(100.), Val::Percent(100.)),
                     ..Default::default()
                 },
-                material: nameplate_materials.energy_bar.clone(),
+                color: Color::BLUE.into(),
                 ..Default::default()
             },
         }

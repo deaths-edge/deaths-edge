@@ -5,9 +5,9 @@ use common::{
     character::{CastState, CharacterMarker},
 };
 
-use super::{NameplateMarker, NameplateMaterials, NameplateParent};
+use super::{NameplateMarker, NameplateParent};
 
-#[derive(Debug)]
+#[derive(Debug, Default, Component)]
 pub struct CastBarMarker;
 
 #[derive(Debug, Bundle)]
@@ -18,7 +18,7 @@ pub struct CastBarBundle {
 }
 
 impl CastBarBundle {
-    pub fn new(nameplate_materials: &NameplateMaterials) -> Self {
+    pub fn new() -> Self {
         Self {
             marker: CastBarMarker,
             node: NodeBundle {
@@ -26,7 +26,7 @@ impl CastBarBundle {
                     size: Size::new(Val::Percent(100.), Val::Percent(100.)),
                     ..Default::default()
                 },
-                material: nameplate_materials.cast_bar.clone(),
+                color: Color::YELLOW.into(),
                 ..Default::default()
             },
         }

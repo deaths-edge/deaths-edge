@@ -5,8 +5,7 @@ use common::network::{find_my_ip_address, SERVER_PORT};
 
 use crate::state::StateTransition;
 
-use super::CharacterSelectionMaterials;
-
+#[derive(Default, Debug, Component)]
 pub struct CharacterConfirmButtonMarker;
 
 #[derive(Bundle)]
@@ -17,7 +16,7 @@ pub struct CharacterConfirmButton {
 }
 
 impl CharacterConfirmButton {
-    pub fn new(materials: &CharacterSelectionMaterials) -> Self {
+    pub fn new() -> Self {
         Self {
             marker: CharacterConfirmButtonMarker,
             button: ButtonBundle {
@@ -29,7 +28,7 @@ impl CharacterConfirmButton {
                     // align_items: AlignItems::Center,
                     ..Default::default()
                 },
-                material: materials.confirm_button.clone(),
+                color: Color::FUCHSIA.into(),
                 ..Default::default()
             },
         }

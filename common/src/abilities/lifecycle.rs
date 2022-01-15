@@ -9,7 +9,7 @@ use super::{
     ProjectileMarker,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Default, Component)]
 pub struct Preparing;
 
 /// If the ability is a cast, then switches from [`Preparing`] to [`Casting`] and sets character
@@ -63,7 +63,7 @@ pub fn initialize_cast(
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Component)]
 pub struct InFlight;
 
 /// Switches projectile from [`Preparing`] to [`InFlight`].
@@ -95,7 +95,7 @@ pub fn initialize_projectile(
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default, Component)]
 pub struct Casting;
 
 /// Waits until casts are complete then switches from [`Casting`] to [`Complete`].
@@ -155,11 +155,11 @@ pub fn complete_casting(
 pub struct WaitingForProjectile;
 
 /// Cast has completed successfully.
-#[derive(Debug)]
+#[derive(Debug, Default, Component)]
 pub struct Complete;
 
 /// Cast has failed.
-#[derive(Debug)]
+#[derive(Debug, Default, Component)]
 pub struct Failed;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -168,9 +168,10 @@ pub enum DeleteObstruction {
 }
 
 /// Prevents the ability from being immediately cleaned up.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Component)]
 pub struct DeleteObstructions(pub HashSet<DeleteObstruction>);
 
+#[derive(Debug, Default, Component)]
 pub struct MarkDeletion;
 
 /// Removes ability instances which is [`MarkDeletion`].

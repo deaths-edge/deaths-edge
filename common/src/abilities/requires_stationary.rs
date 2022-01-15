@@ -9,7 +9,7 @@ use super::{
 };
 
 /// Requires that target is stationary while casting.
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Component)]
 pub struct RequiresStationary;
 
 pub fn check_required_stationary(

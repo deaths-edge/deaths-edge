@@ -9,7 +9,7 @@ use crate::{
 };
 
 /// Ability costs power.
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Component)]
 pub struct PowerCost(pub f32);
 
 /// Check whether character has sufficient power.

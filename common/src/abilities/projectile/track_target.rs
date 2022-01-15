@@ -9,7 +9,7 @@ use crate::{
 
 use super::ProjectileMarker;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Component)]
 pub struct ProjectileTrackTarget;
 
 /// Alters [`Velocity`] so that projectiles to track targets.

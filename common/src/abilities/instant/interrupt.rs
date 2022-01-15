@@ -10,6 +10,7 @@ use crate::{
     character::{CastState, CharacterMarker, Interrupts},
 };
 
+#[derive(Debug, Component)]
 pub struct InstantInterrupt(pub Duration);
 
 pub fn apply_interrupt(

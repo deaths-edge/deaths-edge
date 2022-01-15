@@ -5,7 +5,7 @@ use crate::{
     character::{CharacterMarker, Health},
 };
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Component)]
 pub struct InstantDamage(pub f32);
 
 pub fn apply_damage(

@@ -1,11 +1,11 @@
 use std::fmt;
 
-use bevy::math::Size;
+use bevy::{math::Size, prelude::*};
 use serde::{Deserialize, Serialize};
 
 use super::Power;
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash, Component)]
 pub enum Class {
     /// Melee: Damage + Survivability
     /// High sustained, medium health, escapes
@@ -101,6 +101,10 @@ impl Class {
             Rhea => Heka,
             Mars => Rhea,
         }
+    }
+
+    pub fn color(&self) -> Color {
+        Color::BLUE
     }
 }
 

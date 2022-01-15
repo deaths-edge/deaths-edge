@@ -2,9 +2,9 @@ use bevy::prelude::*;
 
 use common::character::{CharacterMarker, Health};
 
-use super::{NameplateMarker, NameplateMaterials, NameplateParent};
+use super::{NameplateMarker, NameplateParent};
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 pub struct HealthBarMarker;
 
 #[derive(Debug, Bundle)]
@@ -15,7 +15,7 @@ pub struct HealthBarBundle {
 }
 
 impl HealthBarBundle {
-    pub fn new(nameplate_materials: &NameplateMaterials) -> Self {
+    pub fn new() -> Self {
         Self {
             marker: HealthBarMarker,
             node: NodeBundle {
@@ -23,7 +23,7 @@ impl HealthBarBundle {
                     size: Size::new(Val::Percent(100.), Val::Percent(100.)),
                     ..Default::default()
                 },
-                material: nameplate_materials.health_bar.clone(),
+                color: Color::GREEN.into(),
                 ..Default::default()
             },
         }

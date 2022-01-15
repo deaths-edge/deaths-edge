@@ -11,7 +11,7 @@ pub const STATE_TRANSITION_LABEL: &str = "state-transition";
 pub struct StateTransitionPlugin;
 
 impl Plugin for StateTransitionPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let state_transitions = SystemSet::new()
             .label(STATE_TRANSITION_LABEL)
             // TODO: Ordering
@@ -38,7 +38,7 @@ fn state_transitions(// mut transition_events: EventReader<StateTransition>,
 pub struct RunningPlugin;
 
 impl Plugin for RunningPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app
             // .add_plugin(CastingPlugin::new(ServerState))
             // .add_plugin(SpellPlugin)

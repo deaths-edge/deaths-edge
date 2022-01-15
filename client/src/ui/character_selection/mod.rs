@@ -11,25 +11,7 @@ use cycle_button::*;
 
 use super::UIFonts;
 
-pub struct CharacterSelectionMaterials {
-    background: Handle<ColorMaterial>,
-    transparent: Handle<ColorMaterial>,
-    cycle_button: Handle<ColorMaterial>,
-    confirm_button: Handle<ColorMaterial>,
-}
-
-impl FromWorld for CharacterSelectionMaterials {
-    fn from_world(world: &mut World) -> Self {
-        let mut materials = world.get_resource_mut::<Assets<ColorMaterial>>().unwrap();
-        Self {
-            background: materials.add(Color::BLUE.into()),
-            transparent: materials.add(Color::NONE.into()),
-            cycle_button: materials.add(Color::RED.into()),
-            confirm_button: materials.add(Color::GREEN.into()),
-        }
-    }
-}
-
+#[derive(Default, Debug, Component)]
 struct CharacterSelectionRootMarker;
 
 #[derive(Bundle)]
@@ -40,7 +22,7 @@ pub struct CharacterSelectionRoot {
 }
 
 impl CharacterSelectionRoot {
-    pub fn new(materials: &CharacterSelectionMaterials) -> Self {
+    pub fn new() -> Self {
         Self {
             marker: CharacterSelectionRootMarker,
             node: NodeBundle {
@@ -52,13 +34,14 @@ impl CharacterSelectionRoot {
                     flex_direction: FlexDirection::Column,
                     ..Default::default()
                 },
-                material: materials.background.clone(),
+                color: Color::BLACK.into(),
                 ..Default::default()
             },
         }
     }
 }
 
+#[derive(Debug, Default, Component)]
 struct CharacterSelectionTextMarker;
 
 #[derive(Bundle)]
@@ -101,14 +84,13 @@ pub struct CharacterSelectionPlugin;
 pub fn spawn_character_selection(
     selected_char: Res<Class>,
     fonts: Res<UIFonts>,
-    root_materials: Res<CharacterSelectionMaterials>,
 
     mut commands: Commands,
 ) {
     commands
-        .spawn_bundle(CharacterSelectionRoot::new(&root_materials))
+        .spawn_bundle(CharacterSelectionRoot::new())
         .with_children(|parent| {
-            parent.spawn_bundle(CharacterConfirmButton::new(&root_materials));
+            parent.spawn_bundle(CharacterConfirmButton::new());
 
             parent
                 .spawn_bundle(NodeBundle {
@@ -119,13 +101,13 @@ pub fn spawn_character_selection(
                         justify_content: JustifyContent::Center,
                         ..Default::default()
                     },
-                    material: root_materials.transparent.clone(),
+                    color: Color::NONE.into(),
                     ..Default::default()
                 })
                 .with_children(|parent| {
-                    parent.spawn_bundle(CharacterCycleButton::new_left(&root_materials));
+                    parent.spawn_bundle(CharacterCycleButton::new_left());
                     parent.spawn_bundle(ClassSelectionText::new(*selected_char, &fonts));
-                    parent.spawn_bundle(CharacterCycleButton::new_right(&root_materials));
+                    parent.spawn_bundle(CharacterCycleButton::new_right());
                 });
         });
 }
@@ -134,7 +116,7 @@ fn despawn_character_selection(
     query: Query<Entity, With<CharacterSelectionRootMarker>>,
     mut commands: Commands,
 ) {
-    let id = query.single().expect("character selection not found");
+    let id = query.single();
     commands.entity(id).despawn_recursive();
 }
 
@@ -143,15 +125,13 @@ fn character_text_changed(
     mut text_query: Query<&mut Text, With<CharacterSelectionTextMarker>>,
 ) {
     if selected_char.is_changed() {
-        let mut text = text_query
-            .single_mut()
-            .expect("missing character selection text");
+        let mut text = text_query.single_mut();
         text.sections[0].value = selected_char.to_string();
     }
 }
 
 impl Plugin for CharacterSelectionPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         const HANDLE_SELECTION_CLICKS: &str = "handle-selection-clicks";
         let spawn_ui = SystemSet::on_enter(ClientState::MainLobby)
             .with_system(spawn_character_selection.system());
@@ -169,7 +149,6 @@ impl Plugin for CharacterSelectionPlugin {
             .with_system(character_text_changed.system());
 
         app.insert_resource(Class::Heka)
-            .init_resource::<CharacterSelectionMaterials>()
             .add_system_set(spawn_ui)
             .add_system_set(despawn_ui)
             .add_system_set(handle_clicks)

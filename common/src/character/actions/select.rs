@@ -5,7 +5,7 @@ use crate::character::{CharacterIndex, CharacterMarker, OptionalTarget};
 
 use super::CharacterEntityAction;
 
-#[derive(Debug, Default, PartialEq, Clone, Copy, Deserialize, Serialize)]
+#[derive(Debug, Default, PartialEq, Clone, Copy, Deserialize, Serialize, Component)]
 pub struct SelectTarget(pub Option<CharacterIndex>);
 
 /// Receives an [`OptionalTarget`] and performs targeting.

@@ -7,8 +7,6 @@ use crate::state::ClientState;
 pub fn adjoin_projectile_sprite_bundle(
     query: Query<(Entity, &Transform), (With<ProjectileMarker>, With<Preparing>)>,
 
-    mut materials: ResMut<Assets<ColorMaterial>>,
-
     mut commands: Commands,
 ) {
     for (id, transform) in query.iter() {
@@ -16,8 +14,11 @@ pub fn adjoin_projectile_sprite_bundle(
 
         commands.entity(id).insert_bundle(SpriteBundle {
             transform: *transform,
-            material: materials.add(Color::rgb(0.5, 1.0, 0.5).into()),
-            sprite: Sprite::new(Vec2::new(15., 15.)),
+            sprite: Sprite {
+                color: Color::rgb(0.5, 1.0, 0.5).into(),
+                custom_size: Some(Vec2::new(15., 15.)),
+                ..Default::default()
+            },
             ..Default::default()
         });
     }
@@ -26,7 +27,7 @@ pub fn adjoin_projectile_sprite_bundle(
 pub struct AbilityPlugin;
 
 impl Plugin for AbilityPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let adjoin = SystemSet::on_update(ClientState::Arena)
             .with_system(adjoin_projectile_sprite_bundle.system());
         app.add_plugin(CommonAbilityPlugin::new(ClientState::Arena))

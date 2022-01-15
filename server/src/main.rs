@@ -40,7 +40,7 @@ fn main() {
 
     ////
     // App construction
-    App::build()
+    App::new()
         .insert_resource(GameRoster::new(permits))
         .insert_resource(ScheduleRunnerSettings::run_loop(Duration::from_secs_f64(
             1.0 / 60.0,

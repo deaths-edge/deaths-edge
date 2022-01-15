@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::physics::WorldLayer;
 
+#[derive(Debug, Default, Component)]
 pub struct EnvironmentMarker;
 
 #[derive(Bundle)]
@@ -22,7 +23,7 @@ pub struct Environment {
 }
 
 impl Environment {
-    pub fn new(transform: Transform, size: Size, materials: &mut Assets<ColorMaterial>) -> Self {
+    pub fn new(transform: Transform, size: Size) -> Self {
         Self {
             marker: EnvironmentMarker,
 
@@ -36,8 +37,11 @@ impl Environment {
                 .with_masks(&[WorldLayer::Character, WorldLayer::Spell]),
 
             sprite: SpriteBundle {
-                material: materials.add(Color::rgb(0.5, 1.0, 0.5).into()),
-                sprite: Sprite::new(Vec2::new(size.width, size.width)),
+                sprite: Sprite {
+                    color: Color::rgb(0.5, 1.0, 0.5),
+                    custom_size: Some(Vec2::new(size.width, size.width)),
+                    ..Default::default()
+                },
                 transform,
                 ..Default::default()
             },
@@ -51,23 +55,13 @@ pub enum Map {
 }
 
 impl Map {
-    pub fn spawn_environment(
-        &self,
-        commands: &mut Commands,
-        mut materials: &mut Assets<ColorMaterial>,
-    ) {
+    pub fn spawn_environment(&self, commands: &mut Commands) {
         match self {
             Self::Duo => {
-                let pillar_a = Environment::new(
-                    Transform::from_xyz(300., 300., 0.),
-                    Size::new(100., 100.),
-                    &mut materials,
-                );
-                let pillar_b = Environment::new(
-                    Transform::from_xyz(-300., -300., 0.),
-                    Size::new(100., 100.),
-                    &mut materials,
-                );
+                let pillar_a =
+                    Environment::new(Transform::from_xyz(300., 300., 0.), Size::new(100., 100.));
+                let pillar_b =
+                    Environment::new(Transform::from_xyz(-300., -300., 0.), Size::new(100., 100.));
 
                 commands.spawn_bundle(pillar_a);
                 commands.spawn_bundle(pillar_b);

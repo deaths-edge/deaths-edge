@@ -1,10 +1,8 @@
-mod materials;
 mod player;
 mod reconcile;
 
 use bevy::prelude::*;
 
-pub use materials::*;
 pub use player::*;
 pub use reconcile::*;
 
@@ -23,13 +21,16 @@ pub struct ClientCharacterBundle {
 }
 
 impl ClientCharacterBundle {
-    pub fn new(common: &CharacterBundle, materials: &CharacterMaterials) -> Self {
+    pub fn new(common: &CharacterBundle) -> Self {
         let size = common.class().size();
 
         Self {
             sprite: SpriteBundle {
-                material: materials.handle(common.class()).clone(),
-                sprite: Sprite::new(Vec2::new(size.width, size.width)),
+                sprite: Sprite {
+                    color: common.class().color(),
+                    custom_size: Some(Vec2::new(size.width, size.width)),
+                    ..Default::default()
+                },
                 ..Default::default()
             },
             selected: Selected::default(),
@@ -40,7 +41,7 @@ impl ClientCharacterBundle {
 pub struct CharacterPlugin;
 
 impl Plugin for CharacterPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let reconcile = SystemSet::on_update(ClientState::Arena)
             .label(RECONCILE_LABEL)
             // NETWORK_HANDLE_LABEL writes Reconcile events
@@ -48,7 +49,6 @@ impl Plugin for CharacterPlugin {
             .with_system(reconcile.system());
         app.add_system_set(reconcile)
             .add_event::<Reconcile>()
-            .add_plugin(CharacterMaterialPlugin)
             .add_plugin(PlayerPlugin)
             .add_plugin(CommonCharacterPlugin {
                 state: ClientState::Arena,

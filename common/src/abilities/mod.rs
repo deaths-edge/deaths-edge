@@ -27,11 +27,11 @@ use std::{fmt::Debug, hash::Hash};
 
 use bevy::{prelude::*, utils::HashSet};
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Component)]
 pub struct AbilityMarker;
 
 /// The character which the ability originates from.
-#[derive(Debug)]
+#[derive(Debug, Component)]
 pub struct CharacterId(pub Entity);
 
 /// An obstruction preventing a specific ability from being used.
@@ -57,7 +57,7 @@ pub fn spawn_class_abilities(character_id: Entity, commands: &mut Commands) {
         .insert(UseObstructions::default());
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Component)]
 pub struct UseObstructions(pub HashSet<Obstruction>);
 
 pub struct AbilityPlugin<T> {
@@ -94,7 +94,7 @@ where
     T: Send + Sync + 'static,
     T: Debug + Clone + Copy + Hash + Eq,
 {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let ability_checks = SystemSet::on_update(self.state)
             .label(AbilityLabels::Checks)
             // Geometric obstructions

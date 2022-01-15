@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use super::CharacterMarker;
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 pub struct Power {
     pub current: f32,
     pub total: f32,
@@ -15,13 +15,14 @@ impl Power {
     }
 }
 
-pub struct CharacterPowerRegen(pub f32);
+#[derive(Debug, Component)]
+pub struct PowerRegenerate(pub f32);
 
 /// Regenerates power over time.
 pub fn regenerate_power(
     time: Res<Time>,
 
-    mut query: Query<(&CharacterPowerRegen, &mut Power), With<CharacterMarker>>,
+    mut query: Query<(&PowerRegenerate, &mut Power), With<CharacterMarker>>,
 ) {
     let delta_time = time.delta_seconds();
 

@@ -151,7 +151,7 @@ pub enum NetworkingState {
 }
 
 impl Plugin for NetworkPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let setup = SystemSet::on_enter(ClientState::Connecting)
             .label(NETWORK_SETUP_LABEL)
             .with_system(startup.system())

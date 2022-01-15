@@ -8,6 +8,7 @@ use super::{
 };
 
 /// Ability requires a target.
+#[derive(Debug, Component)]
 pub enum RequiresTarget {
     Enemy,
     Ally,
@@ -58,7 +59,7 @@ pub fn check_required_target(
 }
 
 /// The target of the ability.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Component)]
 pub struct Target(pub Entity);
 
 /// Adds current target to instance ability.

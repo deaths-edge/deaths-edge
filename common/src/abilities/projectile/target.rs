@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use super::{AbilityInstanceId, ProjectileMarker};
 use crate::abilities::{AbilityId, AbilityInstanceMarker, AbilityMarker, Preparing, Target};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Component)]
 pub struct ProjectileTarget;
 
 /// Adds [`Target`] to a projectile from it's parent ability instance.

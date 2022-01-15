@@ -48,7 +48,7 @@ impl<T> Plugin for CharacterEntityActionPlugin<T>
 where
     T: Send + Sync + 'static + Debug + Eq + Hash + Clone + Copy,
 {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let movement = SystemSet::on_update(self.state)
             .label(CHARACTER_COMMANDS)
             .with_system(character_movement.system())

@@ -3,6 +3,8 @@ members = [
     "client",
     "server",
     "common",
-    "ladder",
-    "matchmaker"
+    # "ladder",
+    # "matchmaker"
 ]
+
+resolver = "2"
