@@ -16,7 +16,7 @@ impl Plugin for StateTransitionPlugin {
             .label(STATE_TRANSITION_LABEL)
             // TODO: Ordering
             .after(NETWORK_HANDLE_LABEL)
-            .with_system(state_transitions.system());
+            .with_system(state_transitions);
         app.add_event::<StateTransition>()
             .add_state(ServerState)
             .add_event::<ArenaState>()

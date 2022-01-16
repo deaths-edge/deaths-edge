@@ -133,20 +133,20 @@ fn character_text_changed(
 impl Plugin for CharacterSelectionPlugin {
     fn build(&self, app: &mut App) {
         const HANDLE_SELECTION_CLICKS: &str = "handle-selection-clicks";
-        let spawn_ui = SystemSet::on_enter(ClientState::MainLobby)
-            .with_system(spawn_character_selection.system());
+        let spawn_ui =
+            SystemSet::on_enter(ClientState::MainLobby).with_system(spawn_character_selection);
 
-        let despawn_ui = SystemSet::on_exit(ClientState::MainLobby)
-            .with_system(despawn_character_selection.system());
+        let despawn_ui =
+            SystemSet::on_exit(ClientState::MainLobby).with_system(despawn_character_selection);
 
         let handle_clicks = SystemSet::on_update(ClientState::MainLobby)
             .label(HANDLE_SELECTION_CLICKS)
-            .with_system(handle_click_left.system())
-            .with_system(handle_click_right.system())
-            .with_system(handle_confirm_click.system());
+            .with_system(handle_click_left)
+            .with_system(handle_click_right)
+            .with_system(handle_confirm_click);
 
-        let character_class = SystemSet::on_update(ClientState::MainLobby)
-            .with_system(character_text_changed.system());
+        let character_class =
+            SystemSet::on_update(ClientState::MainLobby).with_system(character_text_changed);
 
         app.insert_resource(Class::Heka)
             .add_system_set(spawn_ui)

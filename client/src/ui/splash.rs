@@ -68,8 +68,8 @@ pub struct SplashUIPlugin;
 
 impl Plugin for SplashUIPlugin {
     fn build(&self, app: &mut App) {
-        let teardown = SystemSet::on_exit(ClientState::Splash).with_system(remove_splash.system());
-        app.add_startup_system(setup_splash.system())
+        let teardown = SystemSet::on_exit(ClientState::Splash).with_system(remove_splash);
+        app.add_startup_system(setup_splash)
             .add_system_set(teardown);
     }
 }

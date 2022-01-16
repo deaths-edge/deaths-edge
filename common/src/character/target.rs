@@ -1,26 +1,12 @@
 use bevy::prelude::*;
 
+use crate::abilities::Target;
+
 #[derive(Default, Debug, Clone, Copy, Component)]
-pub struct OptionalTarget(pub Option<Entity>);
+pub struct OptionalTarget(pub Option<Target>);
 
-impl From<Entity> for OptionalTarget {
-    fn from(entity: Entity) -> Self {
-        Self(Some(entity))
-    }
-}
-
-impl OptionalTarget {
-    pub fn set_entity(&mut self, character: Entity) -> &mut Self {
-        self.0 = Some(character);
-        self
-    }
-
-    pub fn deselect(&mut self) -> &mut Self {
-        self.0 = None;
-        self
-    }
-
-    pub fn id(&self) -> Option<Entity> {
-        self.0
+impl From<Target> for OptionalTarget {
+    fn from(target: Target) -> Self {
+        Self(Some(target))
     }
 }

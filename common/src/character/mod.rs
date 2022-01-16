@@ -59,7 +59,6 @@ pub struct CharacterBundle {
 
     // Casting
     cast_state: CastState,
-    interrupts: Interrupts,
     last_cast_instant: LastCastInstant,
 
     target: OptionalTarget,
@@ -105,7 +104,6 @@ impl CharacterBundle {
             },
 
             cast_state: CastState::default(),
-            interrupts: Interrupts::default(),
             last_cast_instant: LastCastInstant(last_cast_instant),
 
             target: OptionalTarget::default(),
@@ -127,7 +125,7 @@ where
     T: Clone + Copy + Eq + Hash + Debug,
 {
     fn build(&self, app: &mut App) {
-        let regenerate = SystemSet::on_update(self.state).with_system(regenerate_power.system());
+        let regenerate = SystemSet::on_update(self.state).with_system(regenerate_power);
         app.add_system_set(regenerate)
             .add_plugin(CharacterEntityActionPlugin::new(self.state));
     }

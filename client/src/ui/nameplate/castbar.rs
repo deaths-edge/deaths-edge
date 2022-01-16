@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use common::{
-    abilities::{AbilityId, AbilityInstanceMarker, AbilityMarker, CastType},
+    abilities::{AbilityId, AbilityInstanceMarker, AbilityMarker},
     character::{CastState, CharacterMarker},
 };
 

@@ -218,27 +218,27 @@ impl Plugin for NetworkServerPlugin {
             .label(NETWORK_HANDLE_LABEL)
             // CHARACTER_COMMANDS reads CharacterEntityAction<Value> events
             .before(CHARACTER_COMMANDS)
-            .with_system(handle_client_messages.system())
-            .with_system(handle_connects.system());
+            .with_system(handle_client_messages)
+            .with_system(handle_connects);
 
         let relay_commands = SystemSet::new()
             .label(NETWORK_RELAY_LABEL)
             // NETWORK_HANDLE_LABEL writes CharacterEntityAction<Value> events
             .after(NETWORK_HANDLE_LABEL)
-            .with_system(relay_character_commands::<Motion>.system())
-            .with_system(relay_character_commands::<SelectTarget>.system())
-            .with_system(relay_character_commands::<Ability>.system())
-            .with_system(relay_character_commands::<FocalAngle>.system());
+            .with_system(relay_character_commands::<Motion>)
+            .with_system(relay_character_commands::<SelectTarget>)
+            .with_system(relay_character_commands::<Ability>)
+            .with_system(relay_character_commands::<FocalAngle>);
 
         let broadcast_reconciles = SystemSet::new()
             .with_run_criteria(FixedTimestep::step(5.0))
-            .with_system(reconcile_broadcast.system());
+            .with_system(reconcile_broadcast);
 
         app.add_plugin(NetworkingPlugin::default())
             .add_system_set(handle_client)
             .add_system_set(relay_commands)
             .add_system_set(broadcast_reconciles)
-            .add_startup_system(startup.system())
-            .add_startup_system(network_setup.system());
+            .add_startup_system(startup)
+            .add_startup_system(network_setup);
     }
 }

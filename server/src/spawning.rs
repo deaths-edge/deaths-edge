@@ -28,7 +28,7 @@ impl Plugin for SpawnPlugin {
             .label(SPAWNER_LABEL)
             // NETWORK_HANDLE_LABEL sends [`SpawnCharacter`] events
             .after(NETWORK_HANDLE_LABEL)
-            .with_system(spawn_characters.system());
+            .with_system(spawn_characters);
 
         // TODO: Don't start active
         app.add_state(ArenaState::Waiting).add_system_set(spawner);

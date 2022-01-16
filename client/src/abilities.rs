@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use common::abilities::{AbilityPlugin as CommonAbilityPlugin, Preparing, ProjectileMarker};
+use common::abilities::AbilityPlugin as CommonAbilityPlugin;
 
 use crate::state::ClientState;
 
@@ -28,8 +28,8 @@ pub struct AbilityPlugin;
 
 impl Plugin for AbilityPlugin {
     fn build(&self, app: &mut App) {
-        let adjoin = SystemSet::on_update(ClientState::Arena)
-            .with_system(adjoin_projectile_sprite_bundle.system());
+        let adjoin =
+            SystemSet::on_update(ClientState::Arena).with_system(adjoin_projectile_sprite_bundle);
         app.add_plugin(CommonAbilityPlugin::new(ClientState::Arena))
             .add_system_set(adjoin);
     }

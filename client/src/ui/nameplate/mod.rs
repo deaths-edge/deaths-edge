@@ -27,10 +27,10 @@ impl Plugin for NameplatePlugin {
     fn build(&self, app: &mut App) {
         let nameplate_system_set = SystemSet::on_update(ClientState::Arena)
             .label(NAMEPLATE_LABEL)
-            .with_system(update_nameplate_position.system())
-            .with_system(health_bar_update.system())
-            .with_system(power_bar_update.system())
-            .with_system(cast_bar_update.system());
+            .with_system(update_nameplate_position)
+            .with_system(health_bar_update)
+            .with_system(power_bar_update)
+            .with_system(cast_bar_update);
         app.add_system_set(nameplate_system_set);
     }
 }

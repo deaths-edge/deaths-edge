@@ -51,7 +51,7 @@ fn main() {
 
     let state_transitions = SystemSet::new()
         .before("state-transitions")
-        .with_system(state_transition.system());
+        .with_system(state_transition);
 
     ////
     // App construction

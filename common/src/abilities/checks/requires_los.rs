@@ -4,8 +4,9 @@ use heron::{
     rapier_plugin::{PhysicsWorld, RayCastInfo},
 };
 
+use super::{Obstruction, UseObstructions};
 use crate::{
-    abilities::{AbilityMarker, CharacterId, Obstruction, UseObstructions},
+    abilities::{AbilityMarker, CharacterId},
     character::{CharacterMarker, OptionalTarget},
     physics::WorldLayer,
 };
@@ -64,7 +65,9 @@ pub fn check_required_los(
             .expect("missing ability source");
 
         if let Some(target_id) = target.0 {
-            let target_transform = target_query.get(target_id).expect("failed to find target");
+            let target_transform = target_query
+                .get(target_id.0)
+                .expect("failed to find target");
 
             let in_los =
                 check_los(self_transform, target_transform.translation, &physics_world).is_ok();

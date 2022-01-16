@@ -1,10 +1,8 @@
 use bevy::prelude::*;
 
+use super::{Obstruction, UseObstructions};
 use crate::{
-    abilities::{
-        AbilityId, AbilityInstanceMarker, AbilityMarker, CharacterId, Complete, Obstruction,
-        UseObstructions,
-    },
+    abilities::{AbilityMarker, CharacterId},
     character::{CharacterMarker, Power},
 };
 
@@ -26,23 +24,5 @@ pub fn check_power_cost(
                 obstructions.0.insert(Obstruction::InsufficientPower);
             }
         }
-    }
-}
-
-// Looks for instances of the ability and then applies the power cost to the character.
-pub fn apply_power_cost(
-    instance_query: Query<&AbilityId, (With<Complete>, With<AbilityInstanceMarker>)>,
-    ability_query: Query<(&CharacterId, &PowerCost), With<AbilityMarker>>,
-    mut character_query: Query<&mut Power, With<CharacterMarker>>,
-) {
-    for AbilityId(id) in instance_query.iter() {
-        let (source, cost) = ability_query.get(*id).expect("failed to find ability");
-        let mut power = character_query
-            .get_mut(source.0)
-            .expect("missing character");
-
-        power.current -= cost.0;
-        info!(current_power = ?power.current);
-        // assert!(power.current > 0.);
     }
 }

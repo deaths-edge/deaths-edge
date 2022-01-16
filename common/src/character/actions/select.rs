@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::character::{CharacterIndex, CharacterMarker, OptionalTarget};
+use crate::{
+    abilities::Target,
+    character::{CharacterIndex, CharacterMarker, OptionalTarget},
+};
 
 use super::CharacterEntityAction;
 
@@ -22,12 +25,13 @@ pub fn character_target(
             .expect("character not found");
 
         if let Some(target_index) = action.action().0 {
-            let target_entity = index_query
+            let target = index_query
                 .iter()
                 .find(|(_, index)| **index == target_index)
                 .map(|(entity, _)| entity)
-                .expect("failed to find target");
-            *character_target = OptionalTarget(Some(target_entity));
+                .map(Target);
+            // TODO: Alert if this fails
+            *character_target = OptionalTarget(target);
         } else {
             *character_target = OptionalTarget(None);
         }

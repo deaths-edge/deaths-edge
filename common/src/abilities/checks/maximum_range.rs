@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
+use super::{Obstruction, UseObstructions};
 use crate::{
-    abilities::{AbilityMarker, CharacterId, Obstruction, UseObstructions},
+    abilities::{AbilityMarker, CharacterId},
     character::{CharacterMarker, OptionalTarget},
 };
 
@@ -23,7 +24,9 @@ pub fn check_maximum_range(
             .expect("missing ability source");
 
         if let Some(target_id) = target.0 {
-            let target_transform = target_query.get(target_id).expect("failed to find target");
+            let target_transform = target_query
+                .get(target_id.0)
+                .expect("failed to find target");
 
             let distance = self_transform
                 .translation

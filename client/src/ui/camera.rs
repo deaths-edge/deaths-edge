@@ -18,6 +18,6 @@ pub struct UICameraPlugin;
 
 impl Plugin for UICameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup_ui_camera.system());
+        app.add_startup_system(setup_ui_camera);
     }
 }

@@ -59,7 +59,7 @@ impl Plugin for WorldMousePlugin {
     fn build(&self, app: &mut App) {
         let world_mouse = SystemSet::on_update(ClientState::Arena)
             .label(WORLD_MOUSE_LABEL)
-            .with_system(world_mouse.system());
+            .with_system(world_mouse);
         app.init_resource::<WorldMousePosition>()
             .add_system_set(world_mouse);
     }

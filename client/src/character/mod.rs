@@ -46,7 +46,7 @@ impl Plugin for CharacterPlugin {
             .label(RECONCILE_LABEL)
             // NETWORK_HANDLE_LABEL writes Reconcile events
             .after(NETWORK_HANDLE_LABEL)
-            .with_system(reconcile.system());
+            .with_system(reconcile);
         app.add_system_set(reconcile)
             .add_event::<Reconcile>()
             .add_plugin(PlayerPlugin)

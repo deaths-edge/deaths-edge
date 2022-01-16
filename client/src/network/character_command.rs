@@ -57,7 +57,7 @@ where
             .label(CHARACTER_NETWORK_COMMAND_LABEL)
             // INPUT_TO_CHARACTER_LABEL sends PlayerInputAction<Value> events
             .after(INPUT_TO_CHARACTER_LABEL)
-            .with_system(player_input_to_network::<T>.system());
+            .with_system(player_input_to_network::<T>);
 
         let network_to_entity = SystemSet::on_update(ClientState::Arena)
             .label(NETWORK_TO_ENTITY_LABEL)
@@ -65,7 +65,7 @@ where
             .after(NETWORK_HANDLE_LABEL)
             // CHARACTER_COMMANDS reads CharacterEntityAction<Value> events
             .before(CHARACTER_COMMANDS)
-            .with_system(network_to_entity_command::<T>.system());
+            .with_system(network_to_entity_command::<T>);
 
         app.add_event::<CharacterNetworkAction<T>>()
             .add_system_set(broadcast_inputs)
