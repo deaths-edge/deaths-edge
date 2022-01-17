@@ -1,3 +1,3 @@
-use bevy::prelude::*;
+mod fireblast;
 
-pub mod fireblast;
+pub use fireblast::*;

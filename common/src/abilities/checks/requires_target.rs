@@ -58,11 +58,3 @@ pub fn check_required_target(
         }
     }
 }
-
-/// The target of the ability.
-#[derive(Debug, Clone, Copy, Component)]
-pub struct Target(pub Entity);
-
-pub struct CharacterTargeted<T>(pub T);
-
-pub struct SelfTargeted<T>(pub T);

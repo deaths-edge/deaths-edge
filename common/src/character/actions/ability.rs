@@ -4,8 +4,8 @@ use tracing::warn;
 
 use crate::{
     abilities::{
-        AbilityMarker, CastBundle, CharacterId, InstantBundle, InstantEffectsMarker,
-        UseObstructions,
+        effects::EffectMarker, AbilityMarker, CastBundle, CastMarker, CharacterId, InstantBundle,
+        Source, UseObstructions,
     },
     character::{Cast, CastState, CharacterMarker, OptionalTarget},
 };
@@ -33,7 +33,7 @@ pub fn character_ability(
     mut events: EventReader<CharacterEntityAction<Ability>>,
 
     mut character_query: Query<(Entity, &OptionalTarget, &mut CastState), With<CharacterMarker>>,
-    ability_query: Query<
+    mut ability_query: Query<
         (
             &CharacterId,
             &UseObstructions,
@@ -68,25 +68,27 @@ pub fn character_ability(
                 entity_commands.insert(target);
             }
 
+            entity_commands.insert(Source(character_id));
+
             entity_commands.id()
         };
 
         if let Some(instant_bundle_fn) = instant_bundle {
+            info!("spawning instant bundle");
             let mut entity_commands = commands.spawn();
 
-            entity_commands
-                .insert(InstantEffectsMarker)
-                .insert_bundle(instant_bundle_fn.0());
+            entity_commands.insert(EffectMarker);
+            instant_bundle_fn.0.apply(&mut entity_commands);
 
             snapshot(entity_commands);
+            info!("spawned instant bundle");
         }
 
         if let Some(cast_bundle_fn) = cast_bundle {
             let mut entity_commands = commands.spawn();
 
-            entity_commands
-                .insert(InstantEffectsMarker)
-                .insert_bundle(cast_bundle_fn.0());
+            entity_commands.insert(CastMarker);
+            cast_bundle_fn.0.apply(&mut entity_commands);
 
             let cast_id = snapshot(entity_commands);
 

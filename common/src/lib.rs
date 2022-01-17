@@ -1,5 +1,6 @@
 pub mod abilities;
 pub mod character;
+mod dyn_command;
 pub mod environment;
 pub mod game;
 pub mod network;

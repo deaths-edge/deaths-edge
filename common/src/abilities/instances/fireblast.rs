@@ -1,13 +1,19 @@
 use bevy::prelude::*;
 
-use crate::abilities::{
-    AbilityMarker, Damage, GlobalCooldown, InstantBundle, MaximumRange, PowerCost, RequiresFov,
-    RequiresLoS, RequiresStationary, RequiresTarget,
+use crate::{
+    abilities::{
+        effects::{damage::Damage, power_burn::PowerBurn, AtSelf, AtTarget},
+        AbilityMarker, GlobalCooldown, InstantBundle, MaximumRange, PowerCost, RequiresFov,
+        RequiresLoS, RequiresStationary, RequiresTarget,
+    },
+    dyn_command::DynCommand,
 };
 
-#[derive(Bundle)]
+#[derive(Bundle, Clone)]
 pub struct FireballInstance {
-    damage: Damage,
+    damage: AtTarget<Damage>,
+
+    power_cost: AtSelf<PowerBurn>,
 }
 
 #[derive(Bundle)]
@@ -29,12 +35,13 @@ pub struct Fireblast {
 
 impl Fireblast {
     pub fn new() -> Self {
+        const POWER_COST: f32 = 20.0;
         Self {
             marker: AbilityMarker,
 
             global_cooldown: GlobalCooldown,
 
-            power_cost: PowerCost(20.0),
+            power_cost: PowerCost(POWER_COST),
 
             requires_target: RequiresTarget::Enemy,
             requires_stationary: RequiresStationary,
@@ -42,11 +49,11 @@ impl Fireblast {
             requires_los: RequiresLoS,
             max_range: MaximumRange(500.0),
 
-            instant_bundle: InstantBundle(|| {
-                Box::new(FireballInstance {
-                    damage: Damage(25.0),
-                })
-            }),
+            instant_bundle: InstantBundle(DynCommand::insert_bundle(FireballInstance {
+                damage: AtTarget(Damage(25.0)),
+
+                power_cost: AtSelf(PowerBurn(POWER_COST)),
+            })),
         }
     }
 }

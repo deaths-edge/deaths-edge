@@ -1,22 +1,20 @@
-mod cast;
-mod checks;
-mod damage;
-mod instances;
-mod instant;
+pub mod checks;
+pub mod effects;
+pub mod instances;
+mod lifecycle;
 mod magic_school;
 mod target;
 
-pub use cast::*;
 pub use checks::*;
-pub use damage::*;
-pub use instances::*;
-pub use instant::*;
+pub use lifecycle::*;
 pub use magic_school::*;
 pub use target::*;
 
 use std::{fmt::Debug, hash::Hash};
 
-use bevy::{prelude::*, utils::HashSet};
+use bevy::prelude::*;
+
+use effects::{cleanup, damage::Damage, EffectPlugin};
 
 #[derive(Default, Debug, Component)]
 pub struct AbilityMarker;
@@ -33,7 +31,7 @@ pub fn spawn_class_abilities(character_id: Entity, commands: &mut Commands) {
     commands
         .spawn()
         .insert(CharacterId(character_id))
-        .insert_bundle(fireblast::Fireblast::new())
+        .insert_bundle(instances::Fireblast::new())
         .insert(UseObstructions::default());
 }
 
@@ -50,6 +48,7 @@ impl<T> AbilityPlugin<T> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AbilityLabels {
     Checks,
+    EffectApplication,
     Cleanup,
 }
 
@@ -81,10 +80,8 @@ where
             // .with_system()
             ;
 
-        let cleanup = SystemSet::on_update(self.state)
-            .label(AbilityLabels::Cleanup)
-            .with_system(cleanup);
+        let effects = EffectPlugin::new(self.state, AbilityLabels::EffectApplication);
 
-        app.add_system_set(ability_checks).add_system_set(cleanup);
+        app.add_system_set(ability_checks).add_plugin(effects);
     }
 }

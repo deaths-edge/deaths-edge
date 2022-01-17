@@ -16,10 +16,13 @@ pub struct Frost;
 pub struct Nature;
 
 pub fn check_lock<School: Component>(
-    mut ability_query: Query<(&CharacterId, &School, &mut UseObstructions), With<AbilityMarker>>,
+    mut ability_query: Query<
+        (&CharacterId, &mut UseObstructions),
+        (With<AbilityMarker>, With<School>),
+    >,
     character_query: Query<(), (With<CharacterMarker>, With<Interrupt<School>>)>,
 ) {
-    for (source, spell_type, mut obstructions) in ability_query.iter_mut() {
+    for (source, mut obstructions) in ability_query.iter_mut() {
         if character_query.get(source.0).is_ok() {
             obstructions.0.insert(Obstruction::Locked);
         }
