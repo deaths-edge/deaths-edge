@@ -14,26 +14,15 @@ use std::{fmt::Debug, hash::Hash};
 
 use bevy::prelude::*;
 
-use effects::{cleanup, damage::Damage, EffectPlugin};
+use effects::EffectPlugin;
+
+use crate::character::Abilities;
 
 #[derive(Default, Debug, Component)]
 pub struct AbilityMarker;
 
-/// The character which the ability originates from.
-#[derive(Debug, Component)]
-pub struct CharacterId(pub Entity);
-
-pub fn spawn_class_abilities(character_id: Entity, commands: &mut Commands) {
-    // use Class::*;
-    // match class {
-    //     Class
-    // }
-    commands
-        .spawn()
-        .insert(CharacterId(character_id))
-        .insert_bundle(instances::Fireblast::new())
-        .insert(UseObstructions::default());
-}
+#[derive(Debug, Clone, Copy, Component)]
+pub struct AbilityId(pub Entity);
 
 pub struct AbilityPlugin<T> {
     state: T,

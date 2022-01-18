@@ -2,9 +2,9 @@ use std::{fmt::Debug, hash::Hash};
 
 use bevy::prelude::*;
 
-use crate::character::{CharacterMarker, Interrupt};
+use crate::character::{Abilities, CharacterMarker, Interrupt};
 
-use super::{AbilityMarker, CharacterId, Obstruction, UseObstructions};
+use super::{AbilityId, AbilityMarker, Obstruction, UseObstructions};
 
 #[derive(Debug, Default, Component)]
 pub struct Fire;
@@ -16,15 +16,14 @@ pub struct Frost;
 pub struct Nature;
 
 pub fn check_lock<School: Component>(
-    mut ability_query: Query<
-        (&CharacterId, &mut UseObstructions),
-        (With<AbilityMarker>, With<School>),
-    >,
-    character_query: Query<(), (With<CharacterMarker>, With<Interrupt<School>>)>,
+    character_query: Query<&Abilities, (With<CharacterMarker>, With<Interrupt<School>>)>,
+    mut ability_query: Query<&mut UseObstructions, (With<AbilityMarker>, With<School>)>,
 ) {
-    for (source, mut obstructions) in ability_query.iter_mut() {
-        if character_query.get(source.0).is_ok() {
-            obstructions.0.insert(Obstruction::Locked);
+    for abilities in character_query.iter() {
+        for AbilityId(ability_id) in *abilities {
+            if let Ok(mut obstructions) = ability_query.get_mut(ability_id) {
+                obstructions.0.insert(Obstruction::Locked);
+            }
         }
     }
 }

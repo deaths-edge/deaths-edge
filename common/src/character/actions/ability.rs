@@ -4,10 +4,10 @@ use tracing::warn;
 
 use crate::{
     abilities::{
-        effects::EffectMarker, AbilityMarker, CastBundle, CastMarker, CharacterId, InstantBundle,
-        Source, UseObstructions,
+        effects::EffectMarker, AbilityMarker, CastBundle, CastMarker, InstantBundle, Source,
+        UseObstructions,
     },
-    character::{Cast, CastState, CharacterMarker, OptionalTarget},
+    character::{Abilities, Cast, CastState, CharacterMarker, OptionalTarget},
 };
 
 use super::CharacterEntityAction;
@@ -24,6 +24,22 @@ pub enum Ability {
     Ability8,
 }
 
+impl Ability {
+    pub fn as_index(&self) -> usize {
+        use Ability::*;
+        match self {
+            Ability1 => 0,
+            Ability2 => 1,
+            Ability3 => 2,
+            Ability4 => 3,
+            Ability5 => 4,
+            Ability6 => 5,
+            Ability7 => 6,
+            Ability8 => 7,
+        }
+    }
+}
+
 /// Receives an [`Ability`] and performs the associated ability.
 // TODO: Split this into two systems? Instant/CastBundle
 pub fn character_ability(
@@ -32,10 +48,12 @@ pub fn character_ability(
     // Ability events
     mut events: EventReader<CharacterEntityAction<Ability>>,
 
-    mut character_query: Query<(Entity, &OptionalTarget, &mut CastState), With<CharacterMarker>>,
-    mut ability_query: Query<
+    mut character_query: Query<
+        (Entity, &Abilities, &OptionalTarget, &mut CastState),
+        With<CharacterMarker>,
+    >,
+    ability_query: Query<
         (
-            &CharacterId,
             &UseObstructions,
             Option<&InstantBundle>,
             Option<&CastBundle>,
@@ -47,16 +65,16 @@ pub fn character_ability(
 ) {
     let now = time.last_update().expect("failed to find last update");
     for action in events.iter() {
-        let (character_id, opt_target, mut cast_state) = character_query
+        let (character_id, abilities, opt_target, mut cast_state) = character_query
             .get_mut(action.id())
             .expect("character not found");
 
-        // Find ability
-        // TODO: Shortcut this search?
-        let (_, obstructions, instant_bundle, cast_bundle) = ability_query
-            .iter()
-            .find(|(source, _, _, _)| source.0 == character_id)
-            .expect("casted by unknown source");
+        let action = action.action;
+        let ability_id = &abilities.0[action.as_index()];
+
+        let (obstructions, instant_bundle, cast_bundle) = ability_query
+            .get(ability_id.0)
+            .expect("cannot find ability");
 
         if !obstructions.0.is_empty() {
             warn!(message = "cannot use ability", ?obstructions);

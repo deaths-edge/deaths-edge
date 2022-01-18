@@ -68,10 +68,10 @@ pub fn apply_effect_self<E>(
 pub struct AtAoe<T>(pub T);
 
 /// Applies an [`Effect`] to everyone in a given radius.
-pub fn apply_effect_radius<E>(
-    ability_query: Query<(&AtAoe<E>, &Transform), With<EffectMarker>>,
-    mut character_query: Query<<E as Effect>::Domain, With<CharacterMarker>>,
-) where
+pub fn apply_effect_radius<E>(// ability_query: Query<(&AtAoe<E>, &Transform), With<EffectMarker>>,
+    // mut character_query: Query<<E as Effect>::Domain, With<CharacterMarker>>,
+)
+where
     E: Send + Sync + 'static,
     for<'a> E: Effect<'a>,
 {

@@ -2,8 +2,8 @@ use bevy::prelude::*;
 
 use super::{Obstruction, UseObstructions};
 use crate::{
-    abilities::{AbilityMarker, CharacterId},
-    character::{CharacterMarker, Power},
+    abilities::{AbilityId, AbilityMarker},
+    character::{Abilities, CharacterMarker, Power},
 };
 
 /// Ability costs power.
@@ -12,16 +12,18 @@ pub struct PowerCost(pub f32);
 
 /// Check whether character has sufficient power.
 pub fn check_power_cost(
-    mut ability_query: Query<(&CharacterId, &PowerCost, &mut UseObstructions), With<AbilityMarker>>,
-    character_query: Query<&Power, (With<CharacterMarker>, Changed<Power>)>,
+    character_query: Query<(&Abilities, &Power), (With<CharacterMarker>, Changed<Power>)>,
+    mut ability_query: Query<(&PowerCost, &mut UseObstructions), With<AbilityMarker>>,
 ) {
-    for (source, cost, mut obstructions) in ability_query.iter_mut() {
-        if let Ok(power) = character_query.get(source.0) {
-            if power.current >= cost.0 {
-                obstructions.0.remove(&Obstruction::InsufficientPower);
-            } else {
-                warn!(message = "insufficient power", current_power = ?power.current, cost = %cost.0);
-                obstructions.0.insert(Obstruction::InsufficientPower);
+    for (abilities, power) in character_query.iter() {
+        for AbilityId(ability_id) in *abilities {
+            if let Ok((cost, mut obstructions)) = ability_query.get_mut(ability_id) {
+                if power.current >= cost.0 {
+                    obstructions.0.remove(&Obstruction::InsufficientPower);
+                } else {
+                    warn!(message = "insufficient power", current_power = ?power.current, cost = %cost.0);
+                    obstructions.0.insert(Obstruction::InsufficientPower);
+                }
             }
         }
     }

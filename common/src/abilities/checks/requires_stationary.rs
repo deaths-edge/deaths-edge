@@ -3,8 +3,8 @@ use heron::Velocity;
 
 use super::{Obstruction, UseObstructions};
 use crate::{
-    abilities::{AbilityMarker, CharacterId},
-    character::CharacterMarker,
+    abilities::{AbilityId, AbilityMarker},
+    character::{Abilities, CharacterMarker},
 };
 
 /// Requires that target is stationary while casting.
@@ -12,18 +12,17 @@ use crate::{
 pub struct RequiresStationary;
 
 pub fn check_required_stationary(
-    mut ability_query: Query<
-        (&CharacterId, &mut UseObstructions),
-        (With<AbilityMarker>, With<RequiresStationary>),
-    >,
-    character_query: Query<&Velocity, (With<CharacterMarker>, Changed<Velocity>)>,
+    character_query: Query<(&Abilities, &Velocity), (With<CharacterMarker>, Changed<Velocity>)>,
+    mut ability_query: Query<&mut UseObstructions, (With<AbilityMarker>, With<RequiresStationary>)>,
 ) {
-    for (source, mut obstructions) in ability_query.iter_mut() {
-        if let Ok(velocity) = character_query.get(source.0) {
-            if velocity.linear == Vec3::ZERO {
-                obstructions.0.remove(&Obstruction::NonStationary);
-            } else {
-                obstructions.0.insert(Obstruction::NonStationary);
+    for (abilities, velocity) in character_query.iter() {
+        for AbilityId(ability_id) in *abilities {
+            if let Ok(mut obstructions) = ability_query.get_mut(ability_id) {
+                if velocity.linear == Vec3::ZERO {
+                    obstructions.0.remove(&Obstruction::NonStationary);
+                } else {
+                    obstructions.0.insert(Obstruction::NonStationary);
+                }
             }
         }
     }
