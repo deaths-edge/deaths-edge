@@ -8,10 +8,7 @@ pub use classes::*;
 pub use player::*;
 pub use reconcile::*;
 
-use common::{
-    character::{CharacterBundle, CharacterPlugin as CommonCharacterPlugin},
-    network::server::Reconcile,
-};
+use common::{character::CharacterPlugin as CommonCharacterPlugin, network::server::Reconcile};
 
 use crate::{network::NETWORK_HANDLE_LABEL, state::ClientState, ui::selected::Selected};
 

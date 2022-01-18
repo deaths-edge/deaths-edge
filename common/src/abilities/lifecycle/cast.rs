@@ -18,6 +18,7 @@ pub struct CastDuration(pub Duration);
 
 #[derive(Component)]
 pub struct CastBundle(pub DynCommand);
+
 pub fn cast_complete(
     time: Res<Time>,
 
@@ -32,11 +33,11 @@ pub fn cast_complete(
         let mut cast_state = character_query
             .get_mut(source.0)
             .expect("failed to find character");
-        let cast = cast_state.0.as_mut().expect("found cast but no cast state");
+        let cast = cast_state.0.as_ref().expect("found cast but no cast state");
         let end = cast.start + duration.0;
 
         if end < now {
-            cast_state.0 = None;
+            let cast = cast_state.0.take().expect("found cast but no cast state");
             let mut entity_commands = commands.spawn();
             instant_bundle.0.apply(&mut entity_commands);
 
@@ -44,6 +45,10 @@ pub fn cast_complete(
             if let Some(target) = opt_target {
                 entity_commands.insert(target.clone());
             }
+
+            entity_commands.insert(source.clone());
+
+            commands.entity(cast.cast_id).despawn();
         }
     }
 }

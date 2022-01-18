@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::{
     abilities::{
-        effects::{damage::Damage, power_burn::PowerBurn, AtSelf, AtTarget},
+        effects::{damage::Damage, power_burn::PowerBurn, AtSelf, AtTarget, EffectMarker},
         AbilityMarker, CastBundle, CastDuration, CastMarker, GlobalCooldown, InstantBundle,
         MaximumRange, PowerCost, RequiresFov, RequiresLoS, RequiresStationary, RequiresTarget,
     },
@@ -13,6 +13,8 @@ use crate::{
 
 #[derive(Bundle, Clone)]
 pub struct ScorchEffects {
+    marker: EffectMarker,
+
     damage: AtTarget<Damage>,
 
     power_cost: AtSelf<PowerBurn>,
@@ -49,6 +51,8 @@ impl Scorch {
         const POWER_COST: f32 = 20.0;
 
         let scorch_effects = ScorchEffects {
+            marker: EffectMarker,
+
             damage: AtTarget(Damage(DAMAGE)),
             power_cost: AtSelf(PowerBurn(POWER_COST)),
         };

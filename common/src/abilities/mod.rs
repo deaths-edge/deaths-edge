@@ -69,6 +69,10 @@ where
 
         let effects = EffectPlugin::new(self.state, AbilityLabels::EffectApplication);
 
-        app.add_system_set(ability_checks).add_plugin(effects);
+        let cast_set = SystemSet::on_update(self.state).with_system(cast_complete);
+
+        app.add_system_set(ability_checks)
+            .add_plugin(effects)
+            .add_system_set(cast_set);
     }
 }

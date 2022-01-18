@@ -1,4 +1,4 @@
-use std::{array::IntoIter, iter::Map};
+use std::array::IntoIter;
 
 use bevy::{
     ecs::query::{Fetch, FilterFetch, WorldQuery},

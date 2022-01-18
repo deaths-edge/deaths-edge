@@ -3,10 +3,7 @@ use serde::{Deserialize, Serialize};
 use tracing::warn;
 
 use crate::{
-    abilities::{
-        effects::EffectMarker, AbilityMarker, CastBundle, CastMarker, InstantBundle, Source,
-        UseObstructions,
-    },
+    abilities::{AbilityMarker, CastBundle, InstantBundle, Source, UseObstructions},
     character::{Abilities, Cast, CastState, CharacterMarker, OptionalTarget},
 };
 
@@ -94,8 +91,6 @@ pub fn character_ability(
         if let Some(instant_bundle_fn) = instant_bundle {
             info!("spawning instant bundle");
             let mut entity_commands = commands.spawn();
-
-            entity_commands.insert(EffectMarker);
             instant_bundle_fn.0.apply(&mut entity_commands);
 
             snapshot(entity_commands);
@@ -104,12 +99,9 @@ pub fn character_ability(
 
         if let Some(cast_bundle_fn) = cast_bundle {
             let mut entity_commands = commands.spawn();
-
-            entity_commands.insert(CastMarker);
             cast_bundle_fn.0.apply(&mut entity_commands);
 
             let cast_id = snapshot(entity_commands);
-
             let cast = Cast {
                 start: now,
                 cast_id,

@@ -5,7 +5,7 @@ use crate::{
     abilities::{instances, AbilityId, UseObstructions},
     character::{
         Abilities, CastState, CharacterBundle, CharacterIndex, CharacterMarker, Controls, Health,
-        LastCastInstant, OptionalTarget, Power, PowerRegenerate, SpeedMultiplier, Team,
+        LastCastInstant, OptionalTarget, Power, SpeedMultiplier, Team,
     },
     physics::WorldLayer,
 };
