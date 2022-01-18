@@ -1,13 +1,13 @@
-use bevy::prelude::*;
+use bevy::{ecs::system::EntityCommands, prelude::*};
 use serde::{Deserialize, Serialize};
 use tracing::warn;
 
 use crate::{
     abilities::{
-        AbilityId, AbilityInstanceMarker, AbilityMarker, CharacterId, DeleteObstructions,
-        Preparing, UseObstructions,
+        effects::EffectMarker, AbilityMarker, CastBundle, CastMarker, InstantBundle, Source,
+        UseObstructions,
     },
-    character::CharacterMarker,
+    character::{Abilities, Cast, CastState, CharacterMarker, OptionalTarget},
 };
 
 use super::CharacterEntityAction;
@@ -24,48 +24,97 @@ pub enum Ability {
     Ability8,
 }
 
-#[derive(Debug, Bundle)]
-pub struct BaseAbilityInstance {
-    marker: AbilityInstanceMarker,
-    ability_id: AbilityId,
-    delete_obstructions: DeleteObstructions,
+impl Ability {
+    pub fn as_index(&self) -> usize {
+        use Ability::*;
+        match self {
+            Ability1 => 0,
+            Ability2 => 1,
+            Ability3 => 2,
+            Ability4 => 3,
+            Ability5 => 4,
+            Ability6 => 5,
+            Ability7 => 6,
+            Ability8 => 7,
+        }
+    }
 }
 
 /// Receives an [`Ability`] and performs the associated ability.
+// TODO: Split this into two systems? Instant/CastBundle
 pub fn character_ability(
+    time: Res<Time>,
+
     // Ability events
     mut events: EventReader<CharacterEntityAction<Ability>>,
 
-    mut character_query: Query<Entity, With<CharacterMarker>>,
-    ability_query: Query<(Entity, &CharacterId, &UseObstructions), With<AbilityMarker>>,
+    mut character_query: Query<
+        (Entity, &Abilities, &OptionalTarget, &mut CastState),
+        With<CharacterMarker>,
+    >,
+    ability_query: Query<
+        (
+            &UseObstructions,
+            Option<&InstantBundle>,
+            Option<&CastBundle>,
+        ),
+        With<AbilityMarker>,
+    >,
 
     mut commands: Commands,
 ) {
+    let now = time.last_update().expect("failed to find last update");
     for action in events.iter() {
-        let character_id = character_query
+        let (character_id, abilities, opt_target, mut cast_state) = character_query
             .get_mut(action.id())
             .expect("character not found");
 
-        // Find ability
-        // TODO: Shortcut this search?
-        let (ability_id, _, obstructions) = ability_query
-            .iter()
-            .find(|(_, source, _)| source.0 == character_id)
-            .expect("casted by unknown source");
+        let action = action.action;
+        let ability_id = &abilities.0[action.as_index()];
+
+        let (obstructions, instant_bundle, cast_bundle) = ability_query
+            .get(ability_id.0)
+            .expect("cannot find ability");
 
         if !obstructions.0.is_empty() {
             warn!(message = "cannot use ability", ?obstructions);
             continue;
         }
 
-        // Create instance of ability
-        commands
-            .spawn()
-            .insert_bundle(BaseAbilityInstance {
-                marker: AbilityInstanceMarker,
-                ability_id: AbilityId(ability_id),
-                delete_obstructions: DeleteObstructions::default(),
-            })
-            .insert(Preparing);
+        let snapshot = |mut entity_commands: EntityCommands| {
+            if let Some(target) = opt_target.0 {
+                entity_commands.insert(target);
+            }
+
+            entity_commands.insert(Source(character_id));
+
+            entity_commands.id()
+        };
+
+        if let Some(instant_bundle_fn) = instant_bundle {
+            info!("spawning instant bundle");
+            let mut entity_commands = commands.spawn();
+
+            entity_commands.insert(EffectMarker);
+            instant_bundle_fn.0.apply(&mut entity_commands);
+
+            snapshot(entity_commands);
+            info!("spawned instant bundle");
+        }
+
+        if let Some(cast_bundle_fn) = cast_bundle {
+            let mut entity_commands = commands.spawn();
+
+            entity_commands.insert(CastMarker);
+            cast_bundle_fn.0.apply(&mut entity_commands);
+
+            let cast_id = snapshot(entity_commands);
+
+            let cast = Cast {
+                start: now,
+                cast_id,
+            };
+            cast_state.0 = Some(cast);
+        }
     }
 }

@@ -51,10 +51,10 @@ where
     fn build(&self, app: &mut App) {
         let movement = SystemSet::on_update(self.state)
             .label(CHARACTER_COMMANDS)
-            .with_system(character_movement.system())
-            .with_system(character_target.system())
-            .with_system(character_ability.system())
-            .with_system(character_focal_rotate.system());
+            .with_system(character_movement)
+            .with_system(character_target)
+            .with_system(character_ability)
+            .with_system(character_focal_rotate);
         app.add_event::<CharacterEntityAction<Motion>>()
             .add_event::<CharacterEntityAction<SelectTarget>>()
             .add_event::<CharacterEntityAction<Ability>>()

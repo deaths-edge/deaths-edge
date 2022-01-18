@@ -1,9 +1,10 @@
+pub mod mars;
+pub mod medea;
+
 use std::fmt;
 
-use bevy::{math::Size, prelude::*};
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
-
-use super::Power;
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash, Component)]
 pub enum Class {
@@ -43,36 +44,6 @@ pub enum Class {
 }
 
 impl Class {
-    pub fn size(&self) -> Size {
-        Size::new(30., 30.)
-    }
-
-    pub fn health(&self) -> f32 {
-        use Class::*;
-
-        match self {
-            Mars => 200.,
-            Medea => 150.,
-            _ => todo!(),
-        }
-    }
-
-    pub fn power(&self) -> Power {
-        use Class::*;
-
-        match self {
-            Mars => Power {
-                current: 0.,
-                total: 100.,
-            },
-            Medea => Power {
-                current: 100.,
-                total: 100.,
-            },
-            _ => todo!(),
-        }
-    }
-
     pub fn cycle_right(self) -> Self {
         use Class::*;
         match self {

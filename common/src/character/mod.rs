@@ -1,3 +1,4 @@
+mod abilities;
 mod actions;
 mod casting;
 mod classes;
@@ -11,13 +12,12 @@ mod speed_multiplier;
 mod target;
 mod team;
 
-use std::{fmt::Debug, hash::Hash, time::Instant};
+use std::{fmt::Debug, hash::Hash};
 
 use bevy::prelude::*;
 use heron::prelude::*;
 
-use crate::physics::WorldLayer;
-
+pub use abilities::*;
 pub use actions::*;
 pub use casting::*;
 pub use classes::*;
@@ -56,65 +56,13 @@ pub struct CharacterBundle {
     // Resources
     health: Health,
     power: Power,
+    abilities: Abilities,
 
     // Casting
     cast_state: CastState,
-    interrupts: Interrupts,
     last_cast_instant: LastCastInstant,
 
     target: OptionalTarget,
-}
-
-impl CharacterBundle {
-    pub fn new(
-        index: CharacterIndex,
-        transform: Transform,
-        class: Class,
-        team: Team,
-        last_cast_instant: Instant,
-    ) -> Self {
-        let size = class.size();
-        let health = class.health();
-        let power = class.power();
-
-        Self {
-            index,
-            marker: CharacterMarker,
-            class,
-            team,
-
-            transform,
-            global_transform: GlobalTransform::default(),
-            speed_modifier: SpeedMultiplier(1.),
-            rigid_body: RigidBody::Dynamic,
-            collision_shape: CollisionShape::Cuboid {
-                half_extends: Vec2::new(size.width / 2., size.height / 2.).extend(0.),
-                border_radius: None,
-            },
-            collision_layers: CollisionLayers::none()
-                .with_group(WorldLayer::Character)
-                .with_mask(WorldLayer::Environment),
-            velocity: Vec3::ZERO.into(),
-            rotational_constraints: RotationConstraints::lock(),
-            controls: Controls::default(),
-
-            power,
-            health: Health {
-                current: health,
-                total: health,
-            },
-
-            cast_state: CastState::default(),
-            interrupts: Interrupts::default(),
-            last_cast_instant: LastCastInstant(last_cast_instant),
-
-            target: OptionalTarget::default(),
-        }
-    }
-
-    pub fn class(&self) -> Class {
-        self.class
-    }
 }
 
 pub struct CharacterPlugin<T> {
@@ -127,7 +75,7 @@ where
     T: Clone + Copy + Eq + Hash + Debug,
 {
     fn build(&self, app: &mut App) {
-        let regenerate = SystemSet::on_update(self.state).with_system(regenerate_power.system());
+        let regenerate = SystemSet::on_update(self.state).with_system(regenerate_power);
         app.add_system_set(regenerate)
             .add_plugin(CharacterEntityActionPlugin::new(self.state));
     }

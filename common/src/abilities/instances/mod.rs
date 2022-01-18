@@ -1,9 +1,5 @@
-use bevy::prelude::*;
+mod fireblast;
+mod scorch;
 
-pub mod fireball;
-
-#[derive(Default, Debug, Component)]
-pub struct AbilityInstanceMarker;
-
-#[derive(Debug, Clone, Copy, Component)]
-pub struct AbilityId(pub Entity);
+pub use fireblast::*;
+pub use scorch::*;

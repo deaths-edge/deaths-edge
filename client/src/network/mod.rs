@@ -154,13 +154,13 @@ impl Plugin for NetworkPlugin {
     fn build(&self, app: &mut App) {
         let setup = SystemSet::on_enter(ClientState::Connecting)
             .label(NETWORK_SETUP_LABEL)
-            .with_system(startup.system())
-            .with_system(network_setup.system());
+            .with_system(startup)
+            .with_system(network_setup);
 
         // Request entry to arena
         // TODO: Do this in lobby
-        let send_passcode = SystemSet::on_enter(NetworkConnectivity::Connected)
-            .with_system(request_arena_entry.system());
+        let send_passcode =
+            SystemSet::on_enter(NetworkConnectivity::Connected).with_system(request_arena_entry);
 
         let handle_server_message = SystemSet::on_update(NetworkingState::Active)
             .label(NETWORK_HANDLE_LABEL)
@@ -168,8 +168,8 @@ impl Plugin for NetworkPlugin {
             .before(NETWORK_TO_ENTITY_LABEL)
             // SPAWN_CHARACTER_LABEL reads SpawnCharacter events
             .before(SPAWN_CHARACTER_LABEL)
-            .with_system(handle_server_messages.system())
-            .with_system(handle_connects.system());
+            .with_system(handle_server_messages)
+            .with_system(handle_connects);
 
         app.add_state(NetworkConnectivity::Disconnected)
             .add_state(NetworkingState::Sleep)

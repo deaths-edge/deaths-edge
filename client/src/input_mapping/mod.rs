@@ -176,7 +176,7 @@ where
             .after(INPUT_MAPPING_LABEL)
             // CHARACTER_COMMANDS reads CharacterEntityAction<Value>
             .before(CHARACTER_COMMANDS)
-            .with_system(input_to_character::<T>.system());
+            .with_system(input_to_character::<T>);
 
         app.add_event::<PlayerInputAction<T>>()
             .add_system_set(input_to_character);
@@ -193,7 +193,7 @@ impl Plugin for InputMapPlugin {
             .after(WORLD_MOUSE_LABEL)
             // INPUT_TO_CHARACTER_LABEL reads PlayerInputAction<Value> events
             .before(INPUT_TO_CHARACTER_LABEL)
-            .with_system(input_map.system());
+            .with_system(input_map);
         app.init_resource::<Bindings>()
             .add_plugin(InputToCharPlugin::<Motion>::new())
             .add_plugin(InputToCharPlugin::<SelectTarget>::new())

@@ -8,8 +8,7 @@ pub struct SelectedPlugin;
 
 impl Plugin for SelectedPlugin {
     fn build(&self, app: &mut App) {
-        let selection =
-            SystemSet::on_update(ClientState::Arena).with_system(select_highlight.system());
+        let selection = SystemSet::on_update(ClientState::Arena).with_system(select_highlight);
         app.add_system_set(selection);
     }
 }

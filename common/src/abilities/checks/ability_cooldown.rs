@@ -2,10 +2,8 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::{
-    abilities::{AbilityMarker, Obstruction, UseObstructions},
-    character::LastCastInstant,
-};
+use super::{Obstruction, UseObstructions};
+use crate::{abilities::AbilityMarker, character::LastCastInstant};
 
 /// Ability has a cooldown (distinct from [`GlobalCooldown`](super::GlobalCooldown)).
 #[derive(Debug, Component)]

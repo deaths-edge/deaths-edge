@@ -36,7 +36,7 @@ impl Plugin for StateTransitionPlugin {
         let state_transitions = SystemSet::new()
             .label(STATE_TRANSITIONS_LABEL)
             // TODO: Ordering
-            .with_system(state_transitions.system());
+            .with_system(state_transitions);
         app.add_event::<StateTransition>()
             .add_system_set(state_transitions);
     }

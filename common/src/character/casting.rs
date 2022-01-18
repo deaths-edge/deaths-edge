@@ -8,5 +8,5 @@ pub struct CastState(pub Option<Cast>);
 #[derive(Debug)]
 pub struct Cast {
     pub start: Instant,
-    pub instance_id: Entity,
+    pub cast_id: Entity,
 }

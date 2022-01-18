@@ -1,8 +1,10 @@
+mod classes;
 mod player;
 mod reconcile;
 
 use bevy::prelude::*;
 
+pub use classes::*;
 pub use player::*;
 pub use reconcile::*;
 
@@ -20,24 +22,6 @@ pub struct ClientCharacterBundle {
     selected: Selected,
 }
 
-impl ClientCharacterBundle {
-    pub fn new(common: &CharacterBundle) -> Self {
-        let size = common.class().size();
-
-        Self {
-            sprite: SpriteBundle {
-                sprite: Sprite {
-                    color: common.class().color(),
-                    custom_size: Some(Vec2::new(size.width, size.width)),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            selected: Selected::default(),
-        }
-    }
-}
-
 pub struct CharacterPlugin;
 
 impl Plugin for CharacterPlugin {
@@ -46,7 +30,7 @@ impl Plugin for CharacterPlugin {
             .label(RECONCILE_LABEL)
             // NETWORK_HANDLE_LABEL writes Reconcile events
             .after(NETWORK_HANDLE_LABEL)
-            .with_system(reconcile.system());
+            .with_system(reconcile);
         app.add_system_set(reconcile)
             .add_event::<Reconcile>()
             .add_plugin(PlayerPlugin)

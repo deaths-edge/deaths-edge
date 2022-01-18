@@ -86,7 +86,7 @@ impl<T> EnvironmentPlugin<T> {
 // {
 //     fn build(&self, app: &mut AppBuilder) {
 //         let spawn_environment =
-//             SystemSet::on_enter(self.state).with_system(spawn_environment.system());
+//             SystemSet::on_enter(self.state).with_system(spawn_environment);
 
 //         app.add_system(spawn_environment);
 //     }
