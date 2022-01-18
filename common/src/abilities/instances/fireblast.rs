@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     abilities::{
-        effects::{damage::Damage, power_burn::PowerBurn, AtSelf, AtTarget},
+        effects::{damage::Damage, power_burn::PowerBurn, AtSelf, AtTarget, EffectMarker},
         AbilityMarker, GlobalCooldown, InstantBundle, MaximumRange, PowerCost, RequiresFov,
         RequiresLoS, RequiresStationary, RequiresTarget,
     },
@@ -10,7 +10,9 @@ use crate::{
 };
 
 #[derive(Bundle, Clone)]
-pub struct FireblastInstance {
+pub struct FireblastEffects {
+    marker: EffectMarker,
+
     damage: AtTarget<Damage>,
 
     power_cost: AtSelf<PowerBurn>,
@@ -36,6 +38,16 @@ pub struct Fireblast {
 impl Fireblast {
     pub fn new() -> Self {
         const POWER_COST: f32 = 20.0;
+
+        let fireblast_effects = FireblastEffects {
+            marker: EffectMarker,
+
+            damage: AtTarget(Damage(25.0)),
+
+            power_cost: AtSelf(PowerBurn(POWER_COST)),
+        };
+        let command = DynCommand::insert_bundle(fireblast_effects);
+
         Self {
             marker: AbilityMarker,
 
@@ -49,11 +61,7 @@ impl Fireblast {
             requires_los: RequiresLoS,
             max_range: MaximumRange(500.0),
 
-            instant_bundle: InstantBundle(DynCommand::insert_bundle(FireblastInstance {
-                damage: AtTarget(Damage(25.0)),
-
-                power_cost: AtSelf(PowerBurn(POWER_COST)),
-            })),
+            instant_bundle: InstantBundle(command),
         }
     }
 }

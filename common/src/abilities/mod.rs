@@ -16,8 +16,6 @@ use bevy::prelude::*;
 
 use effects::EffectPlugin;
 
-use crate::character::Abilities;
-
 #[derive(Default, Debug, Component)]
 pub struct AbilityMarker;
 

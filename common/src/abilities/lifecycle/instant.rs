@@ -2,5 +2,5 @@ use bevy::prelude::*;
 
 use crate::dyn_command::DynCommand;
 
-#[derive(Component)]
+#[derive(Debug, Clone, Component)]
 pub struct InstantBundle(pub DynCommand);

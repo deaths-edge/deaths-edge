@@ -17,7 +17,7 @@ use damage::Damage;
 use power_burn::PowerBurn;
 
 /// Components accompanied by this will take effect immediately.
-#[derive(Component)]
+#[derive(Debug, Default, Clone, Component)]
 pub struct EffectMarker;
 
 pub trait Effect<'a> {

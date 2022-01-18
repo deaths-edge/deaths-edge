@@ -5,14 +5,14 @@ use bevy::prelude::*;
 use crate::{
     abilities::{
         effects::{damage::Damage, power_burn::PowerBurn, AtSelf, AtTarget},
-        AbilityMarker, CastBundle, CastDuration, GlobalCooldown, MaximumRange, PowerCost,
-        RequiresFov, RequiresLoS, RequiresStationary, RequiresTarget,
+        AbilityMarker, CastBundle, CastDuration, CastMarker, GlobalCooldown, InstantBundle,
+        MaximumRange, PowerCost, RequiresFov, RequiresLoS, RequiresStationary, RequiresTarget,
     },
     dyn_command::DynCommand,
 };
 
 #[derive(Bundle, Clone)]
-pub struct ScorchInstance {
+pub struct ScorchEffects {
     damage: AtTarget<Damage>,
 
     power_cost: AtSelf<PowerBurn>,
@@ -20,7 +20,10 @@ pub struct ScorchInstance {
 
 #[derive(Debug, Clone, Bundle)]
 pub struct ScorchCast {
+    marker: CastMarker,
     duration: CastDuration,
+
+    instant_bundle: InstantBundle,
 }
 
 #[derive(Bundle)]
@@ -42,7 +45,22 @@ pub struct Scorch {
 
 impl Scorch {
     pub fn new() -> Self {
+        const DAMAGE: f32 = 30.0;
         const POWER_COST: f32 = 20.0;
+
+        let scorch_effects = ScorchEffects {
+            damage: AtTarget(Damage(DAMAGE)),
+            power_cost: AtSelf(PowerBurn(POWER_COST)),
+        };
+        let effect_command = DynCommand::insert_bundle(scorch_effects);
+
+        let scorch_cast = ScorchCast {
+            marker: CastMarker,
+            duration: CastDuration(Duration::from_secs(1)),
+            instant_bundle: InstantBundle(effect_command),
+        };
+        let scorch_cast_command = DynCommand::insert_bundle(scorch_cast);
+
         Self {
             marker: AbilityMarker,
 
@@ -56,9 +74,7 @@ impl Scorch {
             requires_los: RequiresLoS,
             max_range: MaximumRange(500.0),
 
-            cast_bundle: CastBundle(DynCommand::insert_bundle(ScorchCast {
-                duration: CastDuration(Duration::from_secs(1)),
-            })),
+            cast_bundle: CastBundle(scorch_cast_command),
         }
     }
 }
