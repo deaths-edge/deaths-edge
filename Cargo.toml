@@ -9,5 +9,5 @@ members = [
 
 resolver = "2"
 
-[patch.crates-io]
-bevy = { git = "https://github.com/DJMcNab/bevy.git", branch = "breaker-of-bundles" }
+# [patch.crates-io]
+# bevy = { git = "https://github.com/DJMcNab/bevy.git", branch = "breaker-of-bundles" }

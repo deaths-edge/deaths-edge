@@ -1,8 +1,10 @@
+mod classes;
 mod player;
 mod reconcile;
 
 use bevy::prelude::*;
 
+pub use classes::*;
 pub use player::*;
 pub use reconcile::*;
 
@@ -18,24 +20,6 @@ pub struct ClientCharacterBundle {
     #[bundle]
     sprite: SpriteBundle,
     selected: Selected,
-}
-
-impl ClientCharacterBundle {
-    pub fn new(common: &CharacterBundle) -> Self {
-        let size = common.class().size();
-
-        Self {
-            sprite: SpriteBundle {
-                sprite: Sprite {
-                    color: common.class().color(),
-                    custom_size: Some(Vec2::new(size.width, size.width)),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            selected: Selected::default(),
-        }
-    }
 }
 
 pub struct CharacterPlugin;

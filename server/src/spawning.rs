@@ -3,8 +3,7 @@ use std::iter::once;
 use bevy::prelude::*;
 
 use common::{
-    abilities::spawn_class_abilities,
-    character::{CharacterBundle, CharacterIndex, CharacterMarker, Class, Team},
+    character::{mars::Mars, medea::Medea, CharacterIndex, CharacterMarker, Class, Team},
     game::GameRoster,
     network::{
         server::{GameAction, ServerMessage, SpawnCharacter},
@@ -55,16 +54,34 @@ pub fn spawn_characters(
             let position = Vec2::new(0., 0.); // TODO
 
             let transform = Transform::from_xyz(position.x, position.y, 0.);
-            let common_character_bundle = CharacterBundle::new(
-                *next_index,
-                transform,
-                permit.class,
-                permit.team,
-                time.startup(),
-            );
+
             let server_character_bundle = ServerCharacterBundle {
                 address: ClientAddress(new_address),
             };
+            let mut entity_commands = match permit.class {
+                Class::Mars => Mars::spawn(
+                    *next_index,
+                    permit.team,
+                    transform,
+                    time.startup(),
+                    &mut commands,
+                ),
+                Class::Pluto => todo!(),
+                Class::Mammon => todo!(),
+                Class::Nergal => todo!(),
+                Class::Medea => Medea::spawn(
+                    *next_index,
+                    permit.team,
+                    transform,
+                    time.startup(),
+                    &mut commands,
+                ),
+                Class::Janus => todo!(),
+                Class::Borvo => todo!(),
+                Class::Heka => todo!(),
+                Class::Rhea => todo!(),
+            };
+            entity_commands.insert_bundle(server_character_bundle);
 
             // Send all existing characters to new character
             for (index, class, team, transform) in character_existing_query.iter() {
@@ -80,12 +97,6 @@ pub fn spawn_characters(
                 net.send_message(new_address, message)
                     .expect("failed to send SpawnCharacter to new character");
             }
-
-            let id = commands
-                .spawn_bundle(common_character_bundle)
-                .insert_bundle(server_character_bundle)
-                .id();
-            spawn_class_abilities(id, &mut commands);
 
             // Send spawn to all existing characters and new character
             let iter = character_address_query

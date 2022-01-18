@@ -1,12 +1,13 @@
 use bevy::prelude::*;
 
 use common::{
-    abilities::spawn_class_abilities, character::CharacterBundle, network::server::SpawnCharacter,
+    character::{mars::Mars, medea::Medea, Class},
+    network::server::SpawnCharacter,
     state::ArenaState,
 };
 
 use crate::{
-    character::{ClientCharacterBundle, PlayerMarker, PlayerState},
+    character::{mars::ClientMars, medea::ClientMedea, PlayerMarker, PlayerState},
     network::NETWORK_HANDLE_LABEL,
     ui::nameplate::setup_nameplate,
 };
@@ -26,17 +27,37 @@ pub fn spawn_characters(
         let position = spawn_event.position;
         let transform = Transform::from_xyz(position.x, position.y, 0.);
 
-        let common_character_bundle = CharacterBundle::new(
-            spawn_event.index,
-            transform,
-            spawn_event.class,
-            spawn_event.team,
-            time.startup(),
-        );
-        let client_character_bundle = ClientCharacterBundle::new(&common_character_bundle);
-
-        let mut entity_commands = commands.spawn_bundle(client_character_bundle);
-        entity_commands.insert_bundle(common_character_bundle);
+        let mut entity_commands = match spawn_event.class {
+            Class::Medea => {
+                let mut commands = Medea::spawn(
+                    spawn_event.index,
+                    spawn_event.team,
+                    transform,
+                    time.startup(),
+                    &mut commands,
+                );
+                ClientMedea::insert_bundle(&mut commands);
+                commands
+            }
+            Class::Mars => {
+                let mut commands = Mars::spawn(
+                    spawn_event.index,
+                    spawn_event.team,
+                    transform,
+                    time.startup(),
+                    &mut commands,
+                );
+                ClientMars::insert_bundle(&mut commands);
+                commands
+            }
+            Class::Pluto => todo!(),
+            Class::Mammon => todo!(),
+            Class::Nergal => todo!(),
+            Class::Janus => todo!(),
+            Class::Borvo => todo!(),
+            Class::Heka => todo!(),
+            Class::Rhea => todo!(),
+        };
 
         let id = if spawn_event.player {
             info!("spawned player");
@@ -49,7 +70,6 @@ pub fn spawn_characters(
             entity_commands.id()
         };
         setup_nameplate(id, &mut commands);
-        spawn_class_abilities(id, &mut commands);
     }
 }
 
