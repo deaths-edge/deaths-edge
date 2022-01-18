@@ -38,6 +38,8 @@ pub fn cast_complete(
 
         if end < now {
             let cast = cast_state.0.take().expect("found cast but no cast state");
+
+            // Spawn instant bundle
             let mut entity_commands = commands.spawn();
             instant_bundle.0.apply(&mut entity_commands);
 
@@ -46,8 +48,10 @@ pub fn cast_complete(
                 entity_commands.insert(target.clone());
             }
 
+            // Snapshot source
             entity_commands.insert(source.clone());
 
+            // Remove cast
             commands.entity(cast.cast_id).despawn();
         }
     }

@@ -80,7 +80,7 @@ impl Mars {
             controls: Controls::default(),
 
             power: Power {
-                current: 200.0,
+                current: 0.0,
                 total: 200.0,
             },
             health: Health {

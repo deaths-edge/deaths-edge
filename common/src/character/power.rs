@@ -11,7 +11,7 @@ pub struct Power {
 impl Power {
     pub fn subtract(&mut self, cost: f32) {
         self.current -= cost;
-        self.current = self.current.min(0.);
+        self.current = self.current.max(0.);
     }
 }
 
