@@ -2,9 +2,13 @@ use bevy::prelude::*;
 
 use crate::{
     abilities::{
-        effects::{damage::Damage, power_burn::PowerBurn, AtSelf, AtTarget, EffectMarker},
-        AbilityMarker, GlobalCooldown, InstantBundle, MaximumRange, PowerCost, RequiresFov,
-        RequiresLoS, RequiresStationary, RequiresTarget,
+        effects::{AtSelf, AtTarget, Damage, EffectMarker, PowerBurn},
+        lifecycle::InstantBundle,
+        obstructions::{
+            GlobalCooldown, MaximumRange, PowerCost, RequiresFov, RequiresLoS, RequiresStationary,
+            RequiresTarget,
+        },
+        AbilityMarker,
     },
     dyn_command::DynCommand,
 };

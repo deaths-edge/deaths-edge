@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use common::{
-    abilities::{CastDuration, CastMarker},
+    abilities::lifecycle::{CastDuration, CastMarker},
     character::{Cast, CastState, CharacterMarker},
 };
 

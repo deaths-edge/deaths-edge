@@ -2,7 +2,7 @@ use bevy::{ecs::system::EntityCommands, prelude::*, utils::Instant};
 use heron::prelude::*;
 
 use crate::{
-    abilities::{instances, AbilityId, UseObstructions},
+    abilities::{instances, obstructions::UseObstructions, AbilityId, Source},
     character::{
         Abilities, CastState, CharacterBundle, CharacterIndex, CharacterMarker, Controls, Health,
         LastCastInstant, OptionalTarget, Power, PowerRegenerate, SpeedMultiplier, Team,
@@ -99,6 +99,18 @@ impl Medea {
             base_bundle,
             power_regenerate: PowerRegenerate(20.0),
         };
-        commands.spawn_bundle(medea)
+
+        let mut entity_commands = commands.spawn_bundle(medea);
+        let character_id = entity_commands.id();
+
+        // Insert source into every ability
+        for AbilityId(ability_id) in abilities.0 {
+            entity_commands
+                .commands()
+                .entity(ability_id)
+                .insert(Source(character_id));
+        }
+
+        entity_commands
     }
 }

@@ -2,7 +2,7 @@ use bevy::{ecs::system::EntityCommands, prelude::*, utils::Instant};
 use heron::prelude::*;
 
 use crate::{
-    abilities::{instances, AbilityId, UseObstructions},
+    abilities::{instances, obstructions::UseObstructions, AbilityId},
     character::{
         Abilities, CastState, CharacterBundle, CharacterIndex, CharacterMarker, Controls, Health,
         LastCastInstant, OptionalTarget, Power, SpeedMultiplier, Team,

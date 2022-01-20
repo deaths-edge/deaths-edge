@@ -3,7 +3,11 @@ use serde::{Deserialize, Serialize};
 use tracing::warn;
 
 use crate::{
-    abilities::{AbilityMarker, CastBundle, InstantBundle, Source, UseObstructions},
+    abilities::{
+        lifecycle::{CastBundle, InstantBundle},
+        obstructions::UseObstructions,
+        AbilityMarker, Source,
+    },
     character::{Abilities, Cast, CastState, CharacterMarker, OptionalTarget},
 };
 
@@ -83,9 +87,10 @@ pub fn character_ability(
                 entity_commands.insert(target);
             }
 
-            entity_commands.insert(Source(character_id));
-
-            entity_commands.id()
+            entity_commands
+                .insert(Source(character_id))
+                .insert(*ability_id)
+                .id()
         };
 
         if let Some(instant_bundle_fn) = instant_bundle {

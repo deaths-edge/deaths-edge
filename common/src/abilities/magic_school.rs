@@ -2,9 +2,11 @@ use std::{fmt::Debug, hash::Hash};
 
 use bevy::prelude::*;
 
+use super::{
+    obstructions::{Obstruction, UseObstructions},
+    AbilityId, AbilityMarker,
+};
 use crate::character::{Abilities, CharacterMarker, Interrupt};
-
-use super::{AbilityId, AbilityMarker, Obstruction, UseObstructions};
 
 #[derive(Debug, Default, Component)]
 pub struct Fire;

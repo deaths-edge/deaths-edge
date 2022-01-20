@@ -1,12 +1,10 @@
-pub mod checks;
 pub mod effects;
 pub mod instances;
-mod lifecycle;
+pub mod lifecycle;
 mod magic_school;
+pub mod obstructions;
 mod target;
 
-pub use checks::*;
-pub use lifecycle::*;
 pub use magic_school::*;
 pub use target::*;
 
@@ -15,6 +13,8 @@ use std::{fmt::Debug, hash::Hash};
 use bevy::prelude::*;
 
 use effects::EffectPlugin;
+use lifecycle::*;
+use obstructions::*;
 
 #[derive(Default, Debug, Component)]
 pub struct AbilityMarker;
@@ -35,8 +35,8 @@ impl<T> AbilityPlugin<T> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AbilityLabels {
     Checks,
-    EffectApplication,
-    Cleanup,
+    Effects,
+    Lifecycle,
 }
 
 impl SystemLabel for AbilityLabels {
@@ -51,28 +51,23 @@ where
     T: Debug + Clone + Copy + Hash + Eq,
 {
     fn build(&self, app: &mut App) {
-        let ability_checks = SystemSet::on_update(self.state)
-            .label(AbilityLabels::Checks)
-            // Geometric obstructions
-            .with_system(check_required_target)
-            .with_system(check_required_fov)
-            .with_system(check_maximum_range)
-            .with_system(check_required_stationary)
-            // Resource obstructions
-            .with_system(check_power_cost)
-            // Cooldown obstructions
-            .with_system(check_global_cooldown)
-            .with_system(check_cooldown)
-            // Check silence/lock
-            // .with_system()
-            ;
+        let effects = EffectPlugin {
+            state: self.state,
+            label: AbilityLabels::Effects,
+        };
 
-        let effects = EffectPlugin::new(self.state, AbilityLabels::EffectApplication);
+        let obstructions = ObstructionPlugin {
+            state: self.state,
+            label: AbilityLabels::Checks,
+        };
 
-        let cast_set = SystemSet::on_update(self.state).with_system(cast_complete);
+        let lifecycle = LifecyclePlugin {
+            state: self.state,
+            label: AbilityLabels::Lifecycle,
+        };
 
-        app.add_system_set(ability_checks)
-            .add_plugin(effects)
-            .add_system_set(cast_set);
+        app.add_plugin(lifecycle)
+            .add_plugin(obstructions)
+            .add_plugin(effects);
     }
 }

@@ -1,5 +1,6 @@
-pub mod damage;
-pub mod power_burn;
+mod damage;
+mod induce_global_cooldown;
+mod power_burn;
 
 use std::{fmt::Debug, hash::Hash, marker::PhantomData};
 
@@ -13,8 +14,8 @@ use crate::{
     character::CharacterMarker,
 };
 
-use damage::Damage;
-use power_burn::PowerBurn;
+pub use damage::*;
+pub use power_burn::PowerBurn;
 
 /// Components accompanied by this will take effect immediately.
 #[derive(Debug, Default, Clone, Component)]
@@ -117,14 +118,8 @@ where
 }
 
 pub struct EffectPlugin<T, L> {
-    state: T,
-    label: L,
-}
-
-impl<T, L> EffectPlugin<T, L> {
-    pub fn new(state: T, label: L) -> Self {
-        Self { state, label }
-    }
+    pub state: T,
+    pub label: L,
 }
 
 impl<T, L> Plugin for EffectPlugin<T, L>

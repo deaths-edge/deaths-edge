@@ -4,10 +4,10 @@ use heron::{
     rapier_plugin::{PhysicsWorld, RayCastInfo},
 };
 
-use super::{Obstruction, UseObstructions};
+use super::{CastOrAbilityFilter, Obstruction, UseObstructions};
 use crate::{
-    abilities::{AbilityId, AbilityMarker},
-    character::{Abilities, CharacterMarker, OptionalTarget},
+    abilities::Source,
+    character::{CharacterMarker, OptionalTarget},
     physics::WorldLayer,
 };
 
@@ -52,28 +52,30 @@ pub fn check_los(
 pub fn check_required_los(
     physics_world: PhysicsWorld,
 
-    character_query: Query<(&Abilities, &OptionalTarget, &Transform), With<CharacterMarker>>,
-    mut ability_query: Query<&mut UseObstructions, (With<AbilityMarker>, With<RequiresLoS>)>,
+    character_query: Query<(&OptionalTarget, &Transform), With<CharacterMarker>>,
+    mut ability_query: Query<
+        (&Source, &mut UseObstructions),
+        (CastOrAbilityFilter, With<RequiresLoS>),
+    >,
     target_query: Query<&Transform, With<CharacterMarker>>,
 ) {
-    for (abilities, target, self_transform) in character_query.iter() {
-        for AbilityId(ability_id) in *abilities {
-            if let Ok(mut obstructions) = ability_query.get_mut(ability_id) {
-                if let Some(target_id) = target.0 {
-                    let target_transform = target_query
-                        .get(target_id.0)
-                        .expect("failed to find target");
+    for (source, mut obstructions) in ability_query.iter_mut() {
+        let (target, self_transform) = character_query
+            .get(source.0)
+            .expect("failed to find character");
 
-                    let in_los =
-                        check_los(self_transform, target_transform.translation, &physics_world)
-                            .is_ok();
+        if let Some(target_id) = target.0 {
+            let target_transform = target_query
+                .get(target_id.0)
+                .expect("failed to find target");
 
-                    if in_los {
-                        obstructions.0.remove(&Obstruction::OutOfLoS);
-                    } else {
-                        obstructions.0.insert(Obstruction::OutOfLoS);
-                    }
-                }
+            let in_los =
+                check_los(self_transform, target_transform.translation, &physics_world).is_ok();
+
+            if in_los {
+                obstructions.0.remove(&Obstruction::OutOfLoS);
+            } else {
+                obstructions.0.insert(Obstruction::OutOfLoS);
             }
         }
     }
