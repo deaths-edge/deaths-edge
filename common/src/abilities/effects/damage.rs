@@ -6,10 +6,13 @@ use crate::character::Health;
 #[derive(Default, Debug, Clone, Component)]
 pub struct Damage(pub f32);
 
-impl<'a> Effect<'a> for Damage {
-    type Domain = &'a mut Health;
+impl Effect for Damage {
+    type Domain<'a> = &'a mut Health;
 
-    fn apply(&self, mut item: Mut<'_, Health>) {
+    type SysParam<'w, 's> = ();
+    type Fetch = ();
+
+    fn apply(&self, _time: &Time, mut item: Mut<'_, Health>, _param: &(), commands: &mut Commands) {
         item.apply_damage(self.0);
     }
 }

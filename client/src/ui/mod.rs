@@ -1,3 +1,4 @@
+pub mod button;
 pub mod camera;
 pub mod character_selection;
 pub mod mouse;
@@ -33,6 +34,7 @@ impl Plugin for UIPlugin {
             .add_plugin(mouse::WorldMousePlugin)
             .add_plugin(nameplate::NameplatePlugin)
             .add_plugin(selected::SelectedPlugin)
+            .add_plugin(button::ButtonsPlugin)
             .add_plugin(character_selection::CharacterSelectionPlugin);
     }
 }

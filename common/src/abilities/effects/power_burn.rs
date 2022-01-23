@@ -6,10 +6,13 @@ use crate::character::Power;
 #[derive(Default, Debug, Clone, Component)]
 pub struct PowerBurn(pub f32);
 
-impl<'a> Effect<'a> for PowerBurn {
-    type Domain = &'a mut Power;
+impl Effect for PowerBurn {
+    type Domain<'a> = &'a mut Power;
 
-    fn apply(&self, mut item: Mut<'_, Power>) {
+    type SysParam<'w, 's> = ();
+    type Fetch = ();
+
+    fn apply(&self, _time: &Time, mut item: Mut<'_, Power>, _param: &(), _commands: &mut Commands) {
         info!(message = "burning power", amount = %self.0);
         item.subtract(self.0);
     }

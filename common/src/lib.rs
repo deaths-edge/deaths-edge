@@ -1,3 +1,5 @@
+#![feature(generic_associated_types)]
+
 pub mod abilities;
 pub mod character;
 mod dyn_command;

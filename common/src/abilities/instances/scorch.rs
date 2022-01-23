@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::{
     abilities::{
-        effects::{AtSelf, AtTarget, Damage, EffectMarker, PowerBurn},
+        effects::{AtSelf, AtTarget, Damage, EffectMarker, PowerBurn, TriggerGlobalCooldown},
         lifecycle::{CastBundle, CastDuration, CastMarker, InstantBundle},
         obstructions::{
             GlobalCooldown, MaximumRange, PowerCost, RequiresFov, RequiresLoS, RequiresStationary,
@@ -22,6 +22,7 @@ pub struct ScorchEffects {
     damage: AtTarget<Damage>,
 
     power_cost: AtSelf<PowerBurn>,
+    trigger_global_cooldown: AtSelf<TriggerGlobalCooldown>,
 }
 
 #[derive(Debug, Clone, Bundle)]
@@ -30,6 +31,8 @@ pub struct ScorchCast {
     duration: CastDuration,
 
     instant_bundle: InstantBundle,
+
+    requires_stationary: RequiresStationary,
 }
 
 #[derive(Bundle)]
@@ -59,6 +62,8 @@ impl Scorch {
 
             damage: AtTarget(Damage(DAMAGE)),
             power_cost: AtSelf(PowerBurn(POWER_COST)),
+
+            trigger_global_cooldown: AtSelf(TriggerGlobalCooldown),
         };
         let effect_command = DynCommand::insert_bundle(scorch_effects);
 
@@ -66,6 +71,8 @@ impl Scorch {
             marker: CastMarker,
             duration: CastDuration(Duration::from_secs(1)),
             instant_bundle: InstantBundle(effect_command),
+
+            requires_stationary: RequiresStationary,
         };
         let scorch_cast_command = DynCommand::insert_bundle(scorch_cast);
 

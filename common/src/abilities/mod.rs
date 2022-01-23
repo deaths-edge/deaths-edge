@@ -1,11 +1,10 @@
 pub mod effects;
 pub mod instances;
 pub mod lifecycle;
-mod magic_school;
+pub mod magic_school;
 pub mod obstructions;
 mod target;
 
-pub use magic_school::*;
 pub use target::*;
 
 use std::{fmt::Debug, hash::Hash};

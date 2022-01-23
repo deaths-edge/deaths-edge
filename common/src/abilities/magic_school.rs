@@ -6,7 +6,7 @@ use super::{
     obstructions::{Obstruction, UseObstructions},
     AbilityId, AbilityMarker,
 };
-use crate::character::{Abilities, CharacterMarker, Interrupt};
+use crate::character::{Abilities, CharacterMarker, Interrupted};
 
 #[derive(Debug, Default, Component)]
 pub struct Fire;
@@ -17,8 +17,11 @@ pub struct Frost;
 #[derive(Debug, Default, Component)]
 pub struct Nature;
 
+#[derive(Debug, Default, Component)]
+pub struct Interruptable;
+
 pub fn check_lock<School: Component>(
-    character_query: Query<&Abilities, (With<CharacterMarker>, With<Interrupt<School>>)>,
+    character_query: Query<&Abilities, (With<CharacterMarker>, With<Interrupted<School>>)>,
     mut ability_query: Query<&mut UseObstructions, (With<AbilityMarker>, With<School>)>,
 ) {
     for abilities in character_query.iter() {

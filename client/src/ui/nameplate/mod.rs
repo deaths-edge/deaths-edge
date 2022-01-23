@@ -19,22 +19,6 @@ use crate::{state::ClientState, ui::mouse::local_to_window_position};
 
 use common::character::CharacterMarker;
 
-pub const NAMEPLATE_LABEL: &str = "nameplate";
-
-pub struct NameplatePlugin;
-
-impl Plugin for NameplatePlugin {
-    fn build(&self, app: &mut App) {
-        let nameplate_system_set = SystemSet::on_update(ClientState::Arena)
-            .label(NAMEPLATE_LABEL)
-            .with_system(update_nameplate_position)
-            .with_system(health_bar_update)
-            .with_system(power_bar_update)
-            .with_system(cast_bar_update);
-        app.add_system_set(nameplate_system_set);
-    }
-}
-
 #[derive(Debug, Default, Component)]
 pub struct NameplateMarker;
 
@@ -133,5 +117,21 @@ pub fn update_nameplate_position(
             node_style.position.left = Val::Px(window_position.x) + -offset_width_px;
             node_style.position.bottom = Val::Px(window_position.y) + offset_height_px;
         }
+    }
+}
+
+pub const NAMEPLATE_LABEL: &str = "nameplate";
+
+pub struct NameplatePlugin;
+
+impl Plugin for NameplatePlugin {
+    fn build(&self, app: &mut App) {
+        let nameplate_system_set = SystemSet::on_update(ClientState::Arena)
+            .label(NAMEPLATE_LABEL)
+            .with_system(update_nameplate_position)
+            .with_system(health_bar_update)
+            .with_system(power_bar_update)
+            .with_system(cast_bar_update);
+        app.add_system_set(nameplate_system_set);
     }
 }

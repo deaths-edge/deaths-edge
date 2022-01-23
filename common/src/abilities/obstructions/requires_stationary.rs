@@ -5,7 +5,7 @@ use super::{CastOrAbilityFilter, Obstruction, UseObstructions};
 use crate::{abilities::Source, character::CharacterMarker};
 
 /// Requires that target is stationary while casting.
-#[derive(Default, Debug, Component)]
+#[derive(Default, Debug, Clone, Component)]
 pub struct RequiresStationary;
 
 pub fn check_required_stationary(

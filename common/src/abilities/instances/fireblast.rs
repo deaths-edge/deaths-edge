@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     abilities::{
-        effects::{AtSelf, AtTarget, Damage, EffectMarker, PowerBurn},
+        effects::{AtSelf, AtTarget, Damage, EffectMarker, PowerBurn, TriggerGlobalCooldown},
         lifecycle::InstantBundle,
         obstructions::{
             GlobalCooldown, MaximumRange, PowerCost, RequiresFov, RequiresLoS, RequiresStationary,
@@ -20,6 +20,7 @@ pub struct FireblastEffects {
     damage: AtTarget<Damage>,
 
     power_cost: AtSelf<PowerBurn>,
+    trigger_global_cooldown: AtSelf<TriggerGlobalCooldown>,
 }
 
 #[derive(Bundle)]
@@ -49,6 +50,7 @@ impl Fireblast {
             damage: AtTarget(Damage(25.0)),
 
             power_cost: AtSelf(PowerBurn(POWER_COST)),
+            trigger_global_cooldown: AtSelf(TriggerGlobalCooldown),
         };
         let command = DynCommand::insert_bundle(fireblast_effects);
 
