@@ -10,13 +10,12 @@ pub use reconcile::*;
 
 use common::{character::CharacterPlugin as CommonCharacterPlugin, network::server::Reconcile};
 
-use crate::{network::NETWORK_HANDLE_LABEL, state::ClientState, ui::selected::Selected};
+use crate::{network::NETWORK_HANDLE_LABEL, state::ClientState};
 
 #[derive(Bundle)]
 pub struct ClientCharacterBundle {
     #[bundle]
     sprite: SpriteBundle,
-    selected: Selected,
 }
 
 pub struct CharacterPlugin;

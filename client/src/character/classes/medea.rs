@@ -1,7 +1,7 @@
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use common::character::medea::{HEIGHT, WIDTH};
 
-use crate::{character::ClientCharacterBundle, ui::selected::Selected};
+use crate::character::ClientCharacterBundle;
 
 #[derive(Bundle)]
 pub struct ClientMedea {
@@ -22,7 +22,6 @@ impl ClientMedea {
                 },
                 ..Default::default()
             },
-            selected: Selected::default(),
         };
         let medea = ClientMedea { base_bundle };
         commands.insert_bundle(medea);
