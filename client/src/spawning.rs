@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use common::{
-    character::{mars::Mars, medea::Medea, Class},
+    character::{mars::Mars, medea::Medea, Class, ClassTrait},
     network::server::SpawnCharacter,
     state::ArenaState,
 };
@@ -29,26 +29,28 @@ pub fn spawn_characters(
 
         let mut entity_commands = match spawn_event.class {
             Class::Medea => {
-                let mut commands = Medea::spawn(
+                let character_id = Medea::spawn(
                     spawn_event.index,
                     spawn_event.team,
                     transform,
                     time.startup(),
                     &mut commands,
                 );
-                ClientMedea::insert_bundle(&mut commands);
-                commands
+                let mut entity_commands = commands.entity(character_id);
+                ClientMedea::insert_bundle(&mut entity_commands);
+                entity_commands
             }
             Class::Mars => {
-                let mut commands = Mars::spawn(
+                let character_id = Mars::spawn(
                     spawn_event.index,
                     spawn_event.team,
                     transform,
                     time.startup(),
                     &mut commands,
                 );
-                ClientMars::insert_bundle(&mut commands);
-                commands
+                let mut entity_commands = commands.entity(character_id);
+                ClientMars::insert_bundle(&mut entity_commands);
+                entity_commands
             }
             Class::Pluto => todo!(),
             Class::Mammon => todo!(),

@@ -1,8 +1,8 @@
-use bevy::{ecs::system::EntityCommands, prelude::*, utils::Instant};
+use bevy::{prelude::*, utils::Instant};
 use heron::prelude::*;
 
 use crate::{
-    abilities::{instances, obstructions::UseObstructions, AbilityId},
+    abilities::instances,
     character::{
         Abilities, CastState, CharacterBundle, CharacterIndex, CharacterMarker, Controls, Health,
         LastCastInstant, OptionalTarget, Power, SpeedMultiplier, Team,
@@ -10,7 +10,7 @@ use crate::{
     physics::WorldLayer,
 };
 
-use super::Class;
+use super::{Class, ClassTrait};
 
 #[derive(Bundle)]
 pub struct Mars {
@@ -21,44 +21,15 @@ pub struct Mars {
 pub const WIDTH: f32 = 25.0;
 pub const HEIGHT: f32 = 25.0;
 
-impl Mars {
-    pub fn spawn_abilities(commands: &mut Commands) -> Abilities {
-        // TODO
-        let fireblast_id = commands
-            .spawn()
-            .insert_bundle(instances::Fireblast::new())
-            .insert(UseObstructions::default())
-            .id();
-        let scorch_id = commands
-            .spawn()
-            .insert_bundle(instances::Scorch::new())
-            .insert(UseObstructions::default())
-            .id();
-
-        Abilities(
-            [
-                fireblast_id,
-                scorch_id,
-                scorch_id,
-                scorch_id,
-                scorch_id,
-                scorch_id,
-                scorch_id,
-                scorch_id,
-            ]
-            .map(AbilityId),
-        )
-    }
-
-    pub fn spawn<'a, 'w, 's>(
+impl ClassTrait for Mars {
+    fn spawn_character(
         index: CharacterIndex,
         team: Team,
         transform: Transform,
         last_cast_instant: Instant,
-        commands: &'a mut Commands<'w, 's>,
-    ) -> EntityCommands<'w, 's, 'a> {
-        let abilities = Self::spawn_abilities(commands);
-
+        abilities: Abilities,
+        commands: &mut Commands,
+    ) -> Entity {
         let base_bundle = CharacterBundle {
             index,
             marker: CharacterMarker,
@@ -95,6 +66,27 @@ impl Mars {
         };
 
         let medea = Mars { base_bundle };
-        commands.spawn_bundle(medea)
+        commands.spawn_bundle(medea).id()
+    }
+
+    fn spawn_abilities(commands: &mut Commands) -> [Entity; 8] {
+        let fireblast_id = commands
+            .spawn()
+            .insert_bundle(instances::Fireblast::new())
+            .id();
+        let scorch_id = commands
+            .spawn()
+            .insert_bundle(instances::Scorch::new())
+            .id();
+        [
+            fireblast_id,
+            scorch_id,
+            scorch_id,
+            scorch_id,
+            scorch_id,
+            scorch_id,
+            scorch_id,
+            scorch_id,
+        ]
     }
 }

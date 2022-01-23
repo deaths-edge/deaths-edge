@@ -3,8 +3,51 @@ pub mod medea;
 
 use std::fmt;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::Instant};
 use serde::{Deserialize, Serialize};
+
+use crate::abilities::{AbilityId, Source};
+
+use super::{Abilities, CharacterIndex, Team};
+
+pub trait ClassTrait {
+    fn spawn_character(
+        index: CharacterIndex,
+        team: Team,
+        transform: Transform,
+        last_cast_instant: Instant,
+        abilities: Abilities,
+        commands: &mut Commands,
+    ) -> Entity;
+
+    fn spawn_abilities(commands: &mut Commands) -> [Entity; 8];
+
+    fn spawn(
+        index: CharacterIndex,
+        team: Team,
+        transform: Transform,
+        last_cast_instant: Instant,
+        commands: &mut Commands,
+    ) -> Entity {
+        let abilities = Self::spawn_abilities(commands);
+
+        let character_id = Self::spawn_character(
+            index,
+            team,
+            transform,
+            last_cast_instant,
+            Abilities(abilities.map(AbilityId)),
+            commands,
+        );
+
+        for ability_id in abilities.into_iter() {
+            // Insert source into every ability
+            commands.entity(ability_id).insert(Source(character_id));
+        }
+
+        character_id
+    }
+}
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash, Component)]
 pub enum Class {

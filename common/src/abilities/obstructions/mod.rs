@@ -68,5 +68,6 @@ where
             // Cooldown obstructions
             .with_system(check_global_cooldown)
             .with_system(check_cooldown);
+        app.add_system_set(ability_checks);
     }
 }

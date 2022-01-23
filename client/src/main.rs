@@ -72,7 +72,5 @@ fn main() {
         // Network plugin
         .add_plugin(NetworkPlugin);
 
-    // save_schedule_graph(&mut app).expect("failed to save schedule graph");
-
     app.run();
 }

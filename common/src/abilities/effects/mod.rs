@@ -190,7 +190,7 @@ where
             SingleEffectPlugin::<_, _, PowerBurn>::new(self.state, self.label.clone());
         let trigger_global_cooldown_effects =
             SingleEffectPlugin::<_, _, TriggerGlobalCooldown>::new(self.state, self.label.clone());
-        let trigger_global_cooldown_effects =
+        let interupt_effects =
             SingleEffectPlugin::<_, _, Interrupt>::new(self.state, self.label.clone());
 
         let cleanup_set = SystemSet::on_update(self.state)
@@ -200,6 +200,7 @@ where
         app.add_plugin(damage_effects)
             .add_plugin(power_burn_effects)
             .add_plugin(trigger_global_cooldown_effects)
+            .add_plugin(interupt_effects)
             .add_system_set(cleanup_set);
     }
 }

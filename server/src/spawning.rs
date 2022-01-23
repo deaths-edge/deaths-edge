@@ -3,7 +3,9 @@ use std::iter::once;
 use bevy::prelude::*;
 
 use common::{
-    character::{mars::Mars, medea::Medea, CharacterIndex, CharacterMarker, Class, Team},
+    character::{
+        mars::Mars, medea::Medea, CharacterIndex, CharacterMarker, Class, ClassTrait, Team,
+    },
     game::GameRoster,
     network::{
         server::{GameAction, ServerMessage, SpawnCharacter},
@@ -58,7 +60,7 @@ pub fn spawn_characters(
             let server_character_bundle = ServerCharacterBundle {
                 address: ClientAddress(new_address),
             };
-            let mut entity_commands = match permit.class {
+            let character_id = match permit.class {
                 Class::Mars => Mars::spawn(
                     *next_index,
                     permit.team,
@@ -81,6 +83,7 @@ pub fn spawn_characters(
                 Class::Heka => todo!(),
                 Class::Rhea => todo!(),
             };
+            let mut entity_commands = commands.entity(character_id);
             entity_commands.insert_bundle(server_character_bundle);
 
             // Send all existing characters to new character

@@ -8,7 +8,7 @@ use crate::{
         lifecycle::{CastBundle, CastDuration, CastMarker, InstantBundle},
         obstructions::{
             GlobalCooldown, MaximumRange, PowerCost, RequiresFov, RequiresLoS, RequiresStationary,
-            RequiresTarget,
+            RequiresTarget, UseObstructions,
         },
         AbilityMarker,
     },
@@ -48,6 +48,7 @@ pub struct Scorch {
     requires_fov: RequiresFov,
     requires_los: RequiresLoS,
     max_range: MaximumRange,
+    obstructions: UseObstructions,
 
     cast_bundle: CastBundle,
 }
@@ -88,6 +89,7 @@ impl Scorch {
             requires_fov: RequiresFov,
             requires_los: RequiresLoS,
             max_range: MaximumRange(500.0),
+            obstructions: UseObstructions::default(),
 
             cast_bundle: CastBundle(scorch_cast_command),
         }
