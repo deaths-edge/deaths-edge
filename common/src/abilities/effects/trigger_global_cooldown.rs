@@ -10,7 +10,7 @@ pub struct TriggerGlobalCooldown;
 impl Effect for TriggerGlobalCooldown {
     type Domain<'a> = &'a mut LastCastInstant;
 
-    type SysParam<'w, 's> = ();
+    type Param<'w, 's> = ();
     type Fetch = ();
 
     fn apply(

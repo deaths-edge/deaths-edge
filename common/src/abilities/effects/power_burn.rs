@@ -9,7 +9,7 @@ pub struct PowerBurn(pub f32);
 impl Effect for PowerBurn {
     type Domain<'a> = &'a mut Power;
 
-    type SysParam<'w, 's> = ();
+    type Param<'w, 's> = ();
     type Fetch = ();
 
     fn apply(&self, _time: &Time, mut item: Mut<'_, Power>, _param: &(), _commands: &mut Commands) {

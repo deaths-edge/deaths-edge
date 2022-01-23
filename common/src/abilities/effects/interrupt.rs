@@ -20,7 +20,7 @@ type InterruptableFilter = (With<CastMarker>, With<Interruptable>);
 impl Effect for Interrupt {
     type Domain<'a> = (Entity, &'a mut CastState);
 
-    type SysParam<'w, 's> = Query<'w, 's, SchoolClassify, InterruptableFilter>;
+    type Param<'w, 's> = Query<'w, 's, SchoolClassify, InterruptableFilter>;
     type Fetch = QueryState<SchoolClassify, InterruptableFilter>;
 
     fn apply(

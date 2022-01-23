@@ -9,7 +9,7 @@ pub struct Damage(pub f32);
 impl Effect for Damage {
     type Domain<'a> = &'a mut Health;
 
-    type SysParam<'w, 's> = ();
+    type Param<'w, 's> = ();
     type Fetch = ();
 
     fn apply(&self, _time: &Time, mut item: Mut<'_, Health>, _param: &(), commands: &mut Commands) {

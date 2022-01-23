@@ -23,20 +23,24 @@ pub use interrupt::*;
 pub use power_burn::*;
 pub use trigger_global_cooldown::*;
 
-/// Components accompanied by this will take effect immediately.
+/// A marker component.
 #[derive(Debug, Default, Clone, Component)]
 pub struct EffectMarker;
 
 type EffectParamItem<'world, 'state, E> =
     <<E as Effect>::Fetch as SystemParamFetch<'world, 'state>>::Item;
 
+/// Represents an effect over the course of a single frame.
 pub trait Effect
 where
     for<'w, 's> EffectParamItem<'w, 's, Self>: SystemParam<Fetch = Self::Fetch>,
 {
+    /// The domain of the character query.
     type Domain<'a>: WorldQuery;
 
-    type SysParam<'w, 's>: SystemParam<Fetch = Self::Fetch>;
+    /// Auxillary [`SystemParam`].
+    type Param<'w, 's>: SystemParam<Fetch = Self::Fetch>;
+    /// The [`Fetch`] of `Self::Param`.
     type Fetch: for<'w, 's> SystemParamFetch<'w, 's>;
 
     fn apply(
@@ -48,6 +52,7 @@ where
     );
 }
 
+/// The [`Effect`] is aimed at current target.
 #[derive(Debug, Clone, Component)]
 pub struct AtTarget<T>(pub T);
 
@@ -72,6 +77,7 @@ pub fn apply_effect_target<E>(
     }
 }
 
+/// The [`Effect`] is aimed at self.
 #[derive(Debug, Clone, Component)]
 pub struct AtSelf<T>(pub T);
 
@@ -96,8 +102,12 @@ pub fn apply_effect_self<E>(
     }
 }
 
+/// The [`Effect`] will hit everyone in an AOE.
 #[derive(Debug, Clone, Component)]
-pub struct AtAoe<T>(pub T);
+pub struct AtAoe<T> {
+    effect: T,
+    radius: f32,
+}
 
 /// Applies an [`Effect`] to everyone in a given radius.
 pub fn apply_effect_radius<E>(// ability_query: Query<(&AtAoe<E>, &Transform), With<EffectMarker>>,
@@ -111,6 +121,7 @@ where
     // TODO
 }
 
+/// Represents a single [`Effect`] subsystem.
 struct SingleEffectPlugin<T, L, E> {
     state: T,
     label: L,
@@ -150,6 +161,15 @@ where
     }
 }
 
+/// Remove all the [`Effect`]s after they are applied.
+pub fn cleanup(query: Query<Entity, With<EffectMarker>>, mut commands: Commands) {
+    for instance_id in query.iter() {
+        info!("cleaning up instant effect");
+        commands.entity(instance_id).despawn();
+    }
+}
+
+/// Aggregate all the [`Effect`] subsystems.
 pub struct EffectPlugin<T, L> {
     pub state: T,
     pub label: L,
@@ -181,12 +201,5 @@ where
             .add_plugin(power_burn_effects)
             .add_plugin(trigger_global_cooldown_effects)
             .add_system_set(cleanup_set);
-    }
-}
-
-pub fn cleanup(query: Query<Entity, With<EffectMarker>>, mut commands: Commands) {
-    for instance_id in query.iter() {
-        info!("cleaning up instant effect");
-        commands.entity(instance_id).despawn();
     }
 }
