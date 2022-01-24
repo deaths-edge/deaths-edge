@@ -54,8 +54,8 @@ pub fn spawn_complete_cast(
 #[derive(Component)]
 pub struct Failed;
 
-pub fn despawn_failed_cast(
-    cast_query: Query<(Entity, &Source), (With<CastMarker>, With<Failed>)>,
+pub fn despawn_cast(
+    cast_query: Query<(Entity, &Source), (With<CastMarker>, Or<(With<Failed>, With<Complete>)>)>,
     mut character_cast: Query<&mut CastState, With<CharacterMarker>>,
 
     mut commands: Commands,
@@ -79,7 +79,7 @@ pub fn cast_complete(
         (&AbilityId, &CastDuration, &Source),
         (With<CastMarker>, Without<Failed>, Without<Complete>),
     >,
-    mut character_query: Query<&mut CastState, With<CharacterMarker>>,
+    mut character_query: Query<&CastState, With<CharacterMarker>>,
     ability_query: Query<&UseObstructions>,
 
     mut commands: Commands,
@@ -87,10 +87,10 @@ pub fn cast_complete(
     let now = time.last_update().expect("cannot find last update");
 
     for (ability_id, duration, source) in cast_query.iter() {
-        let mut cast_state = character_query
+        let cast_state = character_query
             .get_mut(source.0)
             .expect("failed to find character");
-        let cast = cast_state.0.as_mut().expect("found cast but no cast state");
+        let cast = cast_state.0.as_ref().expect("found cast but no cast state");
         let end = cast.start + duration.0;
 
         if end < now {
@@ -101,7 +101,6 @@ pub fn cast_complete(
 
             if !obstructed {
                 commands.entity(cast.cast_id).insert(Complete);
-                cast_state.0 = None;
             }
         }
     }

@@ -1,4 +1,5 @@
 pub mod effects;
+mod info;
 pub mod instances;
 pub mod lifecycle;
 pub mod magic_school;

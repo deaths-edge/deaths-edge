@@ -15,7 +15,6 @@ pub trait ClassTrait {
         index: CharacterIndex,
         team: Team,
         transform: Transform,
-        last_cast_instant: Instant,
         abilities: Abilities,
         commands: &mut Commands,
     ) -> Entity;
@@ -26,7 +25,6 @@ pub trait ClassTrait {
         index: CharacterIndex,
         team: Team,
         transform: Transform,
-        last_cast_instant: Instant,
         commands: &mut Commands,
     ) -> Entity {
         let abilities = Self::spawn_abilities(commands);
@@ -35,7 +33,6 @@ pub trait ClassTrait {
             index,
             team,
             transform,
-            last_cast_instant,
             Abilities(abilities.map(AbilityId)),
             commands,
         );

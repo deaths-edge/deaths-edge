@@ -6,7 +6,7 @@ use super::{Obstruction, UseObstructions};
 use crate::{abilities::AbilityMarker, character::LastCastInstant};
 
 /// Ability has a cooldown (distinct from [`GlobalCooldown`](super::GlobalCooldown)).
-#[derive(Debug, Component)]
+#[derive(Debug, Clone, Component)]
 pub struct Cooldown(pub Duration);
 
 pub fn check_cooldown(
@@ -19,7 +19,12 @@ pub fn check_cooldown(
     let last_update = time.last_update().expect("cannot find last update");
 
     for (cooldown, last_cast, mut obstructions) in ability_query.iter_mut() {
-        if last_cast.0 + cooldown.0 < last_update {
+        let last_cast = if let Some(last_cast) = last_cast.0 {
+            last_cast
+        } else {
+            continue;
+        };
+        if last_cast + cooldown.0 < last_update {
             obstructions.0.remove(&Obstruction::Cooldown);
         } else {
             obstructions.0.insert(Obstruction::Cooldown);

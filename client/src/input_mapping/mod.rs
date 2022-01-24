@@ -66,7 +66,7 @@ fn input_map(
     // Outputs
     mut current_motion: Local<Motion>,
     mut motion_events: EventWriter<PlayerInputAction<Motion>>,
-    mut abilitys: EventWriter<PlayerInputAction<Ability>>,
+    mut abilities: EventWriter<PlayerInputAction<Ability>>,
     mut focal_holds: EventWriter<PlayerInputAction<FocalAngle>>,
     mut target: EventWriter<PlayerInputAction<SelectTarget>>,
 ) {
@@ -92,7 +92,7 @@ fn input_map(
         match input {
             BoundKey::Motion(motion_key) => *current_motion = motion_key.release(*current_motion),
             BoundKey::Ability(ability_key) => {
-                abilitys.send(PlayerInputAction(ability_key.into_ability()))
+                abilities.send(PlayerInputAction(ability_key.into_ability()))
             }
         }
     }

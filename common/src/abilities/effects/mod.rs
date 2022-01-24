@@ -1,6 +1,7 @@
 mod damage;
 mod interrupt;
 mod power_burn;
+mod trigger_cooldown;
 mod trigger_global_cooldown;
 
 use std::{fmt::Debug, hash::Hash, marker::PhantomData};
@@ -21,17 +22,20 @@ use crate::{
 pub use damage::*;
 pub use interrupt::*;
 pub use power_burn::*;
+pub use trigger_cooldown::*;
 pub use trigger_global_cooldown::*;
+
+use super::{AbilityId, AbilityMarker};
 
 /// A marker component.
 #[derive(Debug, Default, Clone, Component)]
 pub struct EffectMarker;
 
 type EffectParamItem<'world, 'state, E> =
-    <<E as Effect>::Fetch as SystemParamFetch<'world, 'state>>::Item;
+    <<E as CharacterEffect>::Fetch as SystemParamFetch<'world, 'state>>::Item;
 
 /// Represents an effect over the course of a single frame.
-pub trait Effect
+pub trait CharacterEffect
 where
     for<'w, 's> EffectParamItem<'w, 's, Self>: SystemParam<Fetch = Self::Fetch>,
 {
@@ -52,83 +56,116 @@ where
     );
 }
 
-/// The [`Effect`] is aimed at current target.
+pub trait AbilityEffect {
+    /// The domain of the ability query.
+    type Domain<'a>: WorldQuery;
+
+    fn apply(
+        &self,
+        time: &Time,
+        item: <<Self::Domain<'_> as WorldQuery>::Fetch as Fetch>::Item,
+        commands: &mut Commands,
+    );
+}
+
+/// Apply a [`AbilityEffect`].
+#[derive(Debug, Clone, Component)]
+pub struct AtAbility<T>(pub T);
+
+pub fn apply_ability<E>(
+    time: Res<Time>,
+    effect_query: Query<(&AtAbility<E>, &AbilityId), With<EffectMarker>>,
+    mut ability_query: Query<<E as AbilityEffect>::Domain<'_>, With<AbilityMarker>>,
+    mut commands: Commands,
+) where
+    E: Send + Sync + 'static,
+    E: AbilityEffect,
+{
+    for (AtAbility(effect), AbilityId(ability_id)) in effect_query.iter() {
+        let item = ability_query
+            .get_mut(*ability_id)
+            .expect("failed to find target");
+        effect.apply(&time, item, &mut commands);
+    }
+}
+
+/// The [`CharacterEffect`] is aimed at current target.
 #[derive(Debug, Clone, Component)]
 pub struct AtTarget<T>(pub T);
 
-/// Applies an [`Effect`] to some target.
+/// Applies an [`CharacterEffect`] to some target.
 pub fn apply_effect_target<E>(
     time: Res<Time>,
-    ability_query: Query<(&AtTarget<E>, &Target), With<EffectMarker>>,
-    mut character_query: Query<<E as Effect>::Domain<'_>, With<CharacterMarker>>,
+    effect_query: Query<(&AtTarget<E>, &Target), With<EffectMarker>>,
+    mut character_query: Query<<E as CharacterEffect>::Domain<'_>, With<CharacterMarker>>,
     sys_param: <E::Fetch as SystemParamFetch>::Item,
 
     mut commands: Commands,
 ) where
     E: Send + Sync + 'static,
-    E: Effect,
+    E: CharacterEffect,
     for<'w, 's> <E::Fetch as SystemParamFetch<'w, 's>>::Item: SystemParam<Fetch = E::Fetch>,
 {
-    for (AtTarget(effect), target) in ability_query.iter() {
+    for (AtTarget(effect), Target(target)) in effect_query.iter() {
         let item = character_query
-            .get_mut(target.0)
+            .get_mut(*target)
             .expect("failed to find target");
         effect.apply(&time, item, &sys_param, &mut commands);
     }
 }
 
-/// The [`Effect`] is aimed at self.
+/// The [`CharacterEffect`] is aimed at self.
 #[derive(Debug, Clone, Component)]
 pub struct AtSelf<T>(pub T);
 
-/// Applies an [`Effect`] to self.
+/// Applies an [`CharacterEffect`] to self.
 pub fn apply_effect_self<E>(
     time: Res<Time>,
-    ability_query: Query<(&AtSelf<E>, &Source), With<EffectMarker>>,
-    mut character_query: Query<<E as Effect>::Domain<'_>, With<CharacterMarker>>,
+    effect_query: Query<(&AtSelf<E>, &Source), With<EffectMarker>>,
+    mut character_query: Query<<E as CharacterEffect>::Domain<'_>, With<CharacterMarker>>,
     sys_param: EffectParamItem<'_, '_, E>,
 
     mut commands: Commands,
 ) where
     E: Send + Sync + 'static,
-    E: Effect,
+    E: CharacterEffect,
     for<'w, 's> EffectParamItem<'w, 's, E>: SystemParam<Fetch = E::Fetch>,
 {
-    for (AtSelf(effect), source) in ability_query.iter() {
+    for (AtSelf(effect), Source(source)) in effect_query.iter() {
         let item = character_query
-            .get_mut(source.0)
+            .get_mut(*source)
             .expect("failed to find target");
         effect.apply(&time, item, &sys_param, &mut commands);
     }
 }
 
-/// The [`Effect`] will hit everyone in an AOE.
+/// The [`CharacterEffect`] will hit everyone in an AOE.
 #[derive(Debug, Clone, Component)]
 pub struct AtAoe<T> {
     effect: T,
     radius: f32,
 }
 
-/// Applies an [`Effect`] to everyone in a given radius.
+/// Applies an [`CharacterEffect`] to everyone in a given radius.
 pub fn apply_effect_radius<E>(// ability_query: Query<(&AtAoe<E>, &Transform), With<EffectMarker>>,
-    // mut character_query: Query<<E as Effect>::Domain, With<CharacterMarker>>,
+    // mut character_query: Query<<E as CharacterEffect>::Domain, With<CharacterMarker>>,
 )
 where
     E: Send + Sync + 'static,
-    E: Effect,
+    E: CharacterEffect,
     for<'w, 's> EffectParamItem<'w, 's, E>: SystemParam<Fetch = E::Fetch>,
 {
     // TODO
 }
 
-/// Represents a single [`Effect`] subsystem.
-struct SingleEffectPlugin<T, L, E> {
+/// Represents a single [`CharacterEffect`] subsystem.
+struct CharacterEffectPlugin<T, L, E> {
     state: T,
     label: L,
     _effect: PhantomData<E>,
 }
 
-impl<T, L, E> SingleEffectPlugin<T, L, E> {
+impl<T, L, E> CharacterEffectPlugin<T, L, E> {
     fn new(state: T, label: L) -> Self {
         Self {
             state,
@@ -138,7 +175,7 @@ impl<T, L, E> SingleEffectPlugin<T, L, E> {
     }
 }
 
-impl<T, L, E> Plugin for SingleEffectPlugin<T, L, E>
+impl<T, L, E> Plugin for CharacterEffectPlugin<T, L, E>
 where
     T: Send + Sync + 'static,
     T: Debug + Clone + Copy + Eq + Hash,
@@ -147,7 +184,7 @@ where
     L: SystemLabel + Clone,
 
     E: Send + Sync + 'static,
-    E: Effect,
+    E: CharacterEffect,
     for<'w, 's> <E::Fetch as SystemParamFetch<'w, 's>>::Item: SystemParam<Fetch = E::Fetch>,
 {
     fn build(&self, app: &mut App) {
@@ -161,7 +198,43 @@ where
     }
 }
 
-/// Remove all the [`Effect`]s after they are applied.
+pub struct AbilityEffectPlugin<T, L, E> {
+    state: T,
+    label: L,
+    _effect: PhantomData<E>,
+}
+
+impl<T, L, E> AbilityEffectPlugin<T, L, E> {
+    fn new(state: T, label: L) -> Self {
+        Self {
+            state,
+            label,
+            _effect: PhantomData,
+        }
+    }
+}
+
+impl<T, L, E> Plugin for AbilityEffectPlugin<T, L, E>
+where
+    T: Send + Sync + 'static,
+    T: Debug + Clone + Copy + Eq + Hash,
+
+    L: Send + Sync + 'static,
+    L: SystemLabel + Clone,
+
+    E: Send + Sync + 'static,
+    E: AbilityEffect,
+{
+    fn build(&self, app: &mut App) {
+        let set = SystemSet::on_update(self.state)
+            .label(self.label.clone())
+            .with_system(apply_ability::<E>);
+
+        app.add_system_set(set);
+    }
+}
+
+/// Remove all the [`CharacterEffect`]s after they are applied.
 pub fn cleanup(query: Query<Entity, With<EffectMarker>>, mut commands: Commands) {
     for instance_id in query.iter() {
         info!("cleaning up instant effect");
@@ -169,7 +242,7 @@ pub fn cleanup(query: Query<Entity, With<EffectMarker>>, mut commands: Commands)
     }
 }
 
-/// Aggregate all the [`Effect`] subsystems.
+/// Aggregate all the [`CharacterEffect`] subsystems.
 pub struct EffectPlugin<T, L> {
     pub state: T,
     pub label: L,
@@ -185,13 +258,19 @@ where
 {
     fn build(&self, app: &mut App) {
         let damage_effects =
-            SingleEffectPlugin::<_, _, Damage>::new(self.state, self.label.clone());
+            CharacterEffectPlugin::<_, _, Damage>::new(self.state, self.label.clone());
         let power_burn_effects =
-            SingleEffectPlugin::<_, _, PowerBurn>::new(self.state, self.label.clone());
+            CharacterEffectPlugin::<_, _, PowerBurn>::new(self.state, self.label.clone());
         let trigger_global_cooldown_effects =
-            SingleEffectPlugin::<_, _, TriggerGlobalCooldown>::new(self.state, self.label.clone());
+            CharacterEffectPlugin::<_, _, TriggerGlobalCooldown>::new(
+                self.state,
+                self.label.clone(),
+            );
         let interupt_effects =
-            SingleEffectPlugin::<_, _, Interrupt>::new(self.state, self.label.clone());
+            CharacterEffectPlugin::<_, _, Interrupt>::new(self.state, self.label.clone());
+
+        let cooldown_effects =
+            AbilityEffectPlugin::<_, _, TriggerCooldown>::new(self.state, self.label.clone());
 
         let cleanup_set = SystemSet::on_update(self.state)
             .after(self.label.clone())
@@ -201,6 +280,7 @@ where
             .add_plugin(power_burn_effects)
             .add_plugin(trigger_global_cooldown_effects)
             .add_plugin(interupt_effects)
+            .add_plugin(cooldown_effects)
             .add_system_set(cleanup_set);
     }
 }

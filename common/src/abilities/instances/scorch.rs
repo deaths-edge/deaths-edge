@@ -22,7 +22,6 @@ pub struct ScorchEffects {
     damage: AtTarget<Damage>,
 
     power_cost: AtSelf<PowerBurn>,
-    trigger_global_cooldown: AtSelf<TriggerGlobalCooldown>,
 }
 
 #[derive(Debug, Clone, Bundle)]
@@ -63,8 +62,6 @@ impl Scorch {
 
             damage: AtTarget(Damage(DAMAGE)),
             power_cost: AtSelf(PowerBurn(POWER_COST)),
-
-            trigger_global_cooldown: AtSelf(TriggerGlobalCooldown),
         };
         let effect_command = DynCommand::insert_bundle(scorch_effects);
 

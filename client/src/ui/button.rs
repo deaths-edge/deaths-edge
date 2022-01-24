@@ -122,23 +122,31 @@ fn update_button_cooldown(
         let character_last_cast_instant = player_query.single();
 
         let opt_global_cooldown = if requires_query.get(*ability_id).is_ok() {
-            let finish = character_last_cast_instant.0 + GLOBAL_COOLDOWN;
-            let remaining = finish.saturating_duration_since(now);
-            let ratio = remaining.as_secs_f32() / GLOBAL_COOLDOWN.as_secs_f32();
+            if let Some(last_cast) = character_last_cast_instant.0 {
+                let finish = last_cast + GLOBAL_COOLDOWN;
+                let remaining = finish.saturating_duration_since(now);
+                let ratio = remaining.as_secs_f32() / GLOBAL_COOLDOWN.as_secs_f32();
 
-            Some((remaining, ratio))
+                Some((remaining, ratio))
+            } else {
+                None
+            }
         } else {
             None
         };
 
         let opt_cooldown =
             if let Ok((ability_last_cast_instant, cooldown)) = ability_query.get(*ability_id) {
-                let finish = ability_last_cast_instant.0 + cooldown.0;
-                let remaining = finish.saturating_duration_since(now);
+                if let Some(last_cast) = ability_last_cast_instant.0 {
+                    let finish = last_cast + cooldown.0;
+                    let remaining = finish.saturating_duration_since(now);
 
-                let ratio = remaining.as_secs_f32() / GLOBAL_COOLDOWN.as_secs_f32();
+                    let ratio = remaining.as_secs_f32() / cooldown.0.as_secs_f32();
 
-                Some((remaining, ratio))
+                    Some((remaining, ratio))
+                } else {
+                    None
+                }
             } else {
                 None
             };

@@ -26,7 +26,6 @@ impl ClassTrait for Mars {
         index: CharacterIndex,
         team: Team,
         transform: Transform,
-        last_cast_instant: Instant,
         abilities: Abilities,
         commands: &mut Commands,
     ) -> Entity {
@@ -61,7 +60,7 @@ impl ClassTrait for Mars {
             abilities,
 
             cast_state: CastState::default(),
-            last_cast_instant: LastCastInstant(last_cast_instant),
+            last_cast_instant: LastCastInstant::default(),
             target: OptionalTarget::default(),
         };
 

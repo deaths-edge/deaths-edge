@@ -1,23 +1,29 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 
 use crate::{
     abilities::{
-        effects::{AtSelf, AtTarget, Damage, EffectMarker, PowerBurn, TriggerGlobalCooldown},
+        effects::*,
         lifecycle::InstantBundle,
         obstructions::{
-            GlobalCooldown, MaximumRange, PowerCost, RequiresFov, RequiresLoS, RequiresStationary,
-            RequiresTarget, UseObstructions,
+            Cooldown, GlobalCooldown, MaximumRange, PowerCost, RequiresFov, RequiresLoS,
+            RequiresStationary, RequiresTarget, UseObstructions,
         },
         AbilityMarker,
     },
+    character::LastCastInstant,
     dyn_command::DynCommand,
 };
+
+const COOLDOWN: Duration = Duration::from_secs(8);
 
 #[derive(Bundle, Clone)]
 pub struct FireblastEffects {
     marker: EffectMarker,
 
     damage: AtTarget<Damage>,
+    cooldown: AtAbility<TriggerCooldown>,
 
     power_cost: AtSelf<PowerBurn>,
     trigger_global_cooldown: AtSelf<TriggerGlobalCooldown>,
@@ -28,6 +34,8 @@ pub struct Fireblast {
     marker: AbilityMarker,
 
     global_cooldown: GlobalCooldown,
+    cooldown: Cooldown,
+    last_cast: LastCastInstant,
 
     power_cost: PowerCost,
 
@@ -49,6 +57,7 @@ impl Fireblast {
             marker: EffectMarker,
 
             damage: AtTarget(Damage(25.0)),
+            cooldown: AtAbility(TriggerCooldown(COOLDOWN)),
 
             power_cost: AtSelf(PowerBurn(POWER_COST)),
             trigger_global_cooldown: AtSelf(TriggerGlobalCooldown),
@@ -59,6 +68,8 @@ impl Fireblast {
             marker: AbilityMarker,
 
             global_cooldown: GlobalCooldown,
+            cooldown: Cooldown(COOLDOWN),
+            last_cast: LastCastInstant::default(),
 
             power_cost: PowerCost(POWER_COST),
 

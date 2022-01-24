@@ -37,8 +37,6 @@ impl Plugin for SpawnPlugin {
 }
 
 pub fn spawn_characters(
-    time: Res<Time>,
-
     mut next_index: Local<CharacterIndex>,
     mut game_roster: ResMut<GameRoster>,
 
@@ -61,23 +59,11 @@ pub fn spawn_characters(
                 address: ClientAddress(new_address),
             };
             let character_id = match permit.class {
-                Class::Mars => Mars::spawn(
-                    *next_index,
-                    permit.team,
-                    transform,
-                    time.startup(),
-                    &mut commands,
-                ),
+                Class::Mars => Mars::spawn(*next_index, permit.team, transform, &mut commands),
                 Class::Pluto => todo!(),
                 Class::Mammon => todo!(),
                 Class::Nergal => todo!(),
-                Class::Medea => Medea::spawn(
-                    *next_index,
-                    permit.team,
-                    transform,
-                    time.startup(),
-                    &mut commands,
-                ),
+                Class::Medea => Medea::spawn(*next_index, permit.team, transform, &mut commands),
                 Class::Janus => todo!(),
                 Class::Borvo => todo!(),
                 Class::Heka => todo!(),

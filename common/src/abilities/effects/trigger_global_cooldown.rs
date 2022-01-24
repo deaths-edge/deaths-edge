@@ -2,12 +2,12 @@ use bevy::prelude::*;
 
 use crate::character::LastCastInstant;
 
-use super::Effect;
+use super::CharacterEffect;
 
 #[derive(Default, Debug, Clone, Component)]
 pub struct TriggerGlobalCooldown;
 
-impl Effect for TriggerGlobalCooldown {
+impl CharacterEffect for TriggerGlobalCooldown {
     type Domain<'a> = &'a mut LastCastInstant;
 
     type Param<'w, 's> = ();
@@ -22,6 +22,6 @@ impl Effect for TriggerGlobalCooldown {
     ) {
         info!("applying global cooldown");
         let now = time.last_update().expect("last cast instant");
-        *item = LastCastInstant(now);
+        *item = LastCastInstant(Some(now));
     }
 }

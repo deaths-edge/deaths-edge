@@ -1,8 +1,8 @@
-use bevy::{ecs::system::EntityCommands, prelude::*, utils::Instant};
+use bevy::{prelude::*, utils::Instant};
 use heron::prelude::*;
 
 use crate::{
-    abilities::{instances, obstructions::UseObstructions, AbilityId, Source},
+    abilities::instances,
     character::{
         Abilities, CastState, CharacterBundle, CharacterIndex, CharacterMarker, Controls, Health,
         LastCastInstant, OptionalTarget, Power, PowerRegenerate, SpeedMultiplier, Team,
@@ -28,7 +28,6 @@ impl ClassTrait for Medea {
         index: CharacterIndex,
         team: Team,
         transform: Transform,
-        last_cast_instant: Instant,
         abilities: Abilities,
         commands: &mut Commands,
     ) -> Entity {
@@ -63,7 +62,7 @@ impl ClassTrait for Medea {
             abilities,
 
             cast_state: CastState::default(),
-            last_cast_instant: LastCastInstant(last_cast_instant),
+            last_cast_instant: LastCastInstant::default(),
             target: OptionalTarget::default(),
         };
 

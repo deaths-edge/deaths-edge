@@ -25,7 +25,7 @@ where
         let set = SystemSet::on_update(self.state)
             .label(self.label.clone())
             .with_system(spawn_complete_cast)
-            .with_system(despawn_failed_cast)
+            .with_system(despawn_cast)
             .with_system(cast_complete)
             .with_system(cast_movement_interrupt);
         app.add_system_set(set);

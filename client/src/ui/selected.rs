@@ -32,16 +32,20 @@ fn spawn_selection(mut commands: Commands) {
 }
 
 fn select_changed(
-    player_query: Query<(&OptionalTarget, &Sprite), (With<PlayerMarker>, Changed<OptionalTarget>)>,
+    player_query: Query<&OptionalTarget, (With<PlayerMarker>, Changed<OptionalTarget>)>,
+    char_query: Query<&Sprite, (With<CharacterMarker>, Without<SelectionMarker>)>,
     mut select_query: Query<
         (&mut OptionalTarget, &mut Visibility, &mut Sprite),
         (With<SelectionMarker>, Without<PlayerMarker>),
     >,
 ) {
-    if let Ok((player_target, player_sprite)) = player_query.get_single() {
+    if let Ok(player_target) = player_query.get_single() {
         let (mut select_target, mut visibility, mut select_sprite) = select_query.single_mut();
         *select_target = *player_target;
-        select_sprite.custom_size = player_sprite.custom_size.map(|x| x * 1.2);
+        if let Some(target_id) = player_target.0 {
+            let target_sprite = char_query.get(target_id.0).expect("failed to find target");
+            select_sprite.custom_size = target_sprite.custom_size.map(|x| x * 1.2);
+        }
 
         visibility.is_visible = player_target.0.is_some();
     }

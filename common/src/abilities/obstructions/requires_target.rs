@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use super::{CastOrAbilityFilter, Obstruction, UseObstructions};
 use crate::{
-    abilities::{AbilityMarker, Source},
+    abilities::Source,
     character::{CharacterMarker, OptionalTarget, Team},
 };
 

@@ -20,11 +20,17 @@ pub fn check_global_cooldown(
 ) {
     let last_update = time.last_update().expect("cannot find last update");
 
-    for (source, mut obstructions) in ability_query.iter_mut() {
+    for (Source(source), mut obstructions) in ability_query.iter_mut() {
         let last_cast = character_query
-            .get(source.0)
+            .get(*source)
             .expect("failed to find character");
-        if last_cast.0 + GLOBAL_COOLDOWN < last_update {
+        let last_cast = if let Some(last_cast) = last_cast.0 {
+            last_cast
+        } else {
+            continue;
+        };
+
+        if last_cast + GLOBAL_COOLDOWN < last_update {
             obstructions.0.remove(&Obstruction::GlobalCooldown);
         } else {
             obstructions.0.insert(Obstruction::GlobalCooldown);

@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
-use super::Effect;
+use super::CharacterEffect;
 use crate::character::Power;
 
 #[derive(Default, Debug, Clone, Component)]
 pub struct PowerBurn(pub f32);
 
-impl Effect for PowerBurn {
+impl CharacterEffect for PowerBurn {
     type Domain<'a> = &'a mut Power;
 
     type Param<'w, 's> = ();

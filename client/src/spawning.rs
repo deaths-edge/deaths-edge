@@ -16,8 +16,6 @@ pub const SPAWN_CHARACTER_LABEL: &str = "spawn-characters";
 
 /// Listen for [`SpawnCharacter`] event, adding characters
 pub fn spawn_characters(
-    time: Res<Time>,
-
     mut spawn_reader: EventReader<SpawnCharacter>,
 
     mut player_state: ResMut<State<PlayerState>>,
@@ -33,7 +31,6 @@ pub fn spawn_characters(
                     spawn_event.index,
                     spawn_event.team,
                     transform,
-                    time.startup(),
                     &mut commands,
                 );
                 let mut entity_commands = commands.entity(character_id);
@@ -45,7 +42,6 @@ pub fn spawn_characters(
                     spawn_event.index,
                     spawn_event.team,
                     transform,
-                    time.startup(),
                     &mut commands,
                 );
                 let mut entity_commands = commands.entity(character_id);

@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use super::Effect;
+use super::CharacterEffect;
 use crate::{
     abilities::{
         lifecycle::{CastMarker, Failed},
@@ -17,7 +17,7 @@ pub struct Interrupt(pub Duration);
 type SchoolClassify = (With<Fire>, With<Frost>, With<Nature>);
 type InterruptableFilter = (With<CastMarker>, With<Interruptable>);
 
-impl Effect for Interrupt {
+impl CharacterEffect for Interrupt {
     type Domain<'a> = (Entity, &'a mut CastState);
 
     type Param<'w, 's> = Query<'w, 's, SchoolClassify, InterruptableFilter>;
