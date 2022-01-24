@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use super::CharacterEffect;
-use crate::character::Health;
+use crate::{abilities::AbilityId, character::Health};
 
 #[derive(Default, Debug, Clone, Component)]
 pub struct Damage(pub f32);
@@ -15,6 +15,7 @@ impl CharacterEffect for Damage {
     fn apply(
         &self,
         _time: &Time,
+        _ability_id: &AbilityId,
         mut item: Mut<'_, Health>,
         _param: &(),
         _commands: &mut Commands,

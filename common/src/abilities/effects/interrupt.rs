@@ -7,6 +7,7 @@ use crate::{
     abilities::{
         lifecycle::{CastMarker, Failed},
         magic_school::*,
+        AbilityId,
     },
     character::{CastState, Interrupted},
 };
@@ -26,6 +27,7 @@ impl CharacterEffect for Interrupt {
     fn apply(
         &self,
         time: &Time,
+        _ability_id: &AbilityId,
         (character_id, mut cast_state): (Entity, Mut<'_, CastState>),
         schools: &Query<SchoolClassify, InterruptableFilter>,
         commands: &mut Commands,

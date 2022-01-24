@@ -44,8 +44,6 @@ impl Ability {
 /// Receives an [`Ability`] and performs the associated ability.
 // TODO: Split this into two systems? Instant/CastBundle
 pub fn character_ability(
-    time: Res<Time>,
-
     // Ability events
     mut events: EventReader<CharacterEntityAction<Ability>>,
 
@@ -64,7 +62,6 @@ pub fn character_ability(
 
     mut commands: Commands,
 ) {
-    let now = time.last_update().expect("failed to find last update");
     for action in events.iter() {
         let (character_id, abilities, opt_target, mut cast_state) = character_query
             .get_mut(action.id())
@@ -106,12 +103,7 @@ pub fn character_ability(
             let mut entity_commands = commands.spawn();
             cast_bundle_fn.0.apply(&mut entity_commands);
 
-            let cast_id = snapshot(entity_commands);
-            let cast = Cast {
-                start: now,
-                cast_id,
-            };
-            cast_state.0 = Some(cast);
+            snapshot(entity_commands);
         }
     }
 }

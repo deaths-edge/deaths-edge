@@ -12,7 +12,7 @@ use crate::{
 };
 
 /// Requires that the target is in LoS.
-#[derive(Default, Debug, Component)]
+#[derive(Default, Clone, Debug, Component)]
 pub struct RequiresLoS;
 
 #[derive(Debug)]

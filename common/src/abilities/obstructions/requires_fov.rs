@@ -9,7 +9,7 @@ use crate::{
 };
 
 /// Requires that target is in Field of View.
-#[derive(Default, Debug, Component)]
+#[derive(Default, Clone, Debug, Component)]
 pub struct RequiresFov;
 
 pub struct OutOfFieldOfView(pub f32);

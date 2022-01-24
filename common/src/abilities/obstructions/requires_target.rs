@@ -7,7 +7,7 @@ use crate::{
 };
 
 /// Ability requires a target.
-#[derive(Debug, Component)]
+#[derive(Debug, Clone, Component)]
 pub enum RequiresTarget {
     Enemy,
     Ally,

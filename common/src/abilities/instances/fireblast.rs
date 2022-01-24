@@ -7,8 +7,8 @@ use crate::{
         effects::*,
         lifecycle::InstantBundle,
         obstructions::{
-            Cooldown, GlobalCooldown, MaximumRange, PowerCost, RequiresFov, RequiresLoS,
-            RequiresStationary, RequiresTarget, UseObstructions,
+            CantWhileCasting, Cooldown, GlobalCooldown, MaximumRange, PowerCost, RequiresFov,
+            RequiresLoS, RequiresStationary, RequiresTarget, UseObstructions,
         },
         AbilityMarker,
     },
@@ -44,6 +44,7 @@ pub struct Fireblast {
     requires_fov: RequiresFov,
     requires_los: RequiresLoS,
     max_range: MaximumRange,
+    cant_while_casting: CantWhileCasting,
     obstructions: UseObstructions,
 
     instant_bundle: InstantBundle,
@@ -78,6 +79,7 @@ impl Fireblast {
             requires_fov: RequiresFov,
             requires_los: RequiresLoS,
             max_range: MaximumRange(500.0),
+            cant_while_casting: CantWhileCasting,
             obstructions: UseObstructions::default(),
 
             instant_bundle: InstantBundle(command),

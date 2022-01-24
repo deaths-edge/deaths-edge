@@ -7,7 +7,7 @@ use crate::{
         obstructions::{RequiresStationary, UseObstructions},
         AbilityId, Source, Target,
     },
-    character::{CastState, CharacterEntityAction, CharacterMarker, Motion},
+    character::{Cast, CastState, CharacterEntityAction, CharacterMarker, Motion},
     dyn_command::DynCommand,
 };
 
@@ -27,18 +27,19 @@ pub struct Complete;
 
 pub fn spawn_complete_cast(
     cast_query: Query<
-        (Entity, &Source, Option<&Target>, Option<&InstantBundle>),
+        (&AbilityId, &Source, Option<&Target>, Option<&InstantBundle>),
         (With<CastMarker>, With<Complete>),
     >,
 
     mut commands: Commands,
 ) {
-    for (cast_id, source, opt_target, instant_bundle) in cast_query.iter() {
-        commands.entity(cast_id).despawn();
-
+    for (ability_id, source, opt_target, instant_bundle) in cast_query.iter() {
         if let Some(instant_bundle) = instant_bundle {
             let mut entity_commands = commands.spawn();
             instant_bundle.0.apply(&mut entity_commands);
+
+            // Snapshot ability id
+            entity_commands.insert(*ability_id);
 
             // Snapshot target from cast
             if let Some(target) = opt_target {
@@ -71,22 +72,46 @@ pub fn despawn_cast(
     }
 }
 
+/// Anchors new casts to cast state.
+pub fn anchor_cast(
+    time: Res<Time>,
+    cast_query: Query<(Entity, &Source), Added<CastMarker>>,
+    mut character_query: Query<&mut CastState, With<CharacterMarker>>,
+) {
+    let now = time.last_update().expect("failed to find last update");
+
+    for (cast_id, Source(source)) in cast_query.iter() {
+        let mut cast_state = character_query
+            .get_mut(*source)
+            .expect("failed to find character");
+        let cast = Cast {
+            start: now,
+            cast_id,
+        };
+
+        if cast_state.0.is_some() {
+            panic!("cannot cast while casting");
+        }
+
+        cast_state.0 = Some(cast);
+    }
+}
+
 /// Checks if cast has completed.
 pub fn cast_complete(
     time: Res<Time>,
 
     cast_query: Query<
-        (&AbilityId, &CastDuration, &Source),
+        (&CastDuration, &UseObstructions, &Source),
         (With<CastMarker>, Without<Failed>, Without<Complete>),
     >,
     mut character_query: Query<&CastState, With<CharacterMarker>>,
-    ability_query: Query<&UseObstructions>,
 
     mut commands: Commands,
 ) {
     let now = time.last_update().expect("cannot find last update");
 
-    for (ability_id, duration, source) in cast_query.iter() {
+    for (duration, obstructions, source) in cast_query.iter() {
         let cast_state = character_query
             .get_mut(source.0)
             .expect("failed to find character");
@@ -94,9 +119,6 @@ pub fn cast_complete(
         let end = cast.start + duration.0;
 
         if end < now {
-            let obstructions = ability_query
-                .get(ability_id.0)
-                .expect("failed to find ability");
             let obstructed = !obstructions.0.is_empty();
 
             if !obstructed {

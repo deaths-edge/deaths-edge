@@ -50,6 +50,7 @@ where
     fn apply(
         &self,
         time: &Time,
+        ability_id: &AbilityId,
         item: <<Self::Domain<'_> as WorldQuery>::Fetch as Fetch>::Item,
         param: &<Self::Fetch as SystemParamFetch>::Item,
         commands: &mut Commands,
@@ -96,7 +97,7 @@ pub struct AtTarget<T>(pub T);
 /// Applies an [`CharacterEffect`] to some target.
 pub fn apply_effect_target<E>(
     time: Res<Time>,
-    effect_query: Query<(&AtTarget<E>, &Target), With<EffectMarker>>,
+    effect_query: Query<(&AbilityId, &AtTarget<E>, &Target), With<EffectMarker>>,
     mut character_query: Query<<E as CharacterEffect>::Domain<'_>, With<CharacterMarker>>,
     sys_param: <E::Fetch as SystemParamFetch>::Item,
 
@@ -106,11 +107,11 @@ pub fn apply_effect_target<E>(
     E: CharacterEffect,
     for<'w, 's> <E::Fetch as SystemParamFetch<'w, 's>>::Item: SystemParam<Fetch = E::Fetch>,
 {
-    for (AtTarget(effect), Target(target)) in effect_query.iter() {
+    for (ability_id, AtTarget(effect), Target(target)) in effect_query.iter() {
         let item = character_query
             .get_mut(*target)
             .expect("failed to find target");
-        effect.apply(&time, item, &sys_param, &mut commands);
+        effect.apply(&time, ability_id, item, &sys_param, &mut commands);
     }
 }
 
@@ -121,7 +122,7 @@ pub struct AtSelf<T>(pub T);
 /// Applies an [`CharacterEffect`] to self.
 pub fn apply_effect_self<E>(
     time: Res<Time>,
-    effect_query: Query<(&AtSelf<E>, &Source), With<EffectMarker>>,
+    effect_query: Query<(&AbilityId, &AtSelf<E>, &Source), With<EffectMarker>>,
     mut character_query: Query<<E as CharacterEffect>::Domain<'_>, With<CharacterMarker>>,
     sys_param: EffectParamItem<'_, '_, E>,
 
@@ -131,11 +132,11 @@ pub fn apply_effect_self<E>(
     E: CharacterEffect,
     for<'w, 's> EffectParamItem<'w, 's, E>: SystemParam<Fetch = E::Fetch>,
 {
-    for (AtSelf(effect), Source(source)) in effect_query.iter() {
+    for (ability_id, AtSelf(effect), Source(source)) in effect_query.iter() {
         let item = character_query
             .get_mut(*source)
             .expect("failed to find target");
-        effect.apply(&time, item, &sys_param, &mut commands);
+        effect.apply(&time, ability_id, item, &sys_param, &mut commands);
     }
 }
 

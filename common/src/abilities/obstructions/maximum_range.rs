@@ -7,7 +7,7 @@ use crate::{
 };
 
 /// Ability has a maximum range.
-#[derive(Default, Debug, Component)]
+#[derive(Default, Clone, Debug, Component)]
 pub struct MaximumRange(pub f32);
 
 pub fn check_maximum_range(

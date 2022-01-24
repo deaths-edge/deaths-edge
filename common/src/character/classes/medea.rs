@@ -1,4 +1,4 @@
-use bevy::{prelude::*, utils::Instant};
+use bevy::prelude::*;
 use heron::prelude::*;
 
 use crate::{

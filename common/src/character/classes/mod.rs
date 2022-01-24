@@ -3,7 +3,7 @@ pub mod medea;
 
 use std::fmt;
 
-use bevy::{prelude::*, utils::Instant};
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::abilities::{AbilityId, Source};
