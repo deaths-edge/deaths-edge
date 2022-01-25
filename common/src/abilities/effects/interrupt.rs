@@ -15,7 +15,11 @@ use crate::{
 #[derive(Default, Debug, Clone, Component)]
 pub struct Interrupt(pub Duration);
 
-type SchoolClassify = (With<Fire>, With<Frost>, With<Nature>);
+type SchoolClassify = (
+    Option<&'static Fire>,
+    Option<&'static Frost>,
+    Option<&'static Nature>,
+);
 type InterruptableFilter = (With<CastMarker>, With<Interruptable>);
 
 impl CharacterEffect for Interrupt {
@@ -28,7 +32,7 @@ impl CharacterEffect for Interrupt {
         &self,
         time: &Time,
         _ability_id: &AbilityId,
-        (character_id, mut cast_state): (Entity, Mut<'_, CastState>),
+        (character_id, cast_state): (Entity, Mut<'_, CastState>),
         schools: &Query<SchoolClassify, InterruptableFilter>,
         commands: &mut Commands,
     ) {
@@ -39,25 +43,25 @@ impl CharacterEffect for Interrupt {
             return;
         };
 
-        let until = time.last_update().expect("failed to find last update");
+        let now = time.last_update().expect("failed to find last update");
+        let until = now + self.0;
 
         if let Ok((is_fire, is_frost, is_nature)) = schools.get(cast_id) {
             let mut entity_commands = commands.entity(character_id);
 
-            if is_fire {
-                entity_commands.insert(Interrupted::<Fire>::new(until));
+            if is_fire.is_some() {
+                entity_commands.insert(Interrupted::<Fire>::new(now, until));
             }
 
-            if is_frost {
-                entity_commands.insert(Interrupted::<Frost>::new(until));
+            if is_frost.is_some() {
+                entity_commands.insert(Interrupted::<Frost>::new(now, until));
             }
 
-            if is_nature {
-                entity_commands.insert(Interrupted::<Nature>::new(until));
+            if is_nature.is_some() {
+                entity_commands.insert(Interrupted::<Nature>::new(now, until));
             }
 
             commands.entity(cast_id).insert(Failed);
-            cast_state.0 = None;
         }
     }
 }

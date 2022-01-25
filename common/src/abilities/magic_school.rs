@@ -8,16 +8,16 @@ use super::{
 };
 use crate::character::{Abilities, CharacterMarker, Interrupted};
 
-#[derive(Debug, Default, Component)]
+#[derive(Debug, Default, Clone, Component)]
 pub struct Fire;
 
-#[derive(Debug, Default, Component)]
+#[derive(Debug, Default, Clone, Component)]
 pub struct Frost;
 
-#[derive(Debug, Default, Component)]
+#[derive(Debug, Default, Clone, Component)]
 pub struct Nature;
 
-#[derive(Debug, Default, Component)]
+#[derive(Debug, Default, Clone, Component)]
 pub struct Interruptable;
 
 pub fn check_lock<School: Component>(

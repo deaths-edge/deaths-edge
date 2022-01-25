@@ -5,14 +5,14 @@ use bevy::prelude::*;
 use super::{Obstruction, UseObstructions};
 use crate::{abilities::AbilityMarker, character::LastCastInstant};
 
-/// Ability has a cooldown (distinct from [`GlobalCooldown`](super::GlobalCooldown)).
+/// Ability has a cooldown (distinct from [`OnGlobalCooldown`](super::OnGlobalCooldown)).
 #[derive(Debug, Clone, Component)]
-pub struct Cooldown(pub Duration);
+pub struct OnCooldown(pub Duration);
 
 pub fn check_cooldown(
     time: Res<Time>,
     mut ability_query: Query<
-        (&Cooldown, &LastCastInstant, &mut UseObstructions),
+        (&OnCooldown, &LastCastInstant, &mut UseObstructions),
         With<AbilityMarker>,
     >,
 ) {
@@ -25,9 +25,9 @@ pub fn check_cooldown(
             continue;
         };
         if last_cast + cooldown.0 < last_update {
-            obstructions.0.remove(&Obstruction::Cooldown);
+            obstructions.0.remove(&Obstruction::OnCooldown);
         } else {
-            obstructions.0.insert(Obstruction::Cooldown);
+            obstructions.0.insert(Obstruction::OnCooldown);
         }
     }
 }

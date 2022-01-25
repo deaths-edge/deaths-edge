@@ -8,7 +8,7 @@ use crate::{
         obstructions::UseObstructions,
         AbilityMarker, Source,
     },
-    character::{Abilities, Cast, CastState, CharacterMarker, OptionalTarget},
+    character::{Abilities, CharacterMarker, OptionalTarget},
 };
 
 use super::CharacterEntityAction;
@@ -47,10 +47,7 @@ pub fn character_ability(
     // Ability events
     mut events: EventReader<CharacterEntityAction<Ability>>,
 
-    mut character_query: Query<
-        (Entity, &Abilities, &OptionalTarget, &mut CastState),
-        With<CharacterMarker>,
-    >,
+    mut character_query: Query<(Entity, &Abilities, &OptionalTarget), With<CharacterMarker>>,
     ability_query: Query<
         (
             &UseObstructions,
@@ -63,7 +60,7 @@ pub fn character_ability(
     mut commands: Commands,
 ) {
     for action in events.iter() {
-        let (character_id, abilities, opt_target, mut cast_state) = character_query
+        let (character_id, abilities, opt_target) = character_query
             .get_mut(action.id())
             .expect("character not found");
 

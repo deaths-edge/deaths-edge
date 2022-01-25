@@ -1,4 +1,4 @@
-use std::net::SocketAddr;
+use std::{fmt::Debug, net::SocketAddr};
 
 use bevy::{core::FixedTimestep, prelude::*};
 
@@ -55,7 +55,7 @@ fn process_command<'a, T>(
     command_writer: &mut EventWriter<CharacterEntityAction<T>>,
 ) -> Result<(), CharacterNotFound>
 where
-    T: Send + Sync + std::fmt::Debug + 'static,
+    T: Send + Sync + Debug + 'static,
 {
     info!(message = "sending entity", ?action);
 
@@ -159,7 +159,7 @@ pub fn relay_character_commands<T>(
     mut net: ResMut<NetworkResource>,
 ) where
     T: Send + Sync + 'static,
-    T: Clone + std::fmt::Debug,
+    T: Clone + Debug,
     CharacterNetworkAction<T>: Into<CharacterAction>,
 {
     for action in character_entity_reader.iter() {

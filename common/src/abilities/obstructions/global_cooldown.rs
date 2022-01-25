@@ -8,14 +8,14 @@ use crate::{
 
 /// Ability requires a global cooldown.
 #[derive(Default, Debug, Component)]
-pub struct GlobalCooldown;
+pub struct OnGlobalCooldown;
 
 pub fn check_global_cooldown(
     character_query: Query<&LastCastInstant, With<CharacterMarker>>,
     time: Res<Time>,
     mut ability_query: Query<
         (&Source, &mut UseObstructions),
-        (CastOrAbilityFilter, With<GlobalCooldown>),
+        (CastOrAbilityFilter, With<OnGlobalCooldown>),
     >,
 ) {
     let last_update = time.last_update().expect("cannot find last update");
@@ -31,9 +31,9 @@ pub fn check_global_cooldown(
         };
 
         if last_cast + GLOBAL_COOLDOWN < last_update {
-            obstructions.0.remove(&Obstruction::GlobalCooldown);
+            obstructions.0.remove(&Obstruction::OnGlobalCooldown);
         } else {
-            obstructions.0.insert(Obstruction::GlobalCooldown);
+            obstructions.0.insert(Obstruction::OnGlobalCooldown);
         }
     }
 }

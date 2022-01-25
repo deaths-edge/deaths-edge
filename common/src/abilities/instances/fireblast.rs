@@ -7,7 +7,7 @@ use crate::{
         effects::*,
         lifecycle::InstantBundle,
         obstructions::{
-            CantWhileCasting, Cooldown, GlobalCooldown, MaximumRange, PowerCost, RequiresFov,
+            CantWhileCasting, MaximumRange, OnCooldown, OnGlobalCooldown, PowerCost, RequiresFov,
             RequiresLoS, RequiresStationary, RequiresTarget, UseObstructions,
         },
         AbilityMarker,
@@ -33,8 +33,10 @@ pub struct FireblastEffects {
 pub struct Fireblast {
     marker: AbilityMarker,
 
-    global_cooldown: GlobalCooldown,
-    cooldown: Cooldown,
+    instant_bundle: InstantBundle,
+
+    global_cooldown: OnGlobalCooldown,
+    cooldown: OnCooldown,
     last_cast: LastCastInstant,
 
     power_cost: PowerCost,
@@ -45,9 +47,8 @@ pub struct Fireblast {
     requires_los: RequiresLoS,
     max_range: MaximumRange,
     cant_while_casting: CantWhileCasting,
-    obstructions: UseObstructions,
 
-    instant_bundle: InstantBundle,
+    obstructions: UseObstructions,
 }
 
 impl Fireblast {
@@ -68,8 +69,8 @@ impl Fireblast {
         Self {
             marker: AbilityMarker,
 
-            global_cooldown: GlobalCooldown,
-            cooldown: Cooldown(COOLDOWN),
+            global_cooldown: OnGlobalCooldown,
+            cooldown: OnCooldown(COOLDOWN),
             last_cast: LastCastInstant::default(),
 
             power_cost: PowerCost(POWER_COST),

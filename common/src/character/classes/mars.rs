@@ -69,23 +69,16 @@ impl ClassTrait for Mars {
     }
 
     fn spawn_abilities(commands: &mut Commands) -> [Entity; 8] {
-        let fireblast_id = commands
+        let pummel_id = commands
             .spawn()
-            .insert_bundle(instances::Fireblast::new())
+            .insert_bundle(instances::Pummel::new())
             .id();
         let scorch_id = commands
             .spawn()
             .insert_bundle(instances::Scorch::new())
             .id();
         [
-            fireblast_id,
-            scorch_id,
-            scorch_id,
-            scorch_id,
-            scorch_id,
-            scorch_id,
-            scorch_id,
-            scorch_id,
+            pummel_id, scorch_id, scorch_id, scorch_id, scorch_id, scorch_id, scorch_id, scorch_id,
         ]
     }
 }

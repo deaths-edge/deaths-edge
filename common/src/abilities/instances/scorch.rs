@@ -6,8 +6,9 @@ use crate::{
     abilities::{
         effects::{AtSelf, AtTarget, Damage, EffectMarker, PowerBurn, TriggerGlobalCooldown},
         lifecycle::{CastBundle, CastDuration, CastMarker, InstantBundle},
+        magic_school::{Fire, Interruptable},
         obstructions::{
-            CantWhileCasting, GlobalCooldown, MaximumRange, PowerCost, RequiresFov, RequiresLoS,
+            CantWhileCasting, MaximumRange, OnGlobalCooldown, PowerCost, RequiresFov, RequiresLoS,
             RequiresStationary, RequiresTarget, UseObstructions,
         },
         AbilityMarker,
@@ -28,13 +29,18 @@ pub struct ScorchEffects {
 #[derive(Debug, Clone, Bundle)]
 pub struct ScorchCast {
     marker: CastMarker,
+
     duration: CastDuration,
+
+    fire_school: Fire,
+    interruptable: Interruptable,
 
     requires_target: RequiresTarget,
     requires_stationary: RequiresStationary,
     requires_fov: RequiresFov,
     requires_los: RequiresLoS,
     max_range: MaximumRange,
+
     obstructions: UseObstructions,
 
     instant_bundle: InstantBundle,
@@ -44,7 +50,10 @@ pub struct ScorchCast {
 pub struct Scorch {
     marker: AbilityMarker,
 
-    global_cooldown: GlobalCooldown,
+    global_cooldown: OnGlobalCooldown,
+    cant_while_casting: CantWhileCasting,
+
+    fire_school: Fire,
     power_cost: PowerCost,
 
     requires_target: RequiresTarget,
@@ -52,7 +61,7 @@ pub struct Scorch {
     requires_fov: RequiresFov,
     requires_los: RequiresLoS,
     max_range: MaximumRange,
-    cant_while_casting: CantWhileCasting,
+
     obstructions: UseObstructions,
 
     cast_bundle: CastBundle,
@@ -80,6 +89,9 @@ impl Scorch {
             duration: CastDuration(CAST_DURATION),
             instant_bundle: InstantBundle(effect_command),
 
+            fire_school: Fire,
+            interruptable: Interruptable,
+
             requires_target: RequiresTarget::Enemy,
             requires_stationary: RequiresStationary,
             requires_fov: RequiresFov,
@@ -92,8 +104,10 @@ impl Scorch {
         Self {
             marker: AbilityMarker,
 
-            global_cooldown: GlobalCooldown,
+            global_cooldown: OnGlobalCooldown,
+            cant_while_casting: CantWhileCasting,
 
+            fire_school: Fire,
             power_cost: PowerCost(POWER_COST),
 
             requires_target: RequiresTarget::Enemy,
@@ -101,7 +115,7 @@ impl Scorch {
             requires_fov: RequiresFov,
             requires_los: RequiresLoS,
             max_range: MaximumRange(MAX_RANGE),
-            cant_while_casting: CantWhileCasting,
+
             obstructions: UseObstructions::default(),
 
             cast_bundle: CastBundle(scorch_cast_command),

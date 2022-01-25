@@ -77,6 +77,7 @@ where
     fn build(&self, app: &mut App) {
         let regenerate = SystemSet::on_update(self.state).with_system(regenerate_power);
         app.add_system_set(regenerate)
-            .add_plugin(CharacterEntityActionPlugin::new(self.state));
+            .add_plugin(CharacterEntityActionPlugin::new(self.state))
+            .add_plugin(InterruptedPlugin { state: self.state });
     }
 }

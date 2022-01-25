@@ -36,8 +36,8 @@ pub enum Obstruction {
     OutOfLoS,
     NoTarget,
     IncorrectTarget,
-    Cooldown,
-    GlobalCooldown,
+    OnCooldown,
+    OnGlobalCooldown,
     NonStationary,
     Locked,
     Casting,
@@ -68,7 +68,7 @@ where
             .with_system(check_required_stationary)
             // Resource obstructions
             .with_system(check_power_cost)
-            // Cooldown obstructions
+            // OnCooldown obstructions
             .with_system(check_global_cooldown)
             .with_system(check_cooldown)
             // Casting obstructions
