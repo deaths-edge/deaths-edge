@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::{
     abilities::{
         effects::{AtSelf, AtTarget, Damage, EffectMarker, PowerBurn, TriggerGlobalCooldown},
-        lifecycle::{CastBundle, CastMarker, InstantBundle, InstantEffect},
+        lifecycle::{Cast, CastMarker, InstantEffect, InstantEffects},
         magic_school::{Fire, Interruptable},
         obstructions::{
             CantWhileCasting, MaximumRange, OnGlobalCooldown, PowerCost, RequiresFov, RequiresLoS,
@@ -42,7 +42,7 @@ pub struct ScorchCast {
 
     obstructions: UseObstructions,
 
-    instant_bundle: InstantBundle,
+    instant_bundle: InstantEffects,
 }
 
 #[derive(Bundle)]
@@ -63,7 +63,7 @@ pub struct Scorch {
 
     obstructions: UseObstructions,
 
-    cast_bundle: CastBundle,
+    cast_bundle: Cast,
 }
 
 impl Scorch {
@@ -86,7 +86,7 @@ impl Scorch {
 
         let scorch_cast = ScorchCast {
             marker: CastMarker,
-            instant_bundle: InstantBundle(effect_command),
+            instant_bundle: InstantEffects(effect_command),
 
             fire_school: Fire,
             interruptable: Interruptable,
@@ -117,7 +117,7 @@ impl Scorch {
 
             obstructions: UseObstructions::default(),
 
-            cast_bundle: CastBundle {
+            cast_bundle: Cast {
                 command: scorch_cast_command,
                 duration: CAST_DURATION,
             },

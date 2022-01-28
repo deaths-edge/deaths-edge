@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use common::{
-    abilities::lifecycle::{CastDuration, CastMarker},
-    character::{Cast, CastState, CharacterMarker},
+    abilities::lifecycle::{CastMarker, TotalDuration},
+    character::{CastRef, CastState, CharacterMarker},
 };
 
 use super::{NameplateMarker, NameplateParent};
@@ -36,7 +36,7 @@ impl CastBarBundle {
 pub fn cast_bar_update(
     time: Res<Time>,
     mut cast_bar_query: Query<(&Parent, &mut Style), With<CastBarMarker>>,
-    cast_query: Query<&CastDuration, With<CastMarker>>,
+    cast_query: Query<&TotalDuration, With<CastMarker>>,
     nameplate_query: Query<&NameplateParent, With<NameplateMarker>>,
     character_query: Query<&CastState, With<CharacterMarker>>,
 ) {
@@ -49,7 +49,7 @@ pub fn cast_bar_update(
             .map(|character_cast_state| character_cast_state.0.as_ref());
 
         match character_cast {
-            Ok(Some(Cast { start, cast_id })) => {
+            Ok(Some(CastRef { start, cast_id })) => {
                 cast_bar_style.display = Display::Flex;
 
                 let total_cast_duration = cast_query

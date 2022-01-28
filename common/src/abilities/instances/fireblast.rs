@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::{
     abilities::{
         effects::*,
-        lifecycle::{InstantBundle, InstantEffect},
+        lifecycle::{InstantEffect, InstantEffects, StatusMarker},
         magic_school::Fire,
         obstructions::{
             CantWhileCasting, MaximumRange, OnCooldown, OnGlobalCooldown, PowerCost, RequiresFov,
@@ -20,12 +20,20 @@ use crate::{
 const COOLDOWN: Duration = Duration::from_secs(8);
 
 #[derive(Bundle, Clone)]
+pub struct FireblastStatus {
+    status_marker: StatusMarker,
+
+    dot: AtTarget<Dot>,
+}
+
+#[derive(Bundle, Clone)]
 pub struct FireblastEffects {
     instant_marker: InstantEffect,
     effect_marker: EffectMarker,
 
     damage: AtTarget<Damage>,
     cooldown: AtAbility<TriggerCooldown>,
+    apply_status: AtTarget<ApplyStatus>,
 
     power_cost: AtSelf<PowerBurn>,
     trigger_global_cooldown: AtSelf<TriggerGlobalCooldown>,
@@ -35,7 +43,7 @@ pub struct FireblastEffects {
 pub struct Fireblast {
     marker: AbilityMarker,
 
-    instant_bundle: InstantBundle,
+    instant_bundle: InstantEffects,
 
     global_cooldown: OnGlobalCooldown,
     cooldown: OnCooldown,
@@ -58,12 +66,20 @@ impl Fireblast {
     pub fn new() -> Self {
         const POWER_COST: f32 = 20.0;
 
+        let fireblast_status = FireblastStatus {
+            status_marker: StatusMarker,
+            dot: AtTarget(Dot(10.0)),
+        };
+
         let fireblast_effects = FireblastEffects {
             instant_marker: InstantEffect,
             effect_marker: EffectMarker,
 
             damage: AtTarget(Damage(25.0)),
             cooldown: AtAbility(TriggerCooldown(COOLDOWN)),
+            apply_status: AtTarget(ApplyStatus(DynEntityMutate::insert_bundle(
+                fireblast_status,
+            ))),
 
             power_cost: AtSelf(PowerBurn(POWER_COST)),
             trigger_global_cooldown: AtSelf(TriggerGlobalCooldown),
@@ -88,7 +104,7 @@ impl Fireblast {
             cant_while_casting: CantWhileCasting,
             obstructions: UseObstructions::default(),
 
-            instant_bundle: InstantBundle(command),
+            instant_bundle: InstantEffects(command),
         }
     }
 }

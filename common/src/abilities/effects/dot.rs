@@ -20,7 +20,7 @@ impl CharacterEffect for Dot {
         _param: &(),
         _commands: &mut Commands,
     ) {
-        let delta = time.delta();
+        let delta = time.delta().as_secs_f32();
         item.apply_damage(self.0 * delta);
     }
 }

@@ -2,13 +2,19 @@ mod cast;
 mod instant;
 mod status;
 
-use std::{fmt::Debug, hash::Hash};
+use std::{fmt::Debug, hash::Hash, time::Duration};
 
 use bevy::{prelude::*, utils::Instant};
 
 pub use cast::*;
 pub use instant::*;
 pub use status::*;
+
+#[derive(Debug, Clone, Component)]
+pub struct TotalDuration(pub Duration);
+
+#[derive(Debug, Clone, Component)]
+pub struct ProgressDuration(pub Duration);
 
 #[derive(Debug, Component)]
 pub struct Start(pub Instant);
@@ -30,15 +36,15 @@ where
         let anchor = SystemSet::on_update(self.state)
             .label(self.label.clone())
             .label("anchor-casts")
-            .with_system(anchor_cast);
+            .with_system(cast_anchor);
         let set = SystemSet::on_update(self.state)
             .label(self.label.clone())
             .after("anchor-casts")
-            .with_system(spawn_complete_cast)
-            .with_system(despawn_cast)
+            .with_system(cast_complete_spawn)
+            .with_system(cast_despawn)
             .with_system(cast_complete)
             .with_system(cast_movement_interrupt)
-            .with_system(cleanup_instants);
+            .with_system(instant_effect_despawn);
         app.add_system_set(set).add_system_set(anchor);
     }
 }

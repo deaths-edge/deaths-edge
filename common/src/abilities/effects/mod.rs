@@ -1,7 +1,8 @@
+mod apply_status;
 mod damage;
+mod dot;
 mod interrupt;
 mod power_burn;
-pub mod status;
 mod trigger_cooldown;
 mod trigger_global_cooldown;
 
@@ -20,13 +21,15 @@ use crate::{
     character::CharacterMarker,
 };
 
+pub use apply_status::*;
 pub use damage::*;
+pub use dot::*;
 pub use interrupt::*;
 pub use power_burn::*;
 pub use trigger_cooldown::*;
 pub use trigger_global_cooldown::*;
 
-use super::{AbilityId, AbilityMarker};
+use super::{lifecycle::ProgressDuration, AbilityId, AbilityMarker};
 
 /// Marks an [`Entity`] as a collection of "effects". These will be enacted every frame.
 #[derive(Debug, Default, Clone, Component)]
@@ -236,6 +239,12 @@ where
     }
 }
 
+pub fn progress_durations(time: Res<Time>, mut query: Query<&mut ProgressDuration>) {
+    for mut progress in query.iter_mut() {
+        progress.0 += time.delta();
+    }
+}
+
 /// Aggregate all the [`CharacterEffect`] subsystems.
 pub struct EffectPlugin<T, L> {
     pub state: T,
@@ -262,6 +271,7 @@ where
             );
         let interupt_effects =
             CharacterEffectPlugin::<_, _, Interrupt>::new(self.state, self.label.clone());
+        let dot_effects = CharacterEffectPlugin::<_, _, Dot>::new(self.state, self.label.clone());
 
         let cooldown_effects =
             AbilityEffectPlugin::<_, _, TriggerCooldown>::new(self.state, self.label.clone());
@@ -270,6 +280,8 @@ where
             .add_plugin(power_burn_effects)
             .add_plugin(trigger_global_cooldown_effects)
             .add_plugin(interupt_effects)
-            .add_plugin(cooldown_effects);
+            .add_plugin(cooldown_effects)
+            .add_plugin(dot_effects)
+            .add_system(progress_durations);
     }
 }

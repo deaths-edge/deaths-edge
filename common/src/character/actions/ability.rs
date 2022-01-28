@@ -4,7 +4,7 @@ use tracing::warn;
 
 use crate::{
     abilities::{
-        lifecycle::{CastBundle, CastDuration, InstantBundle},
+        lifecycle::{Cast, InstantEffects, TotalDuration},
         obstructions::UseObstructions,
         AbilityMarker, Source,
     },
@@ -48,11 +48,7 @@ pub fn character_ability(
 
     mut character_query: Query<(Entity, &Abilities, &OptionalTarget), With<CharacterMarker>>,
     ability_query: Query<
-        (
-            &UseObstructions,
-            Option<&InstantBundle>,
-            Option<&CastBundle>,
-        ),
+        (&UseObstructions, Option<&InstantEffects>, Option<&Cast>),
         With<AbilityMarker>,
     >,
 
@@ -95,14 +91,14 @@ pub fn character_ability(
             info!("spawned instant bundle");
         }
 
-        if let Some(CastBundle {
+        if let Some(Cast {
             command: cast_bundle_fn,
             duration,
         }) = cast_bundle
         {
             let mut entity_commands = commands.spawn();
             cast_bundle_fn.apply(&mut entity_commands);
-            entity_commands.insert(CastDuration(*duration));
+            entity_commands.insert(TotalDuration(*duration));
 
             snapshot(entity_commands);
         }

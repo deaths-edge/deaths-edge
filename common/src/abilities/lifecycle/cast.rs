@@ -7,20 +7,17 @@ use crate::{
         obstructions::{RequiresStationary, UseObstructions},
         AbilityId, Source, Target,
     },
-    character::{Cast, CastState, CharacterEntityAction, CharacterMarker, Motion},
+    character::{CastRef, CastState, CharacterEntityAction, CharacterMarker, Motion},
     dyn_command::DynEntityMutate,
 };
 
-use super::InstantBundle;
+use super::{InstantEffects, TotalDuration};
 
 #[derive(Debug, Default, Clone, Component)]
 pub struct CastMarker;
 
-#[derive(Debug, Clone, Component)]
-pub struct CastDuration(pub Duration);
-
 #[derive(Component)]
-pub struct CastBundle {
+pub struct Cast {
     pub command: DynEntityMutate,
     pub duration: Duration,
 }
@@ -28,9 +25,14 @@ pub struct CastBundle {
 #[derive(Debug, Default, Component)]
 pub struct Complete;
 
-pub fn spawn_complete_cast(
+pub fn cast_complete_spawn(
     cast_query: Query<
-        (&AbilityId, &Source, Option<&Target>, Option<&InstantBundle>),
+        (
+            &AbilityId,
+            &Source,
+            Option<&Target>,
+            Option<&InstantEffects>,
+        ),
         (With<CastMarker>, With<Complete>),
     >,
 
@@ -58,7 +60,7 @@ pub fn spawn_complete_cast(
 #[derive(Component)]
 pub struct Failed;
 
-pub fn despawn_cast(
+pub fn cast_despawn(
     cast_query: Query<(Entity, &Source), (With<CastMarker>, Or<(With<Failed>, With<Complete>)>)>,
     mut character_cast: Query<&mut CastState, With<CharacterMarker>>,
 
@@ -76,7 +78,7 @@ pub fn despawn_cast(
 }
 
 /// Anchors new casts to cast state.
-pub fn anchor_cast(
+pub fn cast_anchor(
     time: Res<Time>,
     cast_query: Query<(Entity, &Source), Added<CastMarker>>,
     mut character_query: Query<&mut CastState, With<CharacterMarker>>,
@@ -87,7 +89,7 @@ pub fn anchor_cast(
         let mut cast_state = character_query
             .get_mut(*source)
             .expect("failed to find character");
-        let cast = Cast {
+        let cast = CastRef {
             start: now,
             cast_id,
         };
@@ -105,7 +107,7 @@ pub fn cast_complete(
     time: Res<Time>,
 
     cast_query: Query<
-        (&CastDuration, &UseObstructions, &Source),
+        (&TotalDuration, &UseObstructions, &Source),
         (With<CastMarker>, Without<Failed>, Without<Complete>),
     >,
     mut character_query: Query<&CastState, With<CharacterMarker>>,

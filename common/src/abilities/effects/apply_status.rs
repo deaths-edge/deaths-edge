@@ -7,6 +7,7 @@ use crate::{
 
 use super::CharacterEffect;
 
+#[derive(Clone)]
 pub struct ApplyStatus(pub DynEntityMutate);
 
 impl CharacterEffect for ApplyStatus {

@@ -4,5 +4,5 @@ use bevy::prelude::*;
 pub struct Target(pub Entity);
 
 /// The source of an [`CharacterEffect`].
-#[derive(Debug, Clone, Component)]
+#[derive(Debug, Clone, Copy, Component)]
 pub struct Source(pub Entity);
