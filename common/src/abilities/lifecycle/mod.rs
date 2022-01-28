@@ -33,18 +33,20 @@ where
     L: SystemLabel + Clone,
 {
     fn build(&self, app: &mut App) {
-        let anchor = SystemSet::on_update(self.state)
-            .label(self.label.clone())
-            .label("anchor-casts")
-            .with_system(cast_anchor);
-        let set = SystemSet::on_update(self.state)
-            .label(self.label.clone())
-            .after("anchor-casts")
-            .with_system(cast_complete_spawn)
-            .with_system(cast_despawn)
-            .with_system(cast_complete)
-            .with_system(cast_movement_interrupt)
-            .with_system(instant_effect_despawn);
-        app.add_system_set(set).add_system_set(anchor);
+        let instant_plugin = InstantPlugin {
+            state: self.state,
+            label: self.label.clone(),
+        };
+        let cast_plugin = CastPlugin {
+            state: self.state,
+            label: self.label.clone(),
+        };
+        let status_plugin = StatusPlugin {
+            state: self.state,
+            label: self.label.clone(),
+        };
+        app.add_plugin(instant_plugin)
+            .add_plugin(cast_plugin)
+            .add_plugin(status_plugin);
     }
 }

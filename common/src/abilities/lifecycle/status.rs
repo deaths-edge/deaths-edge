@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{fmt::Debug, hash::Hash, time::Duration};
 
 use bevy::prelude::*;
 
@@ -66,5 +66,29 @@ pub fn status_dispel_spawn(
         mutation.apply(&mut entity_commands);
 
         entity_commands.insert(*source).insert(*target);
+    }
+}
+
+pub struct StatusPlugin<T, L> {
+    pub state: T,
+    pub label: L,
+}
+
+impl<T, L> Plugin for StatusPlugin<T, L>
+where
+    T: Send + Sync + 'static,
+    T: Debug + Clone + Copy + Eq + Hash,
+
+    L: Send + Sync + 'static,
+    L: SystemLabel + Clone,
+{
+    fn build(&self, app: &mut App) {
+        let set = SystemSet::on_update(self.state)
+            .label(self.label.clone())
+            .with_system(status_complete)
+            .with_system(status_cleanup)
+            .with_system(status_final_spawn)
+            .with_system(status_dispel_spawn);
+        app.add_system_set(set);
     }
 }

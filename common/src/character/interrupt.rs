@@ -1,8 +1,8 @@
 use std::{fmt::Debug, hash::Hash, marker::PhantomData};
 
-use bevy::{ecs::system::Resource, prelude::*, utils::Instant};
+use bevy::{prelude::*, utils::Instant};
 
-use crate::abilities::magic_school::{Fire, Frost, Interruptable, Nature};
+use crate::abilities::magic_school::{Fire, Frost, Nature};
 
 #[derive(Debug, Component)]
 pub struct Interrupted<School> {

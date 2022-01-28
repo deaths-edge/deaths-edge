@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{fmt::Debug, hash::Hash, time::Duration};
 
 use bevy::prelude::*;
 
@@ -145,5 +145,35 @@ pub fn cast_movement_interrupt(
                 commands.entity(cast_id).insert(Failed);
             }
         }
+    }
+}
+
+pub struct CastPlugin<T, L> {
+    pub state: T,
+    pub label: L,
+}
+
+impl<T, L> Plugin for CastPlugin<T, L>
+where
+    T: Send + Sync + 'static,
+    T: Debug + Clone + Copy + Eq + Hash,
+
+    L: Send + Sync + 'static,
+    L: SystemLabel + Clone,
+{
+    fn build(&self, app: &mut App) {
+        const CAST_ANCHOR_LABEL: &str = "cast-anchor";
+        let anchor = SystemSet::on_update(self.state)
+            .label(self.label.clone())
+            .label(CAST_ANCHOR_LABEL)
+            .with_system(cast_anchor);
+        let set = SystemSet::on_update(self.state)
+            .label(self.label.clone())
+            .after(CAST_ANCHOR_LABEL)
+            .with_system(cast_complete_spawn)
+            .with_system(cast_despawn)
+            .with_system(cast_complete)
+            .with_system(cast_movement_interrupt);
+        app.add_system_set(anchor).add_system_set(set);
     }
 }

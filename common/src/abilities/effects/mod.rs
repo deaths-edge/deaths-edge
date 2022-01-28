@@ -251,6 +251,35 @@ pub struct EffectPlugin<T, L> {
     pub label: L,
 }
 
+impl<T, L> EffectPlugin<T, L>
+where
+    T: Send + Sync + 'static,
+    T: Debug + Clone + Copy + Eq + Hash,
+
+    L: SystemLabel + Clone,
+{
+    pub fn add_character_effect<E>(&self, app: &mut App) -> &Self
+    where
+        E: Sync + Send + 'static,
+        E: CharacterEffect,
+        for<'w, 's> <E::Fetch as SystemParamFetch<'w, 's>>::Item: SystemParam<Fetch = E::Fetch>,
+    {
+        let plugin = CharacterEffectPlugin::<_, _, E>::new(self.state, self.label.clone());
+        app.add_plugin(plugin);
+        self
+    }
+
+    pub fn add_ability_effect<E>(&self, app: &mut App) -> &Self
+    where
+        E: Sync + Send + 'static,
+        E: AbilityEffect,
+    {
+        let plugin = AbilityEffectPlugin::<_, _, E>::new(self.state, self.label.clone());
+        app.add_plugin(plugin);
+        self
+    }
+}
+
 impl<T, L> Plugin for EffectPlugin<T, L>
 where
     T: Send + Sync + 'static,
@@ -260,28 +289,14 @@ where
     L: SystemLabel + Clone,
 {
     fn build(&self, app: &mut App) {
-        let damage_effects =
-            CharacterEffectPlugin::<_, _, Damage>::new(self.state, self.label.clone());
-        let power_burn_effects =
-            CharacterEffectPlugin::<_, _, PowerBurn>::new(self.state, self.label.clone());
-        let trigger_global_cooldown_effects =
-            CharacterEffectPlugin::<_, _, TriggerGlobalCooldown>::new(
-                self.state,
-                self.label.clone(),
-            );
-        let interupt_effects =
-            CharacterEffectPlugin::<_, _, Interrupt>::new(self.state, self.label.clone());
-        let dot_effects = CharacterEffectPlugin::<_, _, Dot>::new(self.state, self.label.clone());
+        self.add_character_effect::<Damage>(app)
+            .add_character_effect::<PowerBurn>(app)
+            .add_character_effect::<TriggerGlobalCooldown>(app)
+            .add_character_effect::<Interrupt>(app)
+            .add_character_effect::<Dot>(app)
+            .add_character_effect::<ApplyStatus>(app)
+            .add_ability_effect::<TriggerCooldown>(app);
 
-        let cooldown_effects =
-            AbilityEffectPlugin::<_, _, TriggerCooldown>::new(self.state, self.label.clone());
-
-        app.add_plugin(damage_effects)
-            .add_plugin(power_burn_effects)
-            .add_plugin(trigger_global_cooldown_effects)
-            .add_plugin(interupt_effects)
-            .add_plugin(cooldown_effects)
-            .add_plugin(dot_effects)
-            .add_system(progress_durations);
+        app.add_system(progress_durations);
     }
 }
