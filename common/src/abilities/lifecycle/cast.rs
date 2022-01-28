@@ -8,7 +8,7 @@ use crate::{
         AbilityId, Source, Target,
     },
     character::{Cast, CastState, CharacterEntityAction, CharacterMarker, Motion},
-    dyn_command::DynCommand,
+    dyn_command::DynEntityMutate,
 };
 
 use super::InstantBundle;
@@ -20,7 +20,10 @@ pub struct CastMarker;
 pub struct CastDuration(pub Duration);
 
 #[derive(Component)]
-pub struct CastBundle(pub DynCommand);
+pub struct CastBundle {
+    pub command: DynEntityMutate,
+    pub duration: Duration,
+}
 
 #[derive(Debug, Default, Component)]
 pub struct Complete;

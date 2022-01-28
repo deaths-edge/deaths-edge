@@ -9,7 +9,7 @@ use crate::{
         obstructions::{RequiresFov, RequiresTarget, UseObstructions},
         AbilityMarker,
     },
-    dyn_command::DynCommand,
+    dyn_command::DynEntityMutate,
 };
 
 #[derive(Debug, Clone, Bundle)]
@@ -41,7 +41,7 @@ impl Pummel {
 
         let pummel = Pummel {
             marker: AbilityMarker,
-            instant_bundle: InstantBundle(DynCommand::insert_bundle(effect)),
+            instant_bundle: InstantBundle(DynEntityMutate::insert_bundle(effect)),
 
             requires_target: RequiresTarget::Enemy,
             requires_fov: RequiresFov,

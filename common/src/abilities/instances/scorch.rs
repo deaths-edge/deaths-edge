@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::{
     abilities::{
         effects::{AtSelf, AtTarget, Damage, EffectMarker, PowerBurn, TriggerGlobalCooldown},
-        lifecycle::{CastBundle, CastDuration, CastMarker, InstantBundle},
+        lifecycle::{CastBundle, CastMarker, InstantBundle, InstantEffect},
         magic_school::{Fire, Interruptable},
         obstructions::{
             CantWhileCasting, MaximumRange, OnGlobalCooldown, PowerCost, RequiresFov, RequiresLoS,
@@ -13,12 +13,13 @@ use crate::{
         },
         AbilityMarker,
     },
-    dyn_command::DynCommand,
+    dyn_command::DynEntityMutate,
 };
 
 #[derive(Bundle, Clone)]
 pub struct ScorchEffects {
-    marker: EffectMarker,
+    instant_marker: InstantEffect,
+    effect_marker: EffectMarker,
 
     damage: AtTarget<Damage>,
     trigger_global_cooldown: AtSelf<TriggerGlobalCooldown>,
@@ -29,8 +30,6 @@ pub struct ScorchEffects {
 #[derive(Debug, Clone, Bundle)]
 pub struct ScorchCast {
     marker: CastMarker,
-
-    duration: CastDuration,
 
     fire_school: Fire,
     interruptable: Interruptable,
@@ -75,18 +74,18 @@ impl Scorch {
         const MAX_RANGE: f32 = 500.0;
 
         let scorch_effects = ScorchEffects {
-            marker: EffectMarker,
+            instant_marker: InstantEffect,
+            effect_marker: EffectMarker,
 
             damage: AtTarget(Damage(DAMAGE)),
 
             trigger_global_cooldown: AtSelf(TriggerGlobalCooldown),
             power_cost: AtSelf(PowerBurn(POWER_COST)),
         };
-        let effect_command = DynCommand::insert_bundle(scorch_effects);
+        let effect_command = DynEntityMutate::insert_bundle(scorch_effects);
 
         let scorch_cast = ScorchCast {
             marker: CastMarker,
-            duration: CastDuration(CAST_DURATION),
             instant_bundle: InstantBundle(effect_command),
 
             fire_school: Fire,
@@ -99,7 +98,7 @@ impl Scorch {
             max_range: MaximumRange(MAX_RANGE),
             obstructions: UseObstructions::default(),
         };
-        let scorch_cast_command = DynCommand::insert_bundle(scorch_cast);
+        let scorch_cast_command = DynEntityMutate::insert_bundle(scorch_cast);
 
         Self {
             marker: AbilityMarker,
@@ -118,7 +117,10 @@ impl Scorch {
 
             obstructions: UseObstructions::default(),
 
-            cast_bundle: CastBundle(scorch_cast_command),
+            cast_bundle: CastBundle {
+                command: scorch_cast_command,
+                duration: CAST_DURATION,
+            },
         }
     }
 }

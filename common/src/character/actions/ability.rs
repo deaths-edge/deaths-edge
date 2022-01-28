@@ -4,7 +4,7 @@ use tracing::warn;
 
 use crate::{
     abilities::{
-        lifecycle::{CastBundle, InstantBundle},
+        lifecycle::{CastBundle, CastDuration, InstantBundle},
         obstructions::UseObstructions,
         AbilityMarker, Source,
     },
@@ -42,7 +42,6 @@ impl Ability {
 }
 
 /// Receives an [`Ability`] and performs the associated ability.
-// TODO: Split this into two systems? Instant/CastBundle
 pub fn character_ability(
     // Ability events
     mut events: EventReader<CharacterEntityAction<Ability>>,
@@ -96,9 +95,14 @@ pub fn character_ability(
             info!("spawned instant bundle");
         }
 
-        if let Some(cast_bundle_fn) = cast_bundle {
+        if let Some(CastBundle {
+            command: cast_bundle_fn,
+            duration,
+        }) = cast_bundle
+        {
             let mut entity_commands = commands.spawn();
-            cast_bundle_fn.0.apply(&mut entity_commands);
+            cast_bundle_fn.apply(&mut entity_commands);
+            entity_commands.insert(CastDuration(*duration));
 
             snapshot(entity_commands);
         }

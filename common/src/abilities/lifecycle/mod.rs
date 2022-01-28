@@ -1,12 +1,17 @@
 mod cast;
 mod instant;
+mod status;
 
 use std::{fmt::Debug, hash::Hash};
 
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::Instant};
 
 pub use cast::*;
 pub use instant::*;
+pub use status::*;
+
+#[derive(Debug, Component)]
+pub struct Start(pub Instant);
 
 pub struct LifecyclePlugin<T, L> {
     pub state: T,
@@ -32,7 +37,8 @@ where
             .with_system(spawn_complete_cast)
             .with_system(despawn_cast)
             .with_system(cast_complete)
-            .with_system(cast_movement_interrupt);
+            .with_system(cast_movement_interrupt)
+            .with_system(cleanup_instants);
         app.add_system_set(set).add_system_set(anchor);
     }
 }

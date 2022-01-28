@@ -5,7 +5,8 @@ use bevy::prelude::*;
 use crate::{
     abilities::{
         effects::*,
-        lifecycle::InstantBundle,
+        lifecycle::{InstantBundle, InstantEffect},
+        magic_school::Fire,
         obstructions::{
             CantWhileCasting, MaximumRange, OnCooldown, OnGlobalCooldown, PowerCost, RequiresFov,
             RequiresLoS, RequiresStationary, RequiresTarget, UseObstructions,
@@ -13,14 +14,15 @@ use crate::{
         AbilityMarker,
     },
     character::LastCastInstant,
-    dyn_command::DynCommand,
+    dyn_command::DynEntityMutate,
 };
 
 const COOLDOWN: Duration = Duration::from_secs(8);
 
 #[derive(Bundle, Clone)]
 pub struct FireblastEffects {
-    marker: EffectMarker,
+    instant_marker: InstantEffect,
+    effect_marker: EffectMarker,
 
     damage: AtTarget<Damage>,
     cooldown: AtAbility<TriggerCooldown>,
@@ -40,6 +42,7 @@ pub struct Fireblast {
     last_cast: LastCastInstant,
 
     power_cost: PowerCost,
+    fire_school: Fire,
 
     requires_target: RequiresTarget,
     requires_stationary: RequiresStationary,
@@ -56,7 +59,8 @@ impl Fireblast {
         const POWER_COST: f32 = 20.0;
 
         let fireblast_effects = FireblastEffects {
-            marker: EffectMarker,
+            instant_marker: InstantEffect,
+            effect_marker: EffectMarker,
 
             damage: AtTarget(Damage(25.0)),
             cooldown: AtAbility(TriggerCooldown(COOLDOWN)),
@@ -64,7 +68,7 @@ impl Fireblast {
             power_cost: AtSelf(PowerBurn(POWER_COST)),
             trigger_global_cooldown: AtSelf(TriggerGlobalCooldown),
         };
-        let command = DynCommand::insert_bundle(fireblast_effects);
+        let command = DynEntityMutate::insert_bundle(fireblast_effects);
 
         Self {
             marker: AbilityMarker,
@@ -72,6 +76,7 @@ impl Fireblast {
             global_cooldown: OnGlobalCooldown,
             cooldown: OnCooldown(COOLDOWN),
             last_cast: LastCastInstant::default(),
+            fire_school: Fire,
 
             power_cost: PowerCost(POWER_COST),
 

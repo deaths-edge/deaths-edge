@@ -1,6 +1,7 @@
 mod damage;
 mod interrupt;
 mod power_burn;
+pub mod status;
 mod trigger_cooldown;
 mod trigger_global_cooldown;
 
@@ -27,7 +28,7 @@ pub use trigger_global_cooldown::*;
 
 use super::{AbilityId, AbilityMarker};
 
-/// A marker component.
+/// Marks an [`Entity`] as a collection of "effects". These will be enacted every frame.
 #[derive(Debug, Default, Clone, Component)]
 pub struct EffectMarker;
 
@@ -235,14 +236,6 @@ where
     }
 }
 
-/// Remove all the [`CharacterEffect`]s after they are applied.
-pub fn cleanup(query: Query<Entity, With<EffectMarker>>, mut commands: Commands) {
-    for instance_id in query.iter() {
-        info!("cleaning up instant effect");
-        commands.entity(instance_id).despawn();
-    }
-}
-
 /// Aggregate all the [`CharacterEffect`] subsystems.
 pub struct EffectPlugin<T, L> {
     pub state: T,
@@ -273,15 +266,10 @@ where
         let cooldown_effects =
             AbilityEffectPlugin::<_, _, TriggerCooldown>::new(self.state, self.label.clone());
 
-        let cleanup_set = SystemSet::on_update(self.state)
-            .after(self.label.clone())
-            .with_system(cleanup);
-
         app.add_plugin(damage_effects)
             .add_plugin(power_burn_effects)
             .add_plugin(trigger_global_cooldown_effects)
             .add_plugin(interupt_effects)
-            .add_plugin(cooldown_effects)
-            .add_system_set(cleanup_set);
+            .add_plugin(cooldown_effects);
     }
 }
