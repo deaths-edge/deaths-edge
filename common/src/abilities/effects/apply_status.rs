@@ -20,13 +20,14 @@ impl CharacterEffect for ApplyStatus {
     fn apply(
         &self,
         _time: &Time,
-        _ability_id: &AbilityId,
+        ability_id: &AbilityId,
         item: Entity,
         _param: &(),
         commands: &mut Commands,
     ) {
+        info!("applying status");
         let mut entity_commands = commands.spawn();
         self.0.apply(&mut entity_commands);
-        entity_commands.insert(Target(item));
+        entity_commands.insert(Target(item)).insert(*ability_id);
     }
 }

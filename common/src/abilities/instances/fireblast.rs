@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::{
     abilities::{
         effects::*,
-        lifecycle::{InstantEffect, InstantEffects, StatusMarker},
+        lifecycle::{InstantEffect, InstantEffects, StatusMarker, TotalDuration},
         magic_school::Fire,
         obstructions::{
             CantWhileCasting, MaximumRange, OnCooldown, OnGlobalCooldown, PowerCost, RequiresFov,
@@ -22,8 +22,11 @@ const COOLDOWN: Duration = Duration::from_secs(8);
 #[derive(Bundle, Clone)]
 pub struct FireblastStatus {
     status_marker: StatusMarker,
+    effect_marker: EffectMarker,
 
     dot: AtTarget<Dot>,
+
+    total_duration: TotalDuration,
 }
 
 #[derive(Bundle, Clone)]
@@ -65,10 +68,13 @@ pub struct Fireblast {
 impl Fireblast {
     pub fn new() -> Self {
         const POWER_COST: f32 = 20.0;
+        const DOT_DURATION: Duration = Duration::from_secs(3);
 
         let fireblast_status = FireblastStatus {
             status_marker: StatusMarker,
+            effect_marker: EffectMarker,
             dot: AtTarget(Dot(10.0)),
+            total_duration: TotalDuration(DOT_DURATION),
         };
 
         let fireblast_effects = FireblastEffects {

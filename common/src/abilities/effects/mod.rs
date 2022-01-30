@@ -144,24 +144,24 @@ pub fn apply_effect_self<E>(
     }
 }
 
-/// The [`CharacterEffect`] will hit everyone in an AOE.
-#[derive(Debug, Clone, Component)]
-pub struct AtAoe<T> {
-    effect: T,
-    radius: f32,
-}
+// /// The [`CharacterEffect`] will hit everyone in an AOE.
+// #[derive(Debug, Clone, Component)]
+// pub struct AtAoe<T> {
+//     // effect: T,
+//     // radius: f32,
+// }
 
-/// Applies an [`CharacterEffect`] to everyone in a given radius.
-pub fn apply_effect_radius<E>(// ability_query: Query<(&AtAoe<E>, &Transform), With<EffectMarker>>,
-    // mut character_query: Query<<E as CharacterEffect>::Domain, With<CharacterMarker>>,
-)
-where
-    E: Send + Sync + 'static,
-    E: CharacterEffect,
-    for<'w, 's> EffectParamItem<'w, 's, E>: SystemParam<Fetch = E::Fetch>,
-{
-    // TODO
-}
+// /// Applies an [`CharacterEffect`] to everyone in a given radius.
+// pub fn apply_effect_radius<E>(// ability_query: Query<(&AtAoe<E>, &Transform), With<EffectMarker>>,
+//     // mut character_query: Query<<E as CharacterEffect>::Domain, With<CharacterMarker>>,
+// )
+// where
+//     E: Send + Sync + 'static,
+//     E: CharacterEffect,
+//     for<'w, 's> EffectParamItem<'w, 's, E>: SystemParam<Fetch = E::Fetch>,
+// {
+//     // TODO
+// }
 
 /// Represents a single [`CharacterEffect`] subsystem.
 struct CharacterEffectPlugin<T, L, E> {
@@ -197,7 +197,8 @@ where
             .label(self.label.clone())
             .with_system(apply_effect_target::<E>)
             .with_system(apply_effect_self::<E>)
-            .with_system(apply_effect_radius::<E>);
+            // .with_system(apply_effect_radius::<E>)
+            ;
 
         app.add_system_set(set);
     }
