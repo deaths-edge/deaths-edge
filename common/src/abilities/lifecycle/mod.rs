@@ -10,14 +10,31 @@ pub use cast::*;
 pub use instant::*;
 pub use status::*;
 
+use crate::dyn_command::DynEntityMutate;
+
 #[derive(Debug, Clone, Component)]
 pub struct TotalDuration(pub Duration);
 
-#[derive(Debug, Clone, Component)]
+#[derive(Default, Debug, Clone, Component)]
 pub struct ProgressDuration(pub Duration);
 
 #[derive(Debug, Component)]
 pub struct Start(pub Instant);
+
+#[derive(Clone, Debug, Component)]
+pub struct OnComplete(pub DynEntityMutate);
+
+pub fn on_complete_spawn(
+    query: Query<(Entity, &OnComplete), (With<CastMarker>, With<Complete>)>,
+
+    mut commands: Commands,
+) {
+    for (parent, on_complete) in query.iter() {
+        let mut entity_commands = commands.spawn();
+
+        on_complete.0.apply(parent, &mut entity_commands);
+    }
+}
 
 pub struct LifecyclePlugin<T, L> {
     pub state: T,
@@ -47,6 +64,7 @@ where
         };
         app.add_plugin(instant_plugin)
             .add_plugin(cast_plugin)
-            .add_plugin(status_plugin);
+            .add_plugin(status_plugin)
+            .add_system(on_complete_spawn); // TODO: Order this
     }
 }

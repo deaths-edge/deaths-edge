@@ -2,10 +2,13 @@ use bevy::prelude::*;
 
 use crate::{character::PlayerMarker, state::ClientState};
 
-use common::character::{CharacterMarker, OptionalTarget};
+use common::{abilities::Target, character::CharacterMarker};
 
 #[derive(Debug, Default, Component)]
 pub struct SelectionMarker;
+
+#[derive(Component, Debug, Default)]
+pub struct OptionalTarget(pub Option<Target>);
 
 #[derive(Bundle)]
 pub struct SelectionBundle {
@@ -32,7 +35,7 @@ fn spawn_selection(mut commands: Commands) {
 }
 
 fn select_changed(
-    player_query: Query<&OptionalTarget, (With<PlayerMarker>, Changed<OptionalTarget>)>,
+    player_query: Query<Option<&Target>, With<PlayerMarker>>,
     char_query: Query<&Sprite, (With<CharacterMarker>, Without<SelectionMarker>)>,
     mut select_query: Query<
         (&mut OptionalTarget, &mut Visibility, &mut Sprite),
@@ -41,13 +44,13 @@ fn select_changed(
 ) {
     if let Ok(player_target) = player_query.get_single() {
         let (mut select_target, mut visibility, mut select_sprite) = select_query.single_mut();
-        *select_target = *player_target;
-        if let Some(target_id) = player_target.0 {
+        select_target.0 = player_target.cloned();
+        if let Some(target_id) = player_target {
             let target_sprite = char_query.get(target_id.0).expect("failed to find target");
             select_sprite.custom_size = target_sprite.custom_size.map(|x| x * 1.2);
         }
 
-        visibility.is_visible = player_target.0.is_some();
+        visibility.is_visible = player_target.is_some();
     }
 }
 

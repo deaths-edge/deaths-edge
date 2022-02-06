@@ -14,10 +14,13 @@ impl CharacterEffect for PowerBurn {
 
     fn apply(
         &self,
-        _time: &Time,
-        _ability_id: &AbilityId,
+        _parent_id: Entity,
+
         mut item: Mut<'_, Power>,
         _param: &(),
+
+        _time: &Time,
+
         _commands: &mut Commands,
     ) {
         info!(message = "burning power", amount = %self.0);

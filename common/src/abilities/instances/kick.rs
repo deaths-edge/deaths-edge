@@ -5,12 +5,13 @@ use bevy::prelude::*;
 use crate::{
     abilities::{
         effects::{AtTarget, EffectMarker, Interrupt},
-        lifecycle::InstantEffects,
         obstructions::{RequiresFov, RequiresTarget, UseObstructions},
-        AbilityMarker,
+        AbilityMarker, Source, Target,
     },
-    dyn_command::DynEntityMutate,
+    dyn_command::EntityMutate,
 };
+
+use super::OnPress;
 
 #[derive(Debug, Clone, Bundle)]
 pub struct PummelEffect {
@@ -22,11 +23,12 @@ pub struct PummelEffect {
 #[derive(Debug, Bundle)]
 pub struct Pummel {
     marker: AbilityMarker,
-    instant_bundle: InstantEffects,
 
     requires_target: RequiresTarget,
     requires_fov: RequiresFov,
     obstructions: UseObstructions,
+
+    on_press: OnPress,
 }
 
 impl Pummel {
@@ -41,11 +43,17 @@ impl Pummel {
 
         let pummel = Pummel {
             marker: AbilityMarker,
-            instant_bundle: InstantEffects(DynEntityMutate::insert_bundle(effect)),
-
             requires_target: RequiresTarget::Enemy,
             requires_fov: RequiresFov,
             obstructions: UseObstructions::default(),
+
+            on_press: OnPress(
+                EntityMutate::new()
+                    .insert_bundle(effect)
+                    .snapshot_move::<Source>()
+                    .snapshot_move::<Target>()
+                    .arc(),
+            ),
         };
 
         pummel

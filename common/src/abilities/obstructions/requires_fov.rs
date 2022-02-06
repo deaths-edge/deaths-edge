@@ -4,8 +4,8 @@ use bevy::prelude::*;
 
 use super::{CastOrAbilityFilter, Obstruction, UseObstructions};
 use crate::{
-    abilities::Source,
-    character::{CharacterMarker, OptionalTarget},
+    abilities::{Source, Target},
+    character::CharacterMarker,
 };
 
 /// Requires that target is in Field of View.
@@ -26,7 +26,7 @@ fn check_fov(source: &Transform, target: Vec3) -> Result<f32, OutOfFieldOfView> 
 }
 
 pub fn check_required_fov(
-    character_query: Query<(&OptionalTarget, &Transform), With<CharacterMarker>>,
+    character_query: Query<(Option<&Target>, &Transform), With<CharacterMarker>>,
     mut ability_query: Query<
         (&Source, &mut UseObstructions),
         (CastOrAbilityFilter, With<RequiresFov>),
@@ -37,10 +37,8 @@ pub fn check_required_fov(
         let (target, self_transform) = character_query
             .get(source.0)
             .expect("failed to find character");
-        if let Some(target_id) = target.0 {
-            let target_transform = target_query
-                .get(target_id.0)
-                .expect("failed to find target");
+        if let Some(&Target(target_id)) = target {
+            let target_transform = target_query.get(target_id).expect("failed to find target");
 
             let in_front = check_fov(self_transform, target_transform.translation).is_ok();
 

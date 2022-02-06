@@ -2,10 +2,7 @@ use std::{fmt::Debug, hash::Hash, time::Duration};
 
 use bevy::prelude::*;
 
-use crate::{
-    abilities::{Source, Target},
-    dyn_command::DynEntityMutate,
-};
+use crate::dyn_command::DynEntityMutate;
 
 use super::{Complete, ProgressDuration, TotalDuration};
 
@@ -46,26 +43,22 @@ pub fn status_cleanup(
 }
 
 pub fn status_final_spawn(
-    query: Query<(&FinalEffects, &Source, &Target), (With<StatusMarker>, With<Complete>)>,
+    query: Query<(Entity, &FinalEffects), (With<StatusMarker>, With<Complete>)>,
     mut commands: Commands,
 ) {
-    for (FinalEffects(mutation), source, target) in query.iter() {
+    for (id, FinalEffects(mutation)) in query.iter() {
         let mut entity_commands = commands.spawn();
-        mutation.apply(&mut entity_commands);
-
-        entity_commands.insert(*source).insert(*target);
+        mutation.apply(id, &mut entity_commands);
     }
 }
 
 pub fn status_dispel_spawn(
-    query: Query<(&DispelEffects, &Source, &Target), (With<StatusMarker>, With<Dispelled>)>,
+    query: Query<(Entity, &DispelEffects), (With<StatusMarker>, With<Dispelled>)>,
     mut commands: Commands,
 ) {
-    for (DispelEffects(mutation), source, target) in query.iter() {
+    for (id, DispelEffects(mutation)) in query.iter() {
         let mut entity_commands = commands.spawn();
-        mutation.apply(&mut entity_commands);
-
-        entity_commands.insert(*source).insert(*target);
+        mutation.apply(id, &mut entity_commands);
     }
 }
 

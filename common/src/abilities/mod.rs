@@ -45,6 +45,12 @@ impl SystemLabel for AbilityLabels {
     }
 }
 
+pub fn progress_durations(time: Res<Time>, mut query: Query<&mut ProgressDuration>) {
+    for mut progress in query.iter_mut() {
+        progress.0 += time.delta();
+    }
+}
+
 impl<T> Plugin for AbilityPlugin<T>
 where
     T: Send + Sync + 'static,
@@ -68,6 +74,7 @@ where
 
         app.add_plugin(lifecycle)
             .add_plugin(obstructions)
-            .add_plugin(effects);
+            .add_plugin(effects)
+            .add_system(progress_durations);
     }
 }

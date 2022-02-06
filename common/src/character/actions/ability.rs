@@ -1,14 +1,10 @@
-use bevy::{ecs::system::EntityCommands, prelude::*};
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use tracing::warn;
 
 use crate::{
-    abilities::{
-        lifecycle::{Cast, InstantEffects, TotalDuration},
-        obstructions::UseObstructions,
-        AbilityMarker, Source,
-    },
-    character::{Abilities, CharacterMarker, OptionalTarget},
+    abilities::{instances::OnPress, obstructions::UseObstructions, AbilityMarker},
+    character::{Abilities, CharacterMarker},
 };
 
 use super::CharacterEntityAction;
@@ -46,23 +42,20 @@ pub fn character_ability(
     // Ability events
     mut events: EventReader<CharacterEntityAction<Ability>>,
 
-    mut character_query: Query<(Entity, &Abilities, &OptionalTarget), With<CharacterMarker>>,
-    ability_query: Query<
-        (&UseObstructions, Option<&InstantEffects>, Option<&Cast>),
-        With<AbilityMarker>,
-    >,
+    mut character_query: Query<(Entity, &Abilities), With<CharacterMarker>>,
+    ability_query: Query<(&UseObstructions, Option<&OnPress>), With<AbilityMarker>>,
 
     mut commands: Commands,
 ) {
     for action in events.iter() {
-        let (character_id, abilities, opt_target) = character_query
+        let (character_id, abilities) = character_query
             .get_mut(action.id())
             .expect("character not found");
 
         let action = action.action;
         let ability_id = &abilities.0[action.as_index()];
 
-        let (obstructions, instant_bundle, cast_bundle) = ability_query
+        let (obstructions, on_press_opt) = ability_query
             .get(ability_id.0)
             .expect("cannot find ability");
 
@@ -71,36 +64,12 @@ pub fn character_ability(
             continue;
         }
 
-        let snapshot = |mut entity_commands: EntityCommands| {
-            if let Some(target) = opt_target.0 {
-                entity_commands.insert(target);
-            }
-
-            entity_commands
-                .insert(Source(character_id))
-                .insert(*ability_id)
-                .id()
-        };
-
-        if let Some(instant_bundle_fn) = instant_bundle {
+        if let Some(on_press) = on_press_opt {
             info!("spawning instant bundle");
             let mut entity_commands = commands.spawn();
-            instant_bundle_fn.0.apply(&mut entity_commands);
+            on_press.0.apply(character_id, &mut entity_commands);
 
-            snapshot(entity_commands);
             info!("spawned instant bundle");
-        }
-
-        if let Some(Cast {
-            command: cast_bundle_fn,
-            duration,
-        }) = cast_bundle
-        {
-            let mut entity_commands = commands.spawn();
-            cast_bundle_fn.apply(&mut entity_commands);
-            entity_commands.insert(TotalDuration(*duration));
-
-            snapshot(entity_commands);
         }
     }
 }

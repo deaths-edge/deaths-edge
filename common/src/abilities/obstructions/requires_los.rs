@@ -6,8 +6,8 @@ use heron::{
 
 use super::{CastOrAbilityFilter, Obstruction, UseObstructions};
 use crate::{
-    abilities::Source,
-    character::{CharacterMarker, OptionalTarget},
+    abilities::{Source, Target},
+    character::CharacterMarker,
     physics::WorldLayer,
 };
 
@@ -52,7 +52,7 @@ pub fn check_los(
 pub fn check_required_los(
     physics_world: PhysicsWorld,
 
-    character_query: Query<(&OptionalTarget, &Transform), With<CharacterMarker>>,
+    character_query: Query<(Option<&Target>, &Transform), With<CharacterMarker>>,
     mut ability_query: Query<
         (&Source, &mut UseObstructions),
         (CastOrAbilityFilter, With<RequiresLoS>),
@@ -64,10 +64,8 @@ pub fn check_required_los(
             .get(source.0)
             .expect("failed to find character");
 
-        if let Some(target_id) = target.0 {
-            let target_transform = target_query
-                .get(target_id.0)
-                .expect("failed to find target");
+        if let Some(&Target(target_id)) = target {
+            let target_transform = target_query.get(target_id).expect("failed to find target");
 
             let in_los =
                 check_los(self_transform, target_transform.translation, &physics_world).is_ok();

@@ -5,7 +5,7 @@ use crate::{
     abilities::instances,
     character::{
         Abilities, CastState, CharacterBundle, CharacterIndex, CharacterMarker, Controls, Health,
-        LastCastInstant, OptionalTarget, Power, PowerRegenerate, SpeedMultiplier, Team,
+        LastCastInstant, Power, PowerRegenerate, SpeedMultiplier, Team,
     },
     physics::WorldLayer,
 };
@@ -63,7 +63,6 @@ impl ClassTrait for Medea {
 
             cast_state: CastState::default(),
             last_cast_instant: LastCastInstant::default(),
-            target: OptionalTarget::default(),
         };
 
         let medea = Medea {

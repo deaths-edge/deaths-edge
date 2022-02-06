@@ -2,11 +2,6 @@ use std::{fmt::Debug, hash::Hash};
 
 use bevy::prelude::*;
 
-use crate::dyn_command::DynEntityMutate;
-
-#[derive(Debug, Clone, Component)]
-pub struct InstantEffects(pub DynEntityMutate);
-
 #[derive(Debug, Clone, Component)]
 pub struct InstantEffect;
 

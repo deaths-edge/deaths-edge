@@ -30,10 +30,13 @@ impl CharacterEffect for Interrupt {
 
     fn apply(
         &self,
-        time: &Time,
-        _ability_id: &AbilityId,
+        _parent_id: Entity,
+
         (character_id, cast_state): (Entity, Mut<'_, CastState>),
         schools: &Query<SchoolClassify, InterruptableFilter>,
+
+        time: &Time,
+
         commands: &mut Commands,
     ) {
         // If casting then grab cast_id

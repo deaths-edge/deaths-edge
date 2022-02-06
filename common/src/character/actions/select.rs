@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     abilities::Target,
-    character::{CharacterIndex, CharacterMarker, OptionalTarget},
+    character::{CharacterIndex, CharacterMarker},
 };
 
 use super::CharacterEntityAction;
@@ -16,24 +16,28 @@ pub fn character_target(
     // OptionalTarget events
     mut events: EventReader<CharacterEntityAction<SelectTarget>>,
 
-    mut target_query: Query<&mut OptionalTarget, With<CharacterMarker>>,
+    mut target_query: Query<Entity, With<CharacterMarker>>,
     index_query: Query<(Entity, &CharacterIndex), With<CharacterMarker>>,
+
+    mut commands: Commands,
 ) {
     for action in events.iter() {
-        let mut character_target = target_query
+        let character_target = target_query
             .get_mut(action.id())
             .expect("character not found");
 
-        if let Some(target_index) = action.action().0 {
+        let mut entity_commands = commands.entity(character_target);
+        if let &SelectTarget(Some(target_index)) = action.action() {
+            // TODO: Alert if this fails
             let target = index_query
                 .iter()
                 .find(|(_, index)| **index == target_index)
                 .map(|(entity, _)| entity)
-                .map(Target);
-            // TODO: Alert if this fails
-            *character_target = OptionalTarget(target);
+                .expect("failed to find index");
+
+            entity_commands.insert(Target(target));
         } else {
-            *character_target = OptionalTarget(None);
+            entity_commands.remove::<Target>();
         }
     }
 }

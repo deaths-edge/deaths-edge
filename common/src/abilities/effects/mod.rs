@@ -29,7 +29,7 @@ pub use power_burn::*;
 pub use trigger_cooldown::*;
 pub use trigger_global_cooldown::*;
 
-use super::{lifecycle::ProgressDuration, AbilityId, AbilityMarker};
+use super::{AbilityId, AbilityMarker};
 
 /// Marks an [`Entity`] as a collection of "effects". These will be enacted every frame.
 #[derive(Debug, Default, Clone, Component)]
@@ -53,10 +53,13 @@ where
 
     fn apply(
         &self,
-        time: &Time,
-        ability_id: &AbilityId,
+
+        parent_id: Entity,
         item: <<Self::Domain<'_> as WorldQuery>::Fetch as Fetch>::Item,
         param: &<Self::Fetch as SystemParamFetch>::Item,
+
+        time: &Time,
+
         commands: &mut Commands,
     );
 }
@@ -101,7 +104,7 @@ pub struct AtTarget<T>(pub T);
 /// Applies an [`CharacterEffect`] to some target.
 pub fn apply_effect_target<E>(
     time: Res<Time>,
-    effect_query: Query<(&AbilityId, &AtTarget<E>, &Target), With<EffectMarker>>,
+    effect_query: Query<(Entity, &AtTarget<E>, &Target), With<EffectMarker>>,
     mut character_query: Query<<E as CharacterEffect>::Domain<'_>, With<CharacterMarker>>,
     sys_param: <E::Fetch as SystemParamFetch>::Item,
 
@@ -111,11 +114,11 @@ pub fn apply_effect_target<E>(
     E: CharacterEffect,
     for<'w, 's> <E::Fetch as SystemParamFetch<'w, 's>>::Item: SystemParam<Fetch = E::Fetch>,
 {
-    for (ability_id, AtTarget(effect), Target(target)) in effect_query.iter() {
+    for (parent_id, AtTarget(effect), Target(target)) in effect_query.iter() {
         let item = character_query
             .get_mut(*target)
             .expect("failed to find target");
-        effect.apply(&time, ability_id, item, &sys_param, &mut commands);
+        effect.apply(parent_id, item, &sys_param, &time, &mut commands);
     }
 }
 
@@ -126,7 +129,7 @@ pub struct AtSelf<T>(pub T);
 /// Applies an [`CharacterEffect`] to self.
 pub fn apply_effect_self<E>(
     time: Res<Time>,
-    effect_query: Query<(&AbilityId, &AtSelf<E>, &Source), With<EffectMarker>>,
+    effect_query: Query<(Entity, &AtSelf<E>, &Source), With<EffectMarker>>,
     mut character_query: Query<<E as CharacterEffect>::Domain<'_>, With<CharacterMarker>>,
     sys_param: EffectParamItem<'_, '_, E>,
 
@@ -136,11 +139,11 @@ pub fn apply_effect_self<E>(
     E: CharacterEffect,
     for<'w, 's> EffectParamItem<'w, 's, E>: SystemParam<Fetch = E::Fetch>,
 {
-    for (ability_id, AtSelf(effect), Source(source)) in effect_query.iter() {
+    for (parent_id, AtSelf(effect), Source(source)) in effect_query.iter() {
         let item = character_query
             .get_mut(*source)
             .expect("failed to find target");
-        effect.apply(&time, ability_id, item, &sys_param, &mut commands);
+        effect.apply(parent_id, item, &sys_param, &time, &mut commands);
     }
 }
 
@@ -240,12 +243,6 @@ where
     }
 }
 
-pub fn progress_durations(time: Res<Time>, mut query: Query<&mut ProgressDuration>) {
-    for mut progress in query.iter_mut() {
-        progress.0 += time.delta();
-    }
-}
-
 /// Aggregate all the [`CharacterEffect`] subsystems.
 pub struct EffectPlugin<T, L> {
     pub state: T,
@@ -297,7 +294,5 @@ where
             .add_character_effect::<Dot>(app)
             .add_character_effect::<ApplyStatus>(app)
             .add_ability_effect::<TriggerCooldown>(app);
-
-        app.add_system(progress_durations);
     }
 }

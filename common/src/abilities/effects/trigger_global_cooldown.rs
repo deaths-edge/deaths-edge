@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    abilities::{lifecycle::TotalDuration, AbilityId, AbilityMarker},
+    abilities::{lifecycle::TotalDuration, AbilityMarker},
     character::LastCastInstant,
 };
 
@@ -18,17 +18,20 @@ impl CharacterEffect for TriggerGlobalCooldown {
 
     fn apply(
         &self,
-        time: &Time,
-        AbilityId(ability_id): &AbilityId,
+        parent_id: Entity,
+
         mut last_cast: Mut<'_, LastCastInstant>,
         param: &Query<&TotalDuration, With<AbilityMarker>>,
+
+        time: &Time,
+
         _commands: &mut Commands,
     ) {
         info!("applying global cooldown");
         let now = time.last_update().expect("last cast instant");
 
         // Remove cast time from last cast
-        let now = if let Ok(TotalDuration(duration)) = param.get(*ability_id) {
+        let now = if let Ok(TotalDuration(duration)) = param.get(parent_id) {
             now - *duration
         } else {
             now

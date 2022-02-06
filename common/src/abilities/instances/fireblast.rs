@@ -5,17 +5,19 @@ use bevy::prelude::*;
 use crate::{
     abilities::{
         effects::*,
-        lifecycle::{InstantEffect, InstantEffects, StatusMarker, TotalDuration},
+        lifecycle::{InstantEffect, StatusMarker, TotalDuration},
         magic_school::Fire,
         obstructions::{
             CantWhileCasting, MaximumRange, OnCooldown, OnGlobalCooldown, PowerCost, RequiresFov,
             RequiresLoS, RequiresStationary, RequiresTarget, UseObstructions,
         },
-        AbilityMarker,
+        AbilityMarker, Source, Target,
     },
     character::LastCastInstant,
-    dyn_command::DynEntityMutate,
+    dyn_command::EntityMutate,
 };
+
+use super::OnPress;
 
 const COOLDOWN: Duration = Duration::from_secs(8);
 
@@ -37,7 +39,6 @@ pub struct FireblastEffects {
     damage: AtTarget<Damage>,
     cooldown: AtAbility<TriggerCooldown>,
     apply_status: AtTarget<ApplyStatus>,
-
     power_cost: AtSelf<PowerBurn>,
     trigger_global_cooldown: AtSelf<TriggerGlobalCooldown>,
 }
@@ -45,8 +46,6 @@ pub struct FireblastEffects {
 #[derive(Bundle)]
 pub struct Fireblast {
     marker: AbilityMarker,
-
-    instant_bundle: InstantEffects,
 
     global_cooldown: OnGlobalCooldown,
     cooldown: OnCooldown,
@@ -61,6 +60,8 @@ pub struct Fireblast {
     requires_los: RequiresLoS,
     max_range: MaximumRange,
     cant_while_casting: CantWhileCasting,
+
+    on_press: OnPress,
 
     obstructions: UseObstructions,
 }
@@ -83,14 +84,21 @@ impl Fireblast {
 
             damage: AtTarget(Damage(25.0)),
             cooldown: AtAbility(TriggerCooldown(COOLDOWN)),
-            apply_status: AtTarget(ApplyStatus(DynEntityMutate::insert_bundle(
-                fireblast_status,
-            ))),
-
+            apply_status: AtTarget(ApplyStatus(
+                EntityMutate::new()
+                    .insert_bundle(fireblast_status)
+                    .snapshot_clone::<Source>()
+                    .snapshot_clone::<Target>()
+                    .arc(),
+            )),
             power_cost: AtSelf(PowerBurn(POWER_COST)),
             trigger_global_cooldown: AtSelf(TriggerGlobalCooldown),
         };
-        let command = DynEntityMutate::insert_bundle(fireblast_effects);
+        let entity_mutate = EntityMutate::new()
+            .insert_bundle(fireblast_effects)
+            .parent_source()
+            .snapshot_clone::<Target>()
+            .arc();
 
         Self {
             marker: AbilityMarker,
@@ -110,7 +118,7 @@ impl Fireblast {
             cant_while_casting: CantWhileCasting,
             obstructions: UseObstructions::default(),
 
-            instant_bundle: InstantEffects(command),
+            on_press: OnPress(entity_mutate),
         }
     }
 }

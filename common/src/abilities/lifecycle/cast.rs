@@ -5,13 +5,13 @@ use bevy::prelude::*;
 use crate::{
     abilities::{
         obstructions::{RequiresStationary, UseObstructions},
-        AbilityId, Source, Target,
+        Source,
     },
     character::{CastRef, CastState, CharacterEntityAction, CharacterMarker, Motion},
     dyn_command::DynEntityMutate,
 };
 
-use super::{InstantEffects, TotalDuration};
+use super::TotalDuration;
 
 #[derive(Debug, Default, Clone, Component)]
 pub struct CastMarker;
@@ -24,38 +24,6 @@ pub struct Cast {
 
 #[derive(Debug, Default, Component)]
 pub struct Complete;
-
-pub fn cast_complete_spawn(
-    cast_query: Query<
-        (
-            &AbilityId,
-            &Source,
-            Option<&Target>,
-            Option<&InstantEffects>,
-        ),
-        (With<CastMarker>, With<Complete>),
-    >,
-
-    mut commands: Commands,
-) {
-    for (ability_id, source, opt_target, instant_bundle) in cast_query.iter() {
-        if let Some(instant_bundle) = instant_bundle {
-            let mut entity_commands = commands.spawn();
-            instant_bundle.0.apply(&mut entity_commands);
-
-            // Snapshot ability id
-            entity_commands.insert(*ability_id);
-
-            // Snapshot target from cast
-            if let Some(target) = opt_target {
-                entity_commands.insert(target.clone());
-            }
-
-            // Snapshot source
-            entity_commands.insert(source.clone());
-        }
-    }
-}
 
 #[derive(Component)]
 pub struct Failed;
@@ -170,7 +138,6 @@ where
         let set = SystemSet::on_update(self.state)
             .label(self.label.clone())
             .after(CAST_ANCHOR_LABEL)
-            .with_system(cast_complete_spawn)
             .with_system(cast_despawn)
             .with_system(cast_complete)
             .with_system(cast_movement_interrupt);

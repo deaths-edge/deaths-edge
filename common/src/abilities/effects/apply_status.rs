@@ -1,9 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    abilities::{AbilityId, Target},
-    dyn_command::DynEntityMutate,
-};
+use crate::dyn_command::DynEntityMutate;
 
 use super::CharacterEffect;
 
@@ -11,7 +8,7 @@ use super::CharacterEffect;
 pub struct ApplyStatus(pub DynEntityMutate);
 
 impl CharacterEffect for ApplyStatus {
-    type Domain<'a> = Entity;
+    type Domain<'a> = ();
 
     type Param<'w, 's> = ();
 
@@ -19,15 +16,16 @@ impl CharacterEffect for ApplyStatus {
 
     fn apply(
         &self,
-        _time: &Time,
-        ability_id: &AbilityId,
-        item: Entity,
+        parent_id: Entity,
+        _item: (),
         _param: &(),
+
+        _time: &Time,
+
         commands: &mut Commands,
     ) {
         info!("applying status");
         let mut entity_commands = commands.spawn();
-        self.0.apply(&mut entity_commands);
-        entity_commands.insert(Target(item)).insert(*ability_id);
+        self.0.apply(parent_id, &mut entity_commands);
     }
 }

@@ -9,7 +9,6 @@ mod index;
 mod interrupt;
 mod power;
 mod speed_multiplier;
-mod target;
 mod team;
 
 use std::{fmt::Debug, hash::Hash};
@@ -28,7 +27,6 @@ pub use index::*;
 pub use interrupt::*;
 pub use power::*;
 pub use speed_multiplier::*;
-pub use target::*;
 pub use team::*;
 
 #[derive(Debug, Default, Component)]
@@ -61,8 +59,6 @@ pub struct CharacterBundle {
     // Casting
     cast_state: CastState,
     last_cast_instant: LastCastInstant,
-
-    target: OptionalTarget,
 }
 
 pub struct CharacterPlugin<T> {
