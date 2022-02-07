@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use super::CharacterEffect;
-use crate::{abilities::AbilityId, character::Power};
+use crate::character::Power;
 
 #[derive(Default, Debug, Clone, Component)]
 pub struct PowerBurn(pub f32);

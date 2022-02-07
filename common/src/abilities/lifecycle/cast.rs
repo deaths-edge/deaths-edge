@@ -11,7 +11,7 @@ use crate::{
     dyn_command::DynEntityMutate,
 };
 
-use super::TotalDuration;
+use super::{TotalDuration, DESPAWN_LABEL};
 
 #[derive(Debug, Default, Clone, Component)]
 pub struct CastMarker;
@@ -22,21 +22,18 @@ pub struct Cast {
     pub duration: Duration,
 }
 
-#[derive(Debug, Default, Component)]
+#[derive(Debug, Default, Clone, Component)]
 pub struct Complete;
 
 #[derive(Component)]
 pub struct Failed;
 
+// TODO: Remove this?
 pub fn cast_despawn(
     cast_query: Query<(Entity, &Source), (With<CastMarker>, Or<(With<Failed>, With<Complete>)>)>,
     mut character_cast: Query<&mut CastState, With<CharacterMarker>>,
-
-    mut commands: Commands,
 ) {
-    for (cast_id, source) in cast_query.iter() {
-        commands.entity(cast_id).despawn();
-
+    for source in cast_query.iter() {
         let mut cast_state = character_cast
             .get_mut(source.0)
             .expect("failed to find character");
@@ -134,10 +131,12 @@ where
         let anchor = SystemSet::on_update(self.state)
             .label(self.label.clone())
             .label(CAST_ANCHOR_LABEL)
+            .before(DESPAWN_LABEL)
             .with_system(cast_anchor);
         let set = SystemSet::on_update(self.state)
             .label(self.label.clone())
             .after(CAST_ANCHOR_LABEL)
+            .before(DESPAWN_LABEL)
             .with_system(cast_despawn)
             .with_system(cast_complete)
             .with_system(cast_movement_interrupt);

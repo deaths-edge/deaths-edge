@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::{
     abilities::{
         effects::*,
-        lifecycle::{InstantEffect, StatusMarker, TotalDuration},
+        lifecycle::{Complete, ProgressDuration, StatusMarker, TotalDuration},
         magic_school::Fire,
         obstructions::{
             CantWhileCasting, MaximumRange, OnCooldown, OnGlobalCooldown, PowerCost, RequiresFov,
@@ -28,12 +28,12 @@ pub struct FireblastStatus {
 
     dot: AtTarget<Dot>,
 
+    progress_duration: ProgressDuration,
     total_duration: TotalDuration,
 }
 
 #[derive(Bundle, Clone)]
 pub struct FireblastEffects {
-    instant_marker: InstantEffect,
     effect_marker: EffectMarker,
 
     damage: AtTarget<Damage>,
@@ -41,6 +41,8 @@ pub struct FireblastEffects {
     apply_status: AtTarget<ApplyStatus>,
     power_cost: AtSelf<PowerBurn>,
     trigger_global_cooldown: AtSelf<TriggerGlobalCooldown>,
+
+    complete: Complete,
 }
 
 #[derive(Bundle)]
@@ -69,17 +71,18 @@ pub struct Fireblast {
 impl Fireblast {
     pub fn new() -> Self {
         const POWER_COST: f32 = 20.0;
-        const DOT_DURATION: Duration = Duration::from_secs(3);
+        const DOT_DURATION: Duration = Duration::from_secs(2);
 
         let fireblast_status = FireblastStatus {
             status_marker: StatusMarker,
             effect_marker: EffectMarker,
             dot: AtTarget(Dot(10.0)),
+
+            progress_duration: ProgressDuration::default(),
             total_duration: TotalDuration(DOT_DURATION),
         };
 
         let fireblast_effects = FireblastEffects {
-            instant_marker: InstantEffect,
             effect_marker: EffectMarker,
 
             damage: AtTarget(Damage(25.0)),
@@ -93,6 +96,8 @@ impl Fireblast {
             )),
             power_cost: AtSelf(PowerBurn(POWER_COST)),
             trigger_global_cooldown: AtSelf(TriggerGlobalCooldown),
+
+            complete: Complete,
         };
         let entity_mutate = EntityMutate::new()
             .insert_bundle(fireblast_effects)

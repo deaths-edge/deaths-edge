@@ -5,13 +5,13 @@ use bevy::prelude::*;
 use crate::{
     abilities::{
         effects::{AtSelf, AtTarget, Damage, EffectMarker, PowerBurn, TriggerGlobalCooldown},
-        lifecycle::{CastMarker, InstantEffect, OnComplete, ProgressDuration, TotalDuration},
+        lifecycle::{CastMarker, Complete, OnComplete, ProgressDuration, TotalDuration},
         magic_school::{Fire, Interruptable},
         obstructions::{
             CantWhileCasting, MaximumRange, OnGlobalCooldown, PowerCost, RequiresFov, RequiresLoS,
             RequiresStationary, RequiresTarget, UseObstructions,
         },
-        AbilityMarker, Target,
+        AbilityMarker, Source, Target,
     },
     dyn_command::EntityMutate,
 };
@@ -20,13 +20,14 @@ use super::OnPress;
 
 #[derive(Bundle, Clone)]
 pub struct ScorchEffects {
-    instant_marker: InstantEffect,
     effect_marker: EffectMarker,
 
     damage: AtTarget<Damage>,
     trigger_global_cooldown: AtSelf<TriggerGlobalCooldown>,
 
     power_cost: AtSelf<PowerBurn>,
+
+    complete: Complete,
 }
 
 #[derive(Debug, Clone, Bundle)]
@@ -79,13 +80,14 @@ impl Scorch {
         const MAX_RANGE: f32 = 500.0;
 
         let scorch_effects = ScorchEffects {
-            instant_marker: InstantEffect,
             effect_marker: EffectMarker,
 
             damage: AtTarget(Damage(DAMAGE)),
 
             trigger_global_cooldown: AtSelf(TriggerGlobalCooldown),
             power_cost: AtSelf(PowerBurn(POWER_COST)),
+
+            complete: Complete,
         };
         let effect_command = EntityMutate::new().insert_bundle(scorch_effects).arc();
 
@@ -110,7 +112,7 @@ impl Scorch {
 
         let scorch_cast = EntityMutate::new()
             .insert_bundle(scorch_cast)
-            .parent_source()
+            .snapshot_clone::<Source>()
             .snapshot_clone::<Target>()
             .arc();
 

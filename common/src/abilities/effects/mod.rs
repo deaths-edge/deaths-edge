@@ -29,7 +29,7 @@ pub use power_burn::*;
 pub use trigger_cooldown::*;
 pub use trigger_global_cooldown::*;
 
-use super::{AbilityId, AbilityMarker};
+use super::{lifecycle::DESPAWN_LABEL, AbilityId, AbilityMarker};
 
 /// Marks an [`Entity`] as a collection of "effects". These will be enacted every frame.
 #[derive(Debug, Default, Clone, Component)]
@@ -198,6 +198,7 @@ where
     fn build(&self, app: &mut App) {
         let set = SystemSet::on_update(self.state)
             .label(self.label.clone())
+            .before(DESPAWN_LABEL)
             .with_system(apply_effect_target::<E>)
             .with_system(apply_effect_self::<E>)
             // .with_system(apply_effect_radius::<E>)

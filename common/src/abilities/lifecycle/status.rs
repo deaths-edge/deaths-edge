@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::dyn_command::DynEntityMutate;
 
-use super::{Complete, ProgressDuration, TotalDuration};
+use super::{Complete, DESPAWN_LABEL};
 
 #[derive(Debug, Clone, Component)]
 pub struct StatusMarker;
@@ -20,27 +20,6 @@ pub struct FinalEffects(pub DynEntityMutate);
 
 #[derive(Debug, Component)]
 pub struct DispelEffects(pub DynEntityMutate);
-
-/// Once total progress has been made insert [`Complete`].
-pub fn status_complete(
-    query: Query<(Entity, &ProgressDuration, &TotalDuration), With<StatusMarker>>,
-    mut commands: Commands,
-) {
-    for (status_id, progress, total) in query.iter() {
-        if progress.0 > total.0 {
-            commands.entity(status_id).insert(Complete);
-        }
-    }
-}
-
-pub fn status_cleanup(
-    query: Query<Entity, (With<StatusMarker>, Or<(With<Complete>, With<Dispelled>)>)>,
-    mut commands: Commands,
-) {
-    for status_id in query.iter() {
-        commands.entity(status_id).despawn();
-    }
-}
 
 pub fn status_final_spawn(
     query: Query<(Entity, &FinalEffects), (With<StatusMarker>, With<Complete>)>,
@@ -78,8 +57,7 @@ where
     fn build(&self, app: &mut App) {
         let set = SystemSet::on_update(self.state)
             .label(self.label.clone())
-            .with_system(status_complete)
-            .with_system(status_cleanup)
+            .before(DESPAWN_LABEL)
             .with_system(status_final_spawn)
             .with_system(status_dispel_spawn);
         app.add_system_set(set);

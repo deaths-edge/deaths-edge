@@ -50,8 +50,8 @@ impl Pummel {
             on_press: OnPress(
                 EntityMutate::new()
                     .insert_bundle(effect)
-                    .snapshot_move::<Source>()
-                    .snapshot_move::<Target>()
+                    .snapshot_clone::<Source>()
+                    .snapshot_clone::<Target>()
                     .arc(),
             ),
         };
