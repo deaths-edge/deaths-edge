@@ -52,7 +52,6 @@ pub fn cast_anchor(
     mut commands: Commands,
 ) {
     for (cast_id, &Source(source)) in cast_query.iter() {
-        error!("anchoring cast");
         let character_id = character_query
             .get(source)
             .expect("failed to find character");

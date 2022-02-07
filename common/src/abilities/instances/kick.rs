@@ -6,7 +6,7 @@ use crate::{
     abilities::{
         effects::{AtTarget, EffectMarker, Interrupt},
         obstructions::{RequiresFov, RequiresTarget, UseObstructions},
-        AbilityMarker, Source, Target,
+        AbilityMarker, Target,
     },
     dyn_command::EntityMutate,
 };
@@ -50,7 +50,7 @@ impl Pummel {
             on_press: OnPress(
                 EntityMutate::new()
                     .insert_bundle(effect)
-                    .snapshot_clone::<Source>()
+                    .parent_source()
                     .snapshot_clone::<Target>()
                     .arc(),
             ),

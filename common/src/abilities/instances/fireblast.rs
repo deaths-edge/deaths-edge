@@ -86,7 +86,6 @@ impl Fireblast {
             effect_marker: EffectMarker,
 
             damage: AtTarget(Damage(25.0)),
-            cooldown: AtAbility(TriggerCooldown(COOLDOWN)),
             apply_status: AtTarget(ApplyStatus(
                 EntityMutate::new()
                     .insert_bundle(fireblast_status)
@@ -96,12 +95,13 @@ impl Fireblast {
             )),
             power_cost: AtSelf(PowerBurn(POWER_COST)),
             trigger_global_cooldown: AtSelf(TriggerGlobalCooldown),
+            cooldown: AtAbility(TriggerCooldown(COOLDOWN)),
 
             complete: Complete,
         };
         let entity_mutate = EntityMutate::new()
             .insert_bundle(fireblast_effects)
-            .snapshot_clone::<Source>()
+            .parent_source()
             .snapshot_clone::<Target>()
             .arc();
 
