@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use crate::{
     abilities::{
         effects::{AtTarget, EffectMarker, Interrupt},
+        lifecycle::Complete,
         obstructions::{RequiresFov, RequiresTarget, UseObstructions},
         AbilityMarker, Target,
     },
@@ -18,6 +19,8 @@ pub struct PummelEffect {
     marker: EffectMarker,
 
     interrupt: AtTarget<Interrupt>,
+
+    complete: Complete,
 }
 
 #[derive(Debug, Bundle)]
@@ -39,6 +42,8 @@ impl Pummel {
             marker: EffectMarker,
 
             interrupt: AtTarget(Interrupt(INTERRUPT_LENGTH)),
+
+            complete: Complete,
         };
 
         let pummel = Pummel {

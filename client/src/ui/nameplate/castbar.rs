@@ -46,7 +46,6 @@ pub fn cast_bar_update(
 
         match cast_id_res {
             Ok(&CastId(cast_id)) => {
-                info!("update castbar");
                 cast_bar_style.display = Display::Flex;
 
                 let (progress_cast_duration, total_cast_duration) = cast_query
