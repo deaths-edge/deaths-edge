@@ -101,7 +101,7 @@ impl Fireblast {
         };
         let entity_mutate = EntityMutate::new()
             .insert_bundle(fireblast_effects)
-            .parent_source()
+            .snapshot_clone::<Source>()
             .snapshot_clone::<Target>()
             .arc();
 

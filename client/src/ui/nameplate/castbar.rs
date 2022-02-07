@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use common::{
-    abilities::lifecycle::{CastMarker, TotalDuration},
-    character::{CastRef, CastState, CharacterMarker},
+    abilities::lifecycle::{CastMarker, ProgressDuration, TotalDuration},
+    character::{CastId, CharacterMarker},
 };
 
 use super::{NameplateMarker, NameplateParent};
@@ -34,38 +34,33 @@ impl CastBarBundle {
 }
 
 pub fn cast_bar_update(
-    time: Res<Time>,
     mut cast_bar_query: Query<(&Parent, &mut Style), With<CastBarMarker>>,
-    cast_query: Query<&TotalDuration, With<CastMarker>>,
+    cast_query: Query<(&ProgressDuration, &TotalDuration), With<CastMarker>>,
     nameplate_query: Query<&NameplateParent, With<NameplateMarker>>,
-    character_query: Query<&CastState, With<CharacterMarker>>,
+    character_query: Query<&CastId, With<CharacterMarker>>,
 ) {
-    let now = time.last_update().expect("last update not found");
-
     for (cast_bar_parent, mut cast_bar_style) in cast_bar_query.iter_mut() {
-        let character_cast = nameplate_query
+        let cast_id_res = nameplate_query
             .get(cast_bar_parent.0)
-            .and_then(|nameplate_parent| character_query.get(nameplate_parent.0))
-            .map(|character_cast_state| character_cast_state.0.as_ref());
+            .and_then(|nameplate_parent| character_query.get(nameplate_parent.0));
 
-        match character_cast {
-            Ok(Some(CastRef { start, cast_id })) => {
+        match cast_id_res {
+            Ok(&CastId(cast_id)) => {
+                info!("update castbar");
                 cast_bar_style.display = Display::Flex;
 
-                let total_cast_duration = cast_query
-                    .get(*cast_id)
+                let (progress_cast_duration, total_cast_duration) = cast_query
+                    .get(cast_id)
                     .expect("casts must have a cast duration");
 
-                let current_duration = now - *start;
-                let percent =
-                    100. * current_duration.as_secs_f32() / total_cast_duration.0.as_secs_f32();
+                let percent = 100. * progress_cast_duration.0.as_secs_f32()
+                    / total_cast_duration.0.as_secs_f32();
 
                 cast_bar_style.size.width = Val::Percent(percent);
             }
-            Ok(None) => {
+            _ => {
                 cast_bar_style.display = Display::None;
             }
-            _ => (),
         }
     }
 }

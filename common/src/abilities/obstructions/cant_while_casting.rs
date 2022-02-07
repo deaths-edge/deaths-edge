@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     abilities::{AbilityMarker, Source},
-    character::{CastState, CharacterMarker},
+    character::{CastId, CharacterMarker},
 };
 
 use super::{Obstruction, UseObstructions};
@@ -11,18 +11,16 @@ use super::{Obstruction, UseObstructions};
 pub struct CantWhileCasting;
 
 pub fn check_while_casting(
-    character_query: Query<&CastState, With<CharacterMarker>>,
+    character_query: Query<(), (With<CharacterMarker>, With<CastId>)>,
     mut ability_query: Query<
         (&Source, &mut UseObstructions),
         (With<AbilityMarker>, With<CantWhileCasting>),
     >,
 ) {
     for (Source(source), mut obstructions) in ability_query.iter_mut() {
-        let cast_state = character_query
-            .get(*source)
-            .expect("failed to find character");
+        let is_casting = character_query.get(*source).is_ok();
 
-        if cast_state.0.is_some() {
+        if is_casting {
             obstructions.0.insert(Obstruction::Casting);
         } else {
             obstructions.0.remove(&Obstruction::Casting);

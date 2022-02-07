@@ -80,6 +80,12 @@ where
             label: self.label.clone(),
         };
 
+        let completion = SystemSet::on_update(self.state)
+            .label(self.label.clone())
+            .before(DESPAWN_LABEL)
+            .with_system(complete_progress)
+            .with_system(on_complete_spawn);
+
         let despawn = SystemSet::on_update(self.state)
             .label(self.label.clone())
             .label(DESPAWN_LABEL)
@@ -87,8 +93,7 @@ where
 
         app.add_plugin(cast_plugin)
             .add_plugin(status_plugin)
-            .add_system_set(despawn)
-            .add_system(complete_progress)
-            .add_system(on_complete_spawn); // TODO: Order this
+            .add_system_set(completion)
+            .add_system_set(despawn); // TODO: Order this
     }
 }

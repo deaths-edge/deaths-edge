@@ -65,11 +65,8 @@ pub fn character_ability(
         }
 
         if let Some(on_press) = on_press_opt {
-            info!("spawning instant bundle");
             let mut entity_commands = commands.spawn();
             on_press.0.apply(character_id, &mut entity_commands);
-
-            info!("spawned instant bundle");
         }
     }
 }

@@ -8,7 +8,7 @@ use crate::{
         lifecycle::{CastMarker, Failed},
         magic_school::*,
     },
-    character::{CastState, Interrupted},
+    character::{CastId, Interrupted},
 };
 
 #[derive(Default, Debug, Clone, Component)]
@@ -22,7 +22,7 @@ type SchoolClassify = (
 type InterruptableFilter = (With<CastMarker>, With<Interruptable>);
 
 impl CharacterEffect for Interrupt {
-    type Domain<'a> = (Entity, &'a mut CastState);
+    type Domain<'a> = (Entity, Option<&'a CastId>);
 
     type Param<'w, 's> = Query<'w, 's, SchoolClassify, InterruptableFilter>;
     type Fetch = QueryState<SchoolClassify, InterruptableFilter>;
@@ -31,7 +31,7 @@ impl CharacterEffect for Interrupt {
         &self,
         _parent_id: Entity,
 
-        (character_id, cast_state): (Entity, Mut<'_, CastState>),
+        (character_id, cast_id_opt): (Entity, Option<&CastId>),
         schools: &Query<SchoolClassify, InterruptableFilter>,
 
         time: &Time,
@@ -39,8 +39,8 @@ impl CharacterEffect for Interrupt {
         commands: &mut Commands,
     ) {
         // If casting then grab cast_id
-        let cast_id = if let Some(cast) = cast_state.0.as_ref() {
-            cast.cast_id
+        let cast_id = if let Some(&CastId(cast_id)) = cast_id_opt {
+            cast_id
         } else {
             return;
         };

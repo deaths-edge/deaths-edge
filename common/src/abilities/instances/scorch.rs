@@ -89,7 +89,11 @@ impl Scorch {
 
             complete: Complete,
         };
-        let effect_command = EntityMutate::new().insert_bundle(scorch_effects).arc();
+        let effect_command = EntityMutate::new()
+            .insert_bundle(scorch_effects)
+            .snapshot_move::<Source>()
+            .snapshot_move::<Target>()
+            .arc();
 
         let scorch_cast = ScorchCast {
             marker: CastMarker,
@@ -112,7 +116,7 @@ impl Scorch {
 
         let scorch_cast = EntityMutate::new()
             .insert_bundle(scorch_cast)
-            .snapshot_clone::<Source>()
+            .parent_source()
             .snapshot_clone::<Target>()
             .arc();
 

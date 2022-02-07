@@ -4,7 +4,7 @@ use heron::prelude::*;
 use crate::{
     abilities::instances,
     character::{
-        Abilities, CastState, CharacterBundle, CharacterIndex, CharacterMarker, Controls, Health,
+        Abilities, CharacterBundle, CharacterIndex, CharacterMarker, Controls, Health,
         LastCastInstant, Power, PowerRegenerate, SpeedMultiplier, Team,
     },
     physics::WorldLayer,
@@ -61,7 +61,6 @@ impl ClassTrait for Medea {
             },
             abilities,
 
-            cast_state: CastState::default(),
             last_cast_instant: LastCastInstant::default(),
         };
 

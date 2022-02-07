@@ -1,6 +1,6 @@
 mod abilities;
 mod actions;
-mod casting;
+mod cast_id;
 mod classes;
 mod control;
 mod cooldowns;
@@ -18,7 +18,7 @@ use heron::prelude::*;
 
 pub use abilities::*;
 pub use actions::*;
-pub use casting::*;
+pub use cast_id::*;
 pub use classes::*;
 pub use control::*;
 pub use cooldowns::*;
@@ -56,8 +56,6 @@ pub struct CharacterBundle {
     power: Power,
     abilities: Abilities,
 
-    // Casting
-    cast_state: CastState,
     last_cast_instant: LastCastInstant,
 }
 

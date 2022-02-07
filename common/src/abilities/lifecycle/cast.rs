@@ -7,11 +7,11 @@ use crate::{
         obstructions::{RequiresStationary, UseObstructions},
         Source,
     },
-    character::{CastRef, CastState, CharacterEntityAction, CharacterMarker, Motion},
+    character::{CastId, CharacterEntityAction, CharacterMarker, Motion},
     dyn_command::DynEntityMutate,
 };
 
-use super::{TotalDuration, DESPAWN_LABEL};
+use super::DESPAWN_LABEL;
 
 #[derive(Debug, Default, Clone, Component)]
 pub struct CastMarker;
@@ -30,70 +30,49 @@ pub struct Failed;
 
 // TODO: Remove this?
 pub fn cast_despawn(
-    cast_query: Query<(Entity, &Source), (With<CastMarker>, Or<(With<Failed>, With<Complete>)>)>,
-    mut character_cast: Query<&mut CastState, With<CharacterMarker>>,
+    cast_query: Query<&Source, (With<CastMarker>, Or<(With<Failed>, With<Complete>)>)>,
+    character_query: Query<Entity, With<CharacterMarker>>,
+
+    mut commands: Commands,
 ) {
     for source in cast_query.iter() {
-        let mut cast_state = character_cast
-            .get_mut(source.0)
+        let character_id = character_query
+            .get(source.0)
             .expect("failed to find character");
 
-        cast_state.0 = None;
+        commands.entity(character_id).remove::<CastId>();
     }
 }
 
 /// Anchors new casts to cast state.
 pub fn cast_anchor(
-    time: Res<Time>,
     cast_query: Query<(Entity, &Source), Added<CastMarker>>,
-    mut character_query: Query<&mut CastState, With<CharacterMarker>>,
+    character_query: Query<Entity, With<CharacterMarker>>,
+
+    mut commands: Commands,
 ) {
-    let now = time.last_update().expect("failed to find last update");
-
-    for (cast_id, Source(source)) in cast_query.iter() {
-        let mut cast_state = character_query
-            .get_mut(*source)
+    for (cast_id, &Source(source)) in cast_query.iter() {
+        error!("anchoring cast");
+        let character_id = character_query
+            .get(source)
             .expect("failed to find character");
-        let cast = CastRef {
-            start: now,
-            cast_id,
-        };
 
-        if cast_state.0.is_some() {
-            panic!("cannot cast while casting");
-        }
-
-        cast_state.0 = Some(cast);
+        commands.entity(character_id).insert(CastId(cast_id));
     }
 }
 
 /// Checks if cast has completed.
-pub fn cast_complete(
-    time: Res<Time>,
-
+pub fn cast_obstruct(
     cast_query: Query<
-        (&TotalDuration, &UseObstructions, &Source),
+        (Entity, &UseObstructions),
         (With<CastMarker>, Without<Failed>, Without<Complete>),
     >,
-    mut character_query: Query<&CastState, With<CharacterMarker>>,
 
     mut commands: Commands,
 ) {
-    let now = time.last_update().expect("cannot find last update");
-
-    for (duration, obstructions, source) in cast_query.iter() {
-        let cast_state = character_query
-            .get_mut(source.0)
-            .expect("failed to find character");
-        let cast = cast_state.0.as_ref().expect("found cast but no cast state");
-        let end = cast.start + duration.0;
-
-        if end < now {
-            let obstructed = !obstructions.0.is_empty();
-
-            if !obstructed {
-                commands.entity(cast.cast_id).insert(Complete);
-            }
+    for (cast_id, obstructions) in cast_query.iter() {
+        if !obstructions.0.is_empty() {
+            commands.entity(cast_id).insert(Failed);
         }
     }
 }
@@ -138,7 +117,7 @@ where
             .after(CAST_ANCHOR_LABEL)
             .before(DESPAWN_LABEL)
             .with_system(cast_despawn)
-            .with_system(cast_complete)
+            .with_system(cast_obstruct)
             .with_system(cast_movement_interrupt);
         app.add_system_set(anchor).add_system_set(set);
     }
