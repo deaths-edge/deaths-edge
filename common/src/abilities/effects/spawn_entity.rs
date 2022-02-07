@@ -5,9 +5,9 @@ use crate::dyn_command::DynEntityMutate;
 use super::CharacterEffect;
 
 #[derive(Clone)]
-pub struct ApplyStatus(pub DynEntityMutate);
+pub struct SpawnEntity(pub DynEntityMutate);
 
-impl CharacterEffect for ApplyStatus {
+impl CharacterEffect for SpawnEntity {
     type Domain<'a> = ();
 
     type Param<'w, 's> = ();
@@ -24,7 +24,6 @@ impl CharacterEffect for ApplyStatus {
 
         commands: &mut Commands,
     ) {
-        info!("applying status");
         let mut entity_commands = commands.spawn();
         self.0.apply(parent_id, &mut entity_commands);
     }

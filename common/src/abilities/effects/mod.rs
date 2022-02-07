@@ -1,8 +1,8 @@
-mod apply_status;
 mod damage;
 mod dot;
 mod interrupt;
 mod power_burn;
+mod spawn_entity;
 mod trigger_cooldown;
 mod trigger_global_cooldown;
 
@@ -21,11 +21,11 @@ use crate::{
     character::CharacterMarker,
 };
 
-pub use apply_status::*;
 pub use damage::*;
 pub use dot::*;
 pub use interrupt::*;
 pub use power_burn::*;
+pub use spawn_entity::*;
 pub use trigger_cooldown::*;
 pub use trigger_global_cooldown::*;
 
@@ -293,7 +293,7 @@ where
             .add_character_effect::<TriggerGlobalCooldown>(app)
             .add_character_effect::<Interrupt>(app)
             .add_character_effect::<Dot>(app)
-            .add_character_effect::<ApplyStatus>(app)
+            .add_character_effect::<SpawnEntity>(app)
             .add_ability_effect::<TriggerCooldown>(app);
     }
 }

@@ -38,7 +38,7 @@ pub struct FireblastEffects {
 
     damage: AtTarget<Damage>,
     cooldown: AtAbility<TriggerCooldown>,
-    apply_status: AtTarget<ApplyStatus>,
+    apply_status: AtTarget<SpawnEntity>,
     power_cost: AtSelf<PowerBurn>,
     trigger_global_cooldown: AtSelf<TriggerGlobalCooldown>,
 
@@ -86,7 +86,7 @@ impl Fireblast {
             effect_marker: EffectMarker,
 
             damage: AtTarget(Damage(25.0)),
-            apply_status: AtTarget(ApplyStatus(
+            apply_status: AtTarget(SpawnEntity(
                 EntityMutate::new()
                     .insert_bundle(fireblast_status)
                     .snapshot_clone::<Source>()
