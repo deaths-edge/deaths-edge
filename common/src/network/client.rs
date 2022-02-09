@@ -1,9 +1,22 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    character::{Ability, FocalAngle, Motion, SelectTarget},
+    character::{Ability, Class, FocalAngle, Motion, SelectTarget},
     game::ArenaPermit,
 };
+
+/// Primary message sent from client to matchmaker.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub enum ClientMatchmakingMessage {
+    Enter(LobbyEnter),
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct LobbyEnter {
+    pub user_id: u64,
+    pub token: Vec<u8>,
+    pub class: Class,
+}
 
 /// Primary message sent from client to server.
 #[derive(Clone, Debug, Deserialize, Serialize)]

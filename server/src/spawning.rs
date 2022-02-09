@@ -9,15 +9,12 @@ use common::{
     game::GameRoster,
     network::{
         server::{GameAction, ServerMessage, SpawnCharacter},
-        NetworkResource,
+        ClientAddress, NetworkResource,
     },
     state::ArenaState,
 };
 
-use crate::{
-    character::{ClientAddress, ServerCharacterBundle},
-    network::NETWORK_HANDLE_LABEL,
-};
+use crate::{character::ServerCharacterBundle, network::NETWORK_HANDLE_LABEL};
 
 pub const SPAWNER_LABEL: &str = "spawner";
 

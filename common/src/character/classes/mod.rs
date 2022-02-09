@@ -46,6 +46,13 @@ pub trait ClassTrait {
     }
 }
 
+#[derive(PartialEq, Eq)]
+pub enum Role {
+    Melee,
+    Ranged,
+    Support,
+}
+
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash, Component)]
 pub enum Class {
     /// Melee: Damage + Survivability
@@ -84,6 +91,23 @@ pub enum Class {
 }
 
 impl Class {
+    pub fn role(&self) -> Role {
+        use Class::*;
+        use Role::*;
+
+        match self {
+            Mars => Melee,
+            Pluto => Melee,
+            Mammon => Melee,
+            Nergal => Ranged,
+            Medea => Ranged,
+            Janus => Ranged,
+            Borvo => Support,
+            Heka => Support,
+            Rhea => Support,
+        }
+    }
+
     pub fn cycle_right(self) -> Self {
         use Class::*;
         match self {

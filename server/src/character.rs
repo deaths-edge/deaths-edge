@@ -1,9 +1,6 @@
 use bevy::prelude::*;
 
-use common::network::ConnectionHandle;
-
-#[derive(Debug, Component)]
-pub struct ClientAddress(pub ConnectionHandle);
+use common::network::ClientAddress;
 
 #[derive(Bundle)]
 pub struct ServerCharacterBundle {

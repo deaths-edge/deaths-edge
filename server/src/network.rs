@@ -11,14 +11,12 @@ use common::{
     game::{ArenaPermit, GameRoster},
     network::{
         client::{ClientAction, ClientMessage},
-        find_my_ip_address, network_setup,
+        find_my_ip_address,
         server::{ArenaSetup, CharacterAction, GameAction, Reconcile, ServerMessage},
-        CharacterNetworkAction, ConnectionHandle, NetworkEvent, NetworkResource, NetworkingPlugin,
-        SERVER_PORT,
+        CharacterNetworkAction, ClientAddress, ConnectionHandle, NetworkEvent, NetworkResource,
+        NetworkingPlugin, CLIENT_MESSAGE_SETTINGS, SERVER_MESSAGE_SETTINGS, SERVER_PORT,
     },
 };
-
-use crate::character::ClientAddress;
 
 pub const NETWORK_HANDLE_LABEL: &str = "network-handle";
 pub const NETWORK_RELAY_LABEL: &str = "network-relay";
@@ -211,6 +209,17 @@ pub fn startup(mut net: ResMut<NetworkResource>) {
 }
 
 pub struct NetworkServerPlugin;
+
+fn network_setup(mut net: ResMut<NetworkResource>) {
+    net.set_channels_builder(|builder| {
+        builder
+            .register::<ServerMessage>(SERVER_MESSAGE_SETTINGS)
+            .unwrap();
+        builder
+            .register::<ClientMessage>(CLIENT_MESSAGE_SETTINGS)
+            .unwrap();
+    })
+}
 
 impl Plugin for NetworkServerPlugin {
     fn build(&self, app: &mut App) {

@@ -8,11 +8,10 @@ use common::{
     character::{Ability, Class, FocalAngle, Motion, SelectTarget, Team},
     game::{ArenaPasscode, ArenaPermit},
     network::{
-        client::ClientMessage,
-        network_setup,
+        client::{ClientMatchmakingMessage, ClientMessage},
         server::{CharacterAction, GameAction, Reconcile, ServerMessage, SpawnCharacter},
         CharacterNetworkAction, NetworkEvent, NetworkResource, NetworkingPlugin,
-        NETWORK_SETUP_LABEL,
+        CLIENT_MESSAGE_SETTINGS, MATCHMAKING_MESSAGE_SETTINGS, SERVER_MESSAGE_SETTINGS,
     },
 };
 
@@ -150,10 +149,23 @@ pub enum NetworkingState {
     Sleep,
 }
 
+fn network_setup(mut net: ResMut<NetworkResource>) {
+    net.set_channels_builder(|builder| {
+        builder
+            .register::<ServerMessage>(SERVER_MESSAGE_SETTINGS)
+            .unwrap();
+        builder
+            .register::<ClientMessage>(CLIENT_MESSAGE_SETTINGS)
+            .unwrap();
+        builder
+            .register::<ClientMatchmakingMessage>(MATCHMAKING_MESSAGE_SETTINGS)
+            .unwrap();
+    })
+}
+
 impl Plugin for NetworkPlugin {
     fn build(&self, app: &mut App) {
         let setup = SystemSet::on_enter(ClientState::Connecting)
-            .label(NETWORK_SETUP_LABEL)
             .with_system(startup)
             .with_system(network_setup);
 
