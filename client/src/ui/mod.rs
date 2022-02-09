@@ -7,6 +7,7 @@ pub mod selected;
 pub mod splash;
 
 use bevy::prelude::*;
+use bevy_egui::EguiPlugin;
 
 pub struct UIFonts {
     splash: Handle<Font>,
@@ -29,7 +30,8 @@ pub struct UIPlugin;
 
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<UIFonts>()
+        app.add_plugin(EguiPlugin)
+            .init_resource::<UIFonts>()
             .add_plugin(camera::UICameraPlugin)
             .add_plugin(mouse::WorldMousePlugin)
             .add_plugin(nameplate::NameplatePlugin)

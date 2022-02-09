@@ -7,16 +7,16 @@ use crate::{
     character::CharacterPlugin,
     game_camera::GameCameraPlugin,
     input_mapping::InputMapPlugin,
-    music::SplashMusicPlugin,
-    network::{GameServer, NetworkingState},
-    spawning::SpawnPlugin,
+    // music::SplashMusicPlugin,
+    network::{ArenaServer, NetworkingState},
+    spawning::{SpawnPlugin, SpawnState},
     ui::{splash::SplashUIPlugin, UIPlugin},
 };
 
 use common::{heron::PhysicsPlugin, network::server::ArenaSetup, state::ArenaState};
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-pub enum ClientState {
+pub enum GameState {
     /// Splash screen
     Splash,
     /// Main lobby
@@ -53,7 +53,8 @@ pub enum StateTransition {
 fn state_transitions(
     mut transition_events: EventReader<StateTransition>,
 
-    mut app_state: ResMut<State<ClientState>>,
+    mut ui_state: ResMut<State<GameState>>,
+    mut spawning_state: ResMut<State<SpawnState>>,
     mut network_state: ResMut<State<NetworkingState>>,
     mut arena_state: ResMut<State<ArenaState>>,
 
@@ -63,22 +64,31 @@ fn state_transitions(
         info!(state_transition = ?event);
         match event {
             StateTransition::MainLobby => {
-                app_state
-                    .set(ClientState::MainLobby)
+                ui_state
+                    .set(GameState::MainLobby)
+                    .expect("state transition failed");
+                spawning_state
+                    .set(SpawnState::Active)
                     .expect("state transition failed");
             }
             StateTransition::Connect { server } => {
-                app_state
-                    .set(ClientState::Connecting)
+                ui_state
+                    .set(GameState::Connecting)
+                    .expect("state transition failed");
+                spawning_state
+                    .set(SpawnState::Unactive)
                     .expect("state transition failed");
                 network_state
                     .set(NetworkingState::Active)
                     .expect("state transition failed");
-                commands.insert_resource(GameServer::new(*server))
+                commands.insert_resource(ArenaServer::new(*server))
             }
             StateTransition::Connected { setup } => {
-                app_state
-                    .set(ClientState::Arena)
+                ui_state
+                    .set(GameState::Arena)
+                    .expect("state transition failed");
+                spawning_state
+                    .set(SpawnState::Active)
                     .expect("state transition failed");
                 arena_state
                     .set(ArenaState::Waiting)
@@ -93,7 +103,9 @@ pub struct SplashPlugin;
 
 impl Plugin for SplashPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(SplashUIPlugin).add_plugin(SplashMusicPlugin);
+        app.add_plugin(SplashUIPlugin)
+        // .add_plugin(SplashMusicPlugin)
+        ;
     }
 }
 

@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 bevy = "0.6.0"
 
-structopt = "0.3.25"
+clap = { version = "3.0.14", features = ["derive"] }
 
 tracing = "0.1.29"
 tracing-subscriber = { version = "0.3.6", features = ["env-filter", "std"] }
@@ -14,3 +14,5 @@ tracing-subscriber = { version = "0.3.6", features = ["env-filter", "std"] }
 thiserror = "1.0.30"
 
 common = { path = "../common" }
+
+bevy_egui = "0.11.1"

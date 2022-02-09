@@ -18,7 +18,7 @@ use common::{
 use crate::{
     input_mapping::PlayerInputAction,
     spawning::SPAWN_CHARACTER_LABEL,
-    state::{ClientState, StateTransition},
+    state::{GameState, StateTransition},
     Opt,
 };
 
@@ -26,11 +26,11 @@ use character_command::*;
 
 pub const NETWORK_HANDLE_LABEL: &str = "network-handle";
 
-pub struct GameServer {
+pub struct ArenaServer {
     address: SocketAddr,
 }
 
-impl GameServer {
+impl ArenaServer {
     pub fn new(address: SocketAddr) -> Self {
         Self { address }
     }
@@ -133,8 +133,13 @@ fn player_input_to_network<Value>(
 
 pub struct NetworkPlugin;
 
-pub fn startup(mut net: ResMut<NetworkResource>, game_server: Res<GameServer>) {
-    net.connect(game_server.address());
+pub fn connect_arena_server(
+    mut net: ResMut<NetworkResource>,
+    arena_server_opt: Option<Res<ArenaServer>>,
+) {
+    if let Some(arena_server) = arena_server_opt {
+        net.connect(arena_server.address());
+    }
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
@@ -160,14 +165,13 @@ fn network_setup(mut net: ResMut<NetworkResource>) {
         builder
             .register::<ClientMatchmakingMessage>(MATCHMAKING_MESSAGE_SETTINGS)
             .unwrap();
-    })
+    });
 }
 
 impl Plugin for NetworkPlugin {
     fn build(&self, app: &mut App) {
-        let setup = SystemSet::on_enter(ClientState::Connecting)
-            .with_system(startup)
-            .with_system(network_setup);
+        let connect_arena_server =
+            SystemSet::on_enter(GameState::Connecting).with_system(connect_arena_server);
 
         // Request entry to arena
         // TODO: Do this in lobby
@@ -190,7 +194,8 @@ impl Plugin for NetworkPlugin {
             .add_plugin(CharacterNetworkActionPlugin::<SelectTarget>::new())
             .add_plugin(CharacterNetworkActionPlugin::<Ability>::new())
             .add_plugin(CharacterNetworkActionPlugin::<FocalAngle>::new())
-            .add_system_set(setup)
+            .add_startup_system(network_setup)
+            .add_system_set(connect_arena_server)
             .add_system_set(send_passcode)
             .add_system_set(handle_server_message);
     }

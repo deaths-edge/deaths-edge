@@ -7,7 +7,7 @@ use common::{
     network::{client::ClientMessage, CharacterNetworkAction},
 };
 
-use crate::{character::PlayerState, input_mapping::INPUT_TO_CHARACTER_LABEL, state::ClientState};
+use crate::{character::PlayerState, input_mapping::INPUT_TO_CHARACTER_LABEL, state::GameState};
 
 use super::{player_input_to_network, NETWORK_HANDLE_LABEL};
 
@@ -59,7 +59,7 @@ where
             .after(INPUT_TO_CHARACTER_LABEL)
             .with_system(player_input_to_network::<T>);
 
-        let network_to_entity = SystemSet::on_update(ClientState::Arena)
+        let network_to_entity = SystemSet::on_update(GameState::Arena)
             .label(NETWORK_TO_ENTITY_LABEL)
             // NETWORK_HANDLE_LABEL sends CharacterNetworkAction<Value> events
             .after(NETWORK_HANDLE_LABEL)

@@ -10,7 +10,7 @@ pub use reconcile::*;
 
 use common::{character::CharacterPlugin as CommonCharacterPlugin, network::server::Reconcile};
 
-use crate::{network::NETWORK_HANDLE_LABEL, state::ClientState};
+use crate::{network::NETWORK_HANDLE_LABEL, state::GameState};
 
 #[derive(Bundle)]
 pub struct ClientCharacterBundle {
@@ -22,7 +22,7 @@ pub struct CharacterPlugin;
 
 impl Plugin for CharacterPlugin {
     fn build(&self, app: &mut App) {
-        let reconcile = SystemSet::on_update(ClientState::Arena)
+        let reconcile = SystemSet::on_update(GameState::Arena)
             .label(RECONCILE_LABEL)
             // NETWORK_HANDLE_LABEL writes Reconcile events
             .after(NETWORK_HANDLE_LABEL)
@@ -31,7 +31,7 @@ impl Plugin for CharacterPlugin {
             .add_event::<Reconcile>()
             .add_plugin(PlayerPlugin)
             .add_plugin(CommonCharacterPlugin {
-                state: ClientState::Arena,
+                state: GameState::Arena,
             });
     }
 }

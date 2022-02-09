@@ -15,7 +15,7 @@ pub use power::*;
 pub use setup::*;
 
 use super::camera::UICameraMarker;
-use crate::{state::ClientState, ui::mouse::local_to_window_position};
+use crate::{state::GameState, ui::mouse::local_to_window_position};
 
 use common::character::CharacterMarker;
 
@@ -126,7 +126,7 @@ pub struct NameplatePlugin;
 
 impl Plugin for NameplatePlugin {
     fn build(&self, app: &mut App) {
-        let nameplate_system_set = SystemSet::on_update(ClientState::Arena)
+        let nameplate_system_set = SystemSet::on_update(GameState::Arena)
             .label(NAMEPLATE_LABEL)
             .with_system(update_nameplate_position)
             .with_system(health_bar_update)

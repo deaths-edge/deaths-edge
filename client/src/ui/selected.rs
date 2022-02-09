@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{character::PlayerMarker, state::ClientState};
+use crate::{character::PlayerMarker, state::GameState};
 
 use common::{abilities::Target, character::CharacterMarker};
 
@@ -75,10 +75,10 @@ pub struct SelectedPlugin;
 
 impl Plugin for SelectedPlugin {
     fn build(&self, app: &mut App) {
-        let selection = SystemSet::on_update(ClientState::Arena)
+        let selection = SystemSet::on_update(GameState::Arena)
             .with_system(select_changed)
             .with_system(select_follow);
-        let selection_spawn = SystemSet::on_enter(ClientState::Arena).with_system(spawn_selection);
+        let selection_spawn = SystemSet::on_enter(GameState::Arena).with_system(spawn_selection);
         app.add_system_set(selection_spawn)
             .add_system_set(selection);
     }

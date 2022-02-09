@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use common::{
     character::{mars::Mars, medea::Medea, Class, ClassTrait},
     network::server::SpawnCharacter,
-    state::ArenaState,
 };
 
 use crate::{
@@ -74,14 +73,22 @@ pub fn spawn_characters(
 /// While [`ArenaState::Waiting`] run [`spawn_characters`].
 pub struct SpawnPlugin;
 
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+pub enum SpawnState {
+    Active,
+    Unactive,
+}
+
 impl Plugin for SpawnPlugin {
     fn build(&self, app: &mut App) {
-        let spawner = SystemSet::on_update(ArenaState::Waiting)
+        let spawner = SystemSet::on_update(SpawnState::Active)
             .label(SPAWN_CHARACTER_LABEL)
             // NETWORK_HANDLE_LABEL writes SpawnCharacter events.
             .after(NETWORK_HANDLE_LABEL)
             .with_system(spawn_characters);
 
-        app.add_event::<SpawnCharacter>().add_system_set(spawner);
+        app.add_state(SpawnState::Unactive)
+            .add_event::<SpawnCharacter>()
+            .add_system_set(spawner);
     }
 }

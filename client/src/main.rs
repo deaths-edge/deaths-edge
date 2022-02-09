@@ -2,7 +2,7 @@ mod abilities;
 mod character;
 mod game_camera;
 mod input_mapping;
-mod music;
+// mod music;
 mod network;
 mod spawning;
 mod state;
@@ -13,23 +13,24 @@ use std::{net::SocketAddr, time::Duration};
 
 use bevy::prelude::*;
 
-use structopt::StructOpt;
+use clap::Parser;
 
 use network::NetworkPlugin;
 use state::*;
 use window::window_description;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
+#[clap(author, version, about)]
 pub struct Opt {
-    #[structopt(short, long, default_value = "127.0.0.1:8000")]
+    #[clap(short, long, default_value = "127.0.0.1:8000")]
     server: SocketAddr,
-    #[structopt(short, long, default_value = "1234")]
+    #[clap(short, long, default_value = "1234")]
     passcode: u64,
 }
 
 fn state_transition(
     time: Res<Time>,
-    app_state: Res<State<ClientState>>,
+    app_state: Res<State<GameState>>,
     mut transition_writer: EventWriter<StateTransition>,
     settings: Res<Opt>,
 ) {
@@ -39,7 +40,7 @@ fn state_transition(
         return;
     }
 
-    if *app_state.current() == ClientState::Splash {
+    if *app_state.current() == GameState::Splash {
         transition_writer.send(StateTransition::MainLobby);
     }
 }
@@ -47,7 +48,7 @@ fn state_transition(
 fn main() {
     let window_description = window_description();
 
-    let opt = Opt::from_args();
+    let opt = Opt::parse();
 
     let state_transitions = SystemSet::new()
         .before("state-transitions")
@@ -64,7 +65,7 @@ fn main() {
         .insert_resource(window_description)
         // Default plugins
         .add_plugins(DefaultPlugins)
-        .add_state(ClientState::Splash)
+        .add_state(GameState::Splash)
         .add_plugin(StateTransitionPlugin)
         .add_plugin(SplashPlugin)
         .add_plugin(ArenaPlugin)

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::state::ClientState;
+use crate::state::GameState;
 
 pub struct Music {
     splash: Handle<AudioSource>,
@@ -26,7 +26,7 @@ pub struct SplashMusicPlugin;
 
 impl Plugin for SplashMusicPlugin {
     fn build(&self, app: &mut App) {
-        let splash_music = SystemSet::on_enter(ClientState::Arena).with_system(fade_splash);
+        let splash_music = SystemSet::on_enter(GameState::Arena).with_system(fade_splash);
         app.init_resource::<Music>().add_startup_system(setup);
     }
 }
