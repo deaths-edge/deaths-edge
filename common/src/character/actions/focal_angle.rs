@@ -21,7 +21,6 @@ pub fn character_focal_rotate(
     mut events: EventReader<CharacterEntityAction<FocalAngle>>,
 ) {
     if let Some(action) = events.iter().last() {
-        info!(message = "rotating", angle = %action.action.0);
         let (mut transform, mut velocity) = character_query
             .get_mut(action.id)
             .expect("player not found");

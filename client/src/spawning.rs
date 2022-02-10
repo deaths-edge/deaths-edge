@@ -1,14 +1,17 @@
 use bevy::prelude::*;
 
 use common::{
-    character::{mars::Mars, medea::Medea, Class, ClassTrait},
-    network::server::SpawnCharacter,
+    character::{
+        mars::Mars, medea::Medea, CharacterIndex, CharacterMarker, Class, ClassTrait, Team,
+    },
+    network::server::{DespawnCharacter, SpawnCharacter},
 };
 
 use crate::{
     character::{mars::ClientMars, medea::ClientMedea, PlayerMarker, PlayerState},
     network::NETWORK_HANDLE_LABEL,
-    ui::nameplate::setup_nameplate,
+    ui::hud::nameplate::{setup_nameplate, NameplateMarker, NameplateParent},
+    GameState,
 };
 
 pub const SPAWN_CHARACTER_LABEL: &str = "spawn-characters";
@@ -58,9 +61,7 @@ pub fn spawn_characters(
 
         let id = if spawn_event.player {
             info!("spawned player");
-            player_state
-                .set(PlayerState::Spawned)
-                .expect("this can't happen twice");
+            let _ = player_state.overwrite_set(PlayerState::Spawned);
             entity_commands.insert(PlayerMarker).id()
         } else {
             info!("spawned character");
@@ -70,13 +71,77 @@ pub fn spawn_characters(
     }
 }
 
+fn despawn_characters(
+    mut despawn_reader: EventReader<DespawnCharacter>,
+    mut player_state: ResMut<State<PlayerState>>,
+
+    character_query: Query<(Entity, &CharacterIndex, With<PlayerMarker>), With<CharacterMarker>>,
+    nameplate_query: Query<(Entity, &NameplateParent), With<NameplateMarker>>,
+
+    mut commands: Commands,
+) {
+    for despawn in despawn_reader.iter() {
+        info!("despawn found");
+        let (id, _, is_player) = character_query
+            .iter()
+            .find(|(_, index, _)| despawn.index == **index)
+            .expect("can't find character");
+
+        if is_player {
+            info!("is player");
+            // TODO: This seems like a bug?
+            // let _ = player_state.overwrite_set(PlayerState::Waiting);
+        }
+
+        // Remove character
+        commands.entity(id).despawn();
+
+        // Remove nameplate
+        let (nameplate_id, _) = nameplate_query
+            .iter()
+            .find(|(_, parent)| parent.0 == id)
+            .expect("failed to find nameplate");
+        commands.entity(nameplate_id).despawn_recursive();
+    }
+}
+
+// TODO: Replace this?
+fn spawn_lobby_player(
+    player_query: Query<&CharacterIndex, With<PlayerMarker>>,
+
+    mut spawn_writer: EventWriter<SpawnCharacter>,
+    mut despawn_writer: EventWriter<DespawnCharacter>,
+
+    selected_char: Res<Class>,
+    mut last_char: Local<Option<Class>>,
+) {
+    if Some(*selected_char) == *last_char {
+        return;
+    }
+
+    if let Ok(&index) = player_query.get_single() {
+        despawn_writer.send(DespawnCharacter { index })
+    }
+
+    spawn_writer.send(SpawnCharacter {
+        index: CharacterIndex(0),
+        class: *selected_char,
+        player: true,
+        position: Vec2::ZERO,
+        rotation: 0.0,
+        team: Team::Blue,
+    });
+
+    *last_char = Some(*selected_char);
+}
+
 /// While [`ArenaState::Waiting`] run [`spawn_characters`].
 pub struct SpawnPlugin;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub enum SpawnState {
     Active,
-    Unactive,
+    Inactive,
 }
 
 impl Plugin for SpawnPlugin {
@@ -86,9 +151,20 @@ impl Plugin for SpawnPlugin {
             // NETWORK_HANDLE_LABEL writes SpawnCharacter events.
             .after(NETWORK_HANDLE_LABEL)
             .with_system(spawn_characters);
+        let despawner = SystemSet::on_update(SpawnState::Active)
+            // NETWORK_HANDLE_LABEL writes DespawnCharacter events.
+            .after(NETWORK_HANDLE_LABEL)
+            .before(SPAWN_CHARACTER_LABEL)
+            .with_system(despawn_characters);
+        let lobby_spawn =
+            SystemSet::on_update(GameState::MainLobby).with_system(spawn_lobby_player);
 
-        app.add_state(SpawnState::Unactive)
+        app.insert_resource(Class::Mars)
+            .add_state(SpawnState::Inactive)
             .add_event::<SpawnCharacter>()
-            .add_system_set(spawner);
+            .add_event::<DespawnCharacter>()
+            .add_system_set(spawner)
+            .add_system_set(despawner)
+            .add_system_set(lobby_spawn);
     }
 }

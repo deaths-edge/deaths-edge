@@ -7,10 +7,12 @@ use common::{
     network::{client::ClientMessage, CharacterNetworkAction},
 };
 
-use crate::{character::PlayerState, input_mapping::INPUT_TO_CHARACTER_LABEL, state::GameState};
+use crate::{character::PlayerState, input_mapping::INPUT_TO_CHARACTER_LABEL, GameState};
 
 use super::{player_input_to_network, NETWORK_HANDLE_LABEL};
 
+/// Take command [`CharacterNetworkAction<T>`] and convert it to a [`CharacterEntityAction<T>`]
+/// using [`CharacterIndex`].
 pub fn network_to_entity_command<T>(
     query: Query<(Entity, &CharacterIndex), With<CharacterMarker>>,
     mut character_network_reader: EventReader<CharacterNetworkAction<T>>,
@@ -54,6 +56,7 @@ where
 {
     fn build(&self, app: &mut App) {
         let broadcast_inputs = SystemSet::on_update(PlayerState::Spawned)
+            .with_run_criteria(State::on_update(GameState::Arena))
             .label(CHARACTER_NETWORK_COMMAND_LABEL)
             // INPUT_TO_CHARACTER_LABEL sends PlayerInputAction<Value> events
             .after(INPUT_TO_CHARACTER_LABEL)

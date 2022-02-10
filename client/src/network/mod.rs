@@ -16,10 +16,8 @@ use common::{
 };
 
 use crate::{
-    input_mapping::PlayerInputAction,
-    spawning::SPAWN_CHARACTER_LABEL,
-    state::{GameState, StateTransition},
-    Opt,
+    input_mapping::PlayerInputAction, spawning::SPAWN_CHARACTER_LABEL, state::StateTransition,
+    GameState, Opt,
 };
 
 use character_command::*;
@@ -40,6 +38,7 @@ impl ArenaServer {
     }
 }
 
+// TODO: This should be to the match maker
 fn request_arena_entry(mut net: ResMut<NetworkResource>, class: Res<Class>, opts: Res<Opt>) {
     info!("sending arena permit");
 

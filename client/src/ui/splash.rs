@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 
-use crate::state::GameState;
+use crate::GameState;
 
 fn splash_screen(mut egui_context: ResMut<EguiContext>) {
     egui::CentralPanel::default().show(egui_context.ctx_mut(), |ui| {

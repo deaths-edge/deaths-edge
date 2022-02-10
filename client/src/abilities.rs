@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use common::abilities::AbilityPlugin as CommonAbilityPlugin;
 
-use crate::state::GameState;
+use crate::GameState;
 
 pub struct AbilityPlugin;
 

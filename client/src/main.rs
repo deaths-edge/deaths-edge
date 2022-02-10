@@ -28,6 +28,18 @@ pub struct Opt {
     passcode: u64,
 }
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub enum GameState {
+    /// Splash screen
+    Splash,
+    /// Main lobby
+    MainLobby,
+    /// Connecting
+    Connecting,
+    /// In arena
+    Arena,
+}
+
 fn state_transition(
     time: Res<Time>,
     app_state: Res<State<GameState>>,

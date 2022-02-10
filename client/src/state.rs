@@ -4,28 +4,17 @@ use bevy::prelude::*;
 
 use crate::{
     abilities::AbilityPlugin,
-    character::CharacterPlugin,
-    game_camera::GameCameraPlugin,
+    character::{CharacterPlugin, CharacterState},
+    game_camera::{CameraState, GameCameraPlugin},
     input_mapping::InputMapPlugin,
     // music::SplashMusicPlugin,
     network::{ArenaServer, NetworkingState},
     spawning::{SpawnPlugin, SpawnState},
-    ui::{splash::SplashUIPlugin, UIPlugin},
+    ui::{hud::HudState, mouse::WorldMouseState, splash::SplashUIPlugin, UIPlugin},
+    GameState,
 };
 
 use common::{heron::PhysicsPlugin, network::server::ArenaSetup, state::ArenaState};
-
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-pub enum GameState {
-    /// Splash screen
-    Splash,
-    /// Main lobby
-    MainLobby,
-    /// Connecting
-    Connecting,
-    /// In arena
-    Arena,
-}
 
 pub const STATE_TRANSITIONS_LABEL: &str = "state-transitions";
 
@@ -53,38 +42,58 @@ pub enum StateTransition {
 fn state_transitions(
     mut transition_events: EventReader<StateTransition>,
 
-    mut ui_state: ResMut<State<GameState>>,
+    mut game_state: ResMut<State<GameState>>,
     mut spawning_state: ResMut<State<SpawnState>>,
+    mut character_state: ResMut<State<CharacterState>>,
     mut network_state: ResMut<State<NetworkingState>>,
     mut arena_state: ResMut<State<ArenaState>>,
+    mut camera_state: ResMut<State<CameraState>>,
+    mut mouse_state: ResMut<State<WorldMouseState>>,
+    mut hud_state: ResMut<State<HudState>>,
 
     mut commands: Commands,
 ) {
+    const STATE_TRANSION_FAILED: &str = "state transition failed";
     if let Some(event) = transition_events.iter().next() {
         info!(state_transition = ?event);
         match event {
             StateTransition::MainLobby => {
-                ui_state
+                game_state
                     .set(GameState::MainLobby)
-                    .expect("state transition failed");
+                    .expect(STATE_TRANSION_FAILED);
                 spawning_state
                     .set(SpawnState::Active)
-                    .expect("state transition failed");
+                    .expect(STATE_TRANSION_FAILED);
+                character_state
+                    .set(CharacterState::Active)
+                    .expect(STATE_TRANSION_FAILED);
+                camera_state
+                    .set(CameraState::Active)
+                    .expect(STATE_TRANSION_FAILED);
+                mouse_state
+                    .set(WorldMouseState::Active)
+                    .expect(STATE_TRANSION_FAILED);
+                hud_state
+                    .set(HudState::Active)
+                    .expect(STATE_TRANSION_FAILED);
             }
             StateTransition::Connect { server } => {
-                ui_state
+                game_state
                     .set(GameState::Connecting)
                     .expect("state transition failed");
                 spawning_state
-                    .set(SpawnState::Unactive)
+                    .set(SpawnState::Inactive)
                     .expect("state transition failed");
                 network_state
                     .set(NetworkingState::Active)
                     .expect("state transition failed");
+                character_state
+                    .set(CharacterState::Inactive)
+                    .expect("state transition failed");
                 commands.insert_resource(ArenaServer::new(*server))
             }
             StateTransition::Connected { setup } => {
-                ui_state
+                game_state
                     .set(GameState::Arena)
                     .expect("state transition failed");
                 spawning_state
@@ -92,6 +101,9 @@ fn state_transitions(
                     .expect("state transition failed");
                 arena_state
                     .set(ArenaState::Waiting)
+                    .expect("state transition failed");
+                character_state
+                    .set(CharacterState::Active)
                     .expect("state transition failed");
                 setup.map.spawn_environment(&mut commands);
             }

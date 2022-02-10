@@ -1,7 +1,6 @@
 use bevy::{math::Vec2, prelude::*};
 use heron::Velocity;
 use serde::{Deserialize, Serialize};
-use tracing::info;
 
 use super::CharacterEntityAction;
 use crate::character::{CharacterMarker, SpeedMultiplier};
@@ -89,7 +88,5 @@ pub fn character_movement(
 
         // Assign velocity
         *velocity = Velocity::from(direction * speed_multiplier.speed());
-
-        info!(message = "motion", ?velocity);
     }
 }

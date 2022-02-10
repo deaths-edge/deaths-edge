@@ -10,7 +10,10 @@ use common::{
     character::{Abilities, Interrupted, LastCastInstant, GLOBAL_COOLDOWN},
 };
 
-use crate::character::{PlayerMarker, PlayerState};
+use crate::{
+    character::{PlayerMarker, PlayerState},
+    ui::hud::HudState,
+};
 
 #[derive(Debug, Default, Component)]
 pub struct ButtonRowMarker;
@@ -25,11 +28,14 @@ pub struct ButtonRow {
 #[derive(Debug, Default, Component)]
 pub struct ButtonMarker;
 
+#[derive(Component)]
+pub struct ButtonIndex(pub usize);
+
 #[derive(Bundle)]
 pub struct Button {
     marker: ButtonMarker,
 
-    ability_id: AbilityId,
+    button_index: ButtonIndex,
 
     #[bundle]
     node: NodeBundle,
@@ -62,8 +68,22 @@ pub struct ButtonCooldown {
     cooldown_remainder: CooldownRemainder,
 }
 
-fn spawn_buttons(player_query: Query<&Abilities, With<PlayerMarker>>, mut commands: Commands) {
-    let Abilities(abilities) = player_query.single();
+fn attach_abilities(
+    player_query: Query<&Abilities, Added<PlayerMarker>>,
+    button_query: Query<(Entity, &ButtonIndex)>,
+
+    mut commands: Commands,
+) {
+    info!("attaching");
+    if let Ok(Abilities(abilities)) = player_query.get_single() {
+        for (id, btn_index) in button_query.iter() {
+            commands.entity(id).insert(abilities[btn_index.0]);
+        }
+    }
+}
+
+fn spawn_buttons(mut commands: Commands) {
+    const N_ABILITIES: usize = 8;
 
     let button_row = ButtonRow {
         marker: ButtonRowMarker,
@@ -80,16 +100,16 @@ fn spawn_buttons(player_query: Query<&Abilities, With<PlayerMarker>>, mut comman
         },
     };
     commands.spawn_bundle(button_row).with_children(|commands| {
-        for ability_id in abilities.iter().cloned() {
+        for index in 0..N_ABILITIES {
             let button = Button {
                 marker: ButtonMarker,
 
-                ability_id,
+                button_index: ButtonIndex(index),
 
                 node: NodeBundle {
                     style: Style {
                         size: Size::new(
-                            Val::Percent(100.0 / abilities.len() as f32),
+                            Val::Percent(100.0 / N_ABILITIES as f32),
                             Val::Percent(100.0),
                         ),
                         aspect_ratio: Some(1.0),
@@ -139,11 +159,13 @@ fn update_global_cooldown_remainder(
 ) {
     let now = time.last_update().expect("failed to find last time update");
     for (parent, mut remainder) in cooldown_query.iter_mut() {
-        let AbilityId(ability_id) = button_query
-            .get(parent.0)
-            .expect("failed to find parent button");
+        let AbilityId(ability_id) = if let Ok(&ok) = button_query.get(parent.0) {
+            ok
+        } else {
+            continue;
+        };
 
-        if requires_query.get(*ability_id).is_ok() {
+        if requires_query.get(ability_id).is_ok() {
             let character_last_cast_instant = player_query.single();
 
             if let Some(last_cast) = character_last_cast_instant.0 {
@@ -169,11 +191,13 @@ fn update_interrupt_remainder<School: Component>(
 ) {
     let now = time.last_update().expect("failed to find last time update");
     for (parent, mut remainder) in cooldown_query.iter_mut() {
-        let AbilityId(ability_id) = button_query
-            .get(parent.0)
-            .expect("failed to find parent button");
+        let AbilityId(ability_id) = if let Ok(&ok) = button_query.get(parent.0) {
+            ok
+        } else {
+            continue;
+        };
 
-        if requires_query.get(*ability_id).is_ok() {
+        if requires_query.get(ability_id).is_ok() {
             if let Ok(&Interrupted { until, start, .. }) = player_query.get_single() {
                 let duration = until.saturating_duration_since(now);
                 let total = until - start;
@@ -195,11 +219,13 @@ fn update_cooldown_remainder(
 ) {
     let now = time.last_update().expect("failed to find last time update");
     for (parent, mut remainder) in cooldown_query.iter_mut() {
-        let AbilityId(ability_id) = button_query
-            .get(parent.0)
-            .expect("failed to find parent button");
+        let AbilityId(ability_id) = if let Ok(&ok) = button_query.get(parent.0) {
+            ok
+        } else {
+            continue;
+        };
 
-        if let Ok((last_cast_instant, cooldown)) = ability_query.get(*ability_id) {
+        if let Ok((last_cast_instant, cooldown)) = ability_query.get(ability_id) {
             if let Some(last_cast) = last_cast_instant.0 {
                 let finish = last_cast + cooldown.0;
                 let duration = finish.saturating_duration_since(now);
@@ -227,7 +253,12 @@ pub struct ButtonsPlugin;
 
 impl Plugin for ButtonsPlugin {
     fn build(&self, app: &mut App) {
-        let buttons_setup = SystemSet::on_enter(PlayerState::Spawned).with_system(spawn_buttons);
+        // TODO: Make this HUD state
+        let buttons_setup = SystemSet::on_enter(HudState::Active).with_system(spawn_buttons);
+
+        // TODO: Improve lifecycle here
+        let attach_abilities =
+            SystemSet::on_update(PlayerState::Spawned).with_system(attach_abilities);
 
         const COOLDOWN_REMAINDER_UPDATES: &str = "cooldown-remainder-updates";
         let cooldown_updates = SystemSet::on_update(PlayerState::Spawned)
@@ -242,6 +273,7 @@ impl Plugin for ButtonsPlugin {
             .after(COOLDOWN_REMAINDER_UPDATES)
             .with_system(update_button_cooldown);
         app.add_system_set(buttons_setup)
+            .add_system_set(attach_abilities)
             .add_system_set(cooldown_updates)
             .add_system_set(cooldown_button_update);
     }

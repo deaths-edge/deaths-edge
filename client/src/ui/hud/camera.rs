@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use super::HudState;
+
 #[derive(Debug, Default, Component)]
 pub struct UICameraMarker;
 
@@ -18,6 +20,7 @@ pub struct UICameraPlugin;
 
 impl Plugin for UICameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup_ui_camera);
+        let setup = SystemSet::on_enter(HudState::Active).with_system(setup_ui_camera);
+        app.add_system_set(setup);
     }
 }

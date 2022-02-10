@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::state::GameState;
+use crate::GameState;
 
 pub struct Music {
     splash: Handle<AudioSource>,

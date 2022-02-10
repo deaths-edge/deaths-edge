@@ -79,3 +79,8 @@ pub struct SpawnCharacter {
     pub rotation: f32,
     pub team: Team,
 }
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct DespawnCharacter {
+    pub index: CharacterIndex,
+}

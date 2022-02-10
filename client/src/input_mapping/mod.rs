@@ -144,7 +144,6 @@ fn input_map(
 
         let angle = FocalAngle(Vec2::new(0., 1.).angle_between(diff));
 
-        info!(message = "sending focal angle", angle = %angle.0);
         if !last_angle.almost_eq(&angle) {
             *last_angle = angle;
             focal_holds.send(PlayerInputAction(angle));
