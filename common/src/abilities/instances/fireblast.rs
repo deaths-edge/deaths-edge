@@ -37,9 +37,9 @@ pub struct FireblastEffects {
     effect_marker: EffectMarker,
 
     damage: AtTarget<Damage>,
-    cooldown: AtAbility<TriggerCooldown>,
     apply_status: AtTarget<SpawnEntity>,
     power_cost: AtSelf<PowerBurn>,
+    trigger_cooldown: AtAbility<TriggerCooldown>,
     trigger_global_cooldown: AtSelf<TriggerGlobalCooldown>,
 
     complete: Complete,
@@ -95,7 +95,7 @@ impl Fireblast {
             )),
             power_cost: AtSelf(PowerBurn(POWER_COST)),
             trigger_global_cooldown: AtSelf(TriggerGlobalCooldown),
-            cooldown: AtAbility(TriggerCooldown(COOLDOWN)),
+            trigger_cooldown: AtAbility(TriggerCooldown(COOLDOWN)),
 
             complete: Complete,
         };

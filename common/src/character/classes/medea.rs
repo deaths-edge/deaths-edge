@@ -73,12 +73,13 @@ impl ClassTrait for Medea {
     }
 
     fn spawn_abilities(commands: &mut Commands) -> [Entity; 8] {
+        let blink_id = commands.spawn_bundle(instances::Blink::new()).id();
         let fireblast_id = commands.spawn_bundle(instances::Fireblast::new()).id();
         let scorch_id = commands.spawn_bundle(instances::Scorch::new()).id();
 
         [
+            blink_id,
             fireblast_id,
-            scorch_id,
             scorch_id,
             scorch_id,
             scorch_id,

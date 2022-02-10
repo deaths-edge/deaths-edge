@@ -1,9 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    abilities::lifecycle::{CastMarker, TotalDuration},
-    character::LastCastInstant,
-};
+use crate::{abilities::lifecycle::TotalDuration, character::LastCastInstant};
 
 use super::{CharacterEffect, EffectMarker};
 

@@ -1,4 +1,5 @@
 mod damage;
+mod displace;
 mod dot;
 mod interrupt;
 mod power_burn;
@@ -22,6 +23,7 @@ use crate::{
 };
 
 pub use damage::*;
+pub use displace::*;
 pub use dot::*;
 pub use interrupt::*;
 pub use power_burn::*;
@@ -295,6 +297,7 @@ where
             .add_character_effect::<Interrupt>(app)
             .add_character_effect::<Dot>(app)
             .add_character_effect::<SpawnEntity>(app)
+            .add_character_effect::<Displace>(app)
             .add_ability_effect::<TriggerCooldown>(app);
     }
 }

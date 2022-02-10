@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::abilities::AbilityMarker;
 
+/// Complaining does nothing.
 #[derive(Debug, Bundle)]
 pub struct Complain {
     marker: AbilityMarker,
