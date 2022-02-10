@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 
 use crate::{
-    abilities::{lifecycle::TotalDuration, AbilityMarker},
+    abilities::lifecycle::{CastMarker, TotalDuration},
     character::LastCastInstant,
 };
 
-use super::CharacterEffect;
+use super::{CharacterEffect, EffectMarker};
 
 #[derive(Default, Debug, Clone, Component)]
 pub struct TriggerGlobalCooldown;
@@ -13,15 +13,15 @@ pub struct TriggerGlobalCooldown;
 impl CharacterEffect for TriggerGlobalCooldown {
     type Domain<'a> = &'a mut LastCastInstant;
 
-    type Param<'w, 's> = Query<'w, 's, &'static TotalDuration, With<AbilityMarker>>;
-    type Fetch = QueryState<&'static TotalDuration, With<AbilityMarker>>;
+    type Param<'w, 's> = Query<'w, 's, &'static TotalDuration, With<EffectMarker>>;
+    type Fetch = QueryState<&'static TotalDuration, With<EffectMarker>>;
 
     fn apply(
         &self,
         parent_id: Entity,
 
         mut last_cast: Mut<'_, LastCastInstant>,
-        param: &Query<&TotalDuration, With<AbilityMarker>>,
+        param: &Query<&TotalDuration, With<EffectMarker>>,
 
         time: &Time,
 

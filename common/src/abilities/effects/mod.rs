@@ -55,6 +55,7 @@ where
         &self,
 
         parent_id: Entity,
+
         item: <<Self::Domain<'_> as WorldQuery>::Fetch as Fetch>::Item,
         param: &<Self::Fetch as SystemParamFetch>::Item,
 

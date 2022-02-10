@@ -74,9 +74,9 @@ pub struct Scorch {
 
 impl Scorch {
     pub fn new() -> Self {
-        const DAMAGE: f32 = 30.0;
+        const DAMAGE: f32 = 50.0;
         const POWER_COST: f32 = 20.0;
-        const CAST_DURATION: Duration = Duration::from_millis(750);
+        const CAST_DURATION: Duration = Duration::from_millis(1_000);
         const MAX_RANGE: f32 = 500.0;
 
         let scorch_effects = ScorchEffects {
@@ -93,6 +93,7 @@ impl Scorch {
             .insert_bundle(scorch_effects)
             .snapshot_move::<Source>()
             .snapshot_move::<Target>()
+            .snapshot_move::<TotalDuration>()
             .arc();
 
         let scorch_cast = ScorchCast {
