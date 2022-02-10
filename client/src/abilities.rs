@@ -2,12 +2,17 @@ use bevy::prelude::*;
 
 use common::abilities::AbilityPlugin as CommonAbilityPlugin;
 
-use crate::GameState;
-
 pub struct AbilityPlugin;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum AbilityState {
+    Active,
+    Inactive,
+}
 
 impl Plugin for AbilityPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(CommonAbilityPlugin::new(GameState::Arena));
+        app.add_state(AbilityState::Inactive)
+            .add_plugin(CommonAbilityPlugin::new(AbilityState::Active));
     }
 }

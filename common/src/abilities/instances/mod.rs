@@ -1,8 +1,10 @@
+mod complain;
 mod fireblast;
 mod kick;
 mod scorch;
 
 use bevy::prelude::Component;
+pub use complain::*;
 pub use fireblast::*;
 pub use kick::*;
 pub use scorch::*;

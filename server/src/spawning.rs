@@ -4,7 +4,8 @@ use bevy::prelude::*;
 
 use common::{
     character::{
-        mars::Mars, medea::Medea, CharacterIndex, CharacterMarker, Class, ClassTrait, Team,
+        dummy::Dummy, mars::Mars, medea::Medea, CharacterIndex, CharacterMarker, Class, ClassTrait,
+        Team,
     },
     game::GameRoster,
     network::{
@@ -65,6 +66,7 @@ pub fn spawn_characters(
                 Class::Borvo => todo!(),
                 Class::Heka => todo!(),
                 Class::Rhea => todo!(),
+                Class::Dummy => Dummy::spawn(*next_index, permit.team, transform, &mut commands),
             };
             let mut entity_commands = commands.entity(character_id);
             entity_commands.insert_bundle(server_character_bundle);

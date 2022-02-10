@@ -74,7 +74,6 @@ fn attach_abilities(
 
     mut commands: Commands,
 ) {
-    info!("attaching");
     if let Ok(Abilities(abilities)) = player_query.get_single() {
         for (id, btn_index) in button_query.iter() {
             commands.entity(id).insert(abilities[btn_index.0]);

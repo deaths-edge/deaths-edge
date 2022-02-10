@@ -1,14 +1,18 @@
 use bevy::prelude::*;
 
 use common::{
+    abilities::{Source, Target},
     character::{
-        mars::Mars, medea::Medea, CharacterIndex, CharacterMarker, Class, ClassTrait, Team,
+        dummy::Dummy, mars::Mars, medea::Medea, CharacterIndex, CharacterMarker, Class, ClassTrait,
+        Team,
     },
     network::server::{DespawnCharacter, SpawnCharacter},
 };
 
 use crate::{
-    character::{mars::ClientMars, medea::ClientMedea, PlayerMarker, PlayerState},
+    character::{
+        dummy::ClientDummy, mars::ClientMars, medea::ClientMedea, PlayerMarker, PlayerState,
+    },
     network::NETWORK_HANDLE_LABEL,
     ui::hud::nameplate::{setup_nameplate, NameplateMarker, NameplateParent},
     GameState,
@@ -57,6 +61,17 @@ pub fn spawn_characters(
             Class::Borvo => todo!(),
             Class::Heka => todo!(),
             Class::Rhea => todo!(),
+            Class::Dummy => {
+                let character_id = Dummy::spawn(
+                    spawn_event.index,
+                    spawn_event.team,
+                    transform,
+                    &mut commands,
+                );
+                let mut entity_commands = commands.entity(character_id);
+                ClientDummy::insert_bundle(&mut entity_commands);
+                entity_commands
+            }
         };
 
         let id = if spawn_event.player {
@@ -77,6 +92,10 @@ fn despawn_characters(
 
     character_query: Query<(Entity, &CharacterIndex, With<PlayerMarker>), With<CharacterMarker>>,
     nameplate_query: Query<(Entity, &NameplateParent), With<NameplateMarker>>,
+    target_query: Query<
+        (Entity, Option<&Target>, Option<&Source>),
+        (Or<(With<Source>, With<Target>)>, Without<CharacterMarker>),
+    >,
 
     mut commands: Commands,
 ) {
@@ -93,20 +112,30 @@ fn despawn_characters(
             // let _ = player_state.overwrite_set(PlayerState::Waiting);
         }
 
-        // Remove character
-        commands.entity(id).despawn();
-
         // Remove nameplate
         let (nameplate_id, _) = nameplate_query
             .iter()
             .find(|(_, parent)| parent.0 == id)
             .expect("failed to find nameplate");
         commands.entity(nameplate_id).despawn_recursive();
+
+        // Remove pointers
+        let pointers = target_query.iter().filter(|(_, target_opt, source_opt)| {
+            let is_target = target_opt.map(|target| target.0 == id).unwrap_or_default();
+            let is_source = source_opt.map(|source| source.0 == id).unwrap_or_default();
+            is_target || is_source
+        });
+        for (pointer_id, _, _) in pointers {
+            commands.entity(pointer_id).despawn();
+        }
+
+        // Remove character
+        commands.entity(id).despawn();
     }
 }
 
 // TODO: Replace this?
-fn spawn_lobby_player(
+fn respawn_lobby_player(
     player_query: Query<&CharacterIndex, With<PlayerMarker>>,
 
     mut spawn_writer: EventWriter<SpawnCharacter>,
@@ -135,6 +164,17 @@ fn spawn_lobby_player(
     *last_char = Some(*selected_char);
 }
 
+pub fn spawn_dummy(mut spawn_writer: EventWriter<SpawnCharacter>) {
+    spawn_writer.send(SpawnCharacter {
+        index: CharacterIndex(1),
+        class: Class::Dummy,
+        player: false,
+        position: Vec2::ZERO,
+        rotation: 0.0,
+        team: Team::Red,
+    });
+}
+
 /// While [`ArenaState::Waiting`] run [`spawn_characters`].
 pub struct SpawnPlugin;
 
@@ -157,7 +197,9 @@ impl Plugin for SpawnPlugin {
             .before(SPAWN_CHARACTER_LABEL)
             .with_system(despawn_characters);
         let lobby_spawn =
-            SystemSet::on_update(GameState::MainLobby).with_system(spawn_lobby_player);
+            SystemSet::on_update(GameState::MainLobby).with_system(respawn_lobby_player);
+
+        let spawn_dummy = SystemSet::on_enter(GameState::MainLobby).with_system(spawn_dummy);
 
         app.insert_resource(Class::Mars)
             .add_state(SpawnState::Inactive)
@@ -165,6 +207,7 @@ impl Plugin for SpawnPlugin {
             .add_event::<DespawnCharacter>()
             .add_system_set(spawner)
             .add_system_set(despawner)
-            .add_system_set(lobby_spawn);
+            .add_system_set(lobby_spawn)
+            .add_system_set(spawn_dummy);
     }
 }

@@ -1,3 +1,4 @@
+pub mod dummy;
 pub mod mars;
 pub mod medea;
 
@@ -88,6 +89,8 @@ pub enum Class {
     /// Low sustained healing, control, escapes
     /// Druid-like
     Rhea,
+    /// Dummy class
+    Dummy,
 }
 
 impl Class {
@@ -105,6 +108,8 @@ impl Class {
             Borvo => Support,
             Heka => Support,
             Rhea => Support,
+
+            Dummy => Melee,
         }
     }
 
@@ -120,6 +125,8 @@ impl Class {
             Borvo => Heka,
             Heka => Rhea,
             Rhea => Mars,
+
+            Dummy => Dummy,
         }
     }
 
@@ -135,11 +142,9 @@ impl Class {
             Heka => Borvo,
             Rhea => Heka,
             Mars => Rhea,
-        }
-    }
 
-    pub fn color(&self) -> Color {
-        Color::BLUE
+            Dummy => Dummy,
+        }
     }
 }
 
@@ -156,6 +161,8 @@ impl Class {
             Borvo => "Borvo",
             Heka => "Heka",
             Rhea => "Rhea",
+
+            Dummy => "Dummy",
         }
     }
 }

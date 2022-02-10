@@ -3,7 +3,7 @@ use std::net::SocketAddr;
 use bevy::prelude::*;
 
 use crate::{
-    abilities::AbilityPlugin,
+    abilities::{AbilityPlugin, AbilityState},
     character::{CharacterPlugin, CharacterState},
     game_camera::{CameraState, GameCameraPlugin},
     input_mapping::InputMapPlugin,
@@ -45,6 +45,7 @@ fn state_transitions(
     mut game_state: ResMut<State<GameState>>,
     mut spawning_state: ResMut<State<SpawnState>>,
     mut character_state: ResMut<State<CharacterState>>,
+    mut ability_state: ResMut<State<AbilityState>>,
     mut network_state: ResMut<State<NetworkingState>>,
     mut arena_state: ResMut<State<ArenaState>>,
     mut camera_state: ResMut<State<CameraState>>,
@@ -53,29 +54,32 @@ fn state_transitions(
 
     mut commands: Commands,
 ) {
-    const STATE_TRANSION_FAILED: &str = "state transition failed";
+    const STATE_TRANSITION_FAILED: &str = "state transition failed";
     if let Some(event) = transition_events.iter().next() {
         info!(state_transition = ?event);
         match event {
             StateTransition::MainLobby => {
                 game_state
                     .set(GameState::MainLobby)
-                    .expect(STATE_TRANSION_FAILED);
+                    .expect(STATE_TRANSITION_FAILED);
                 spawning_state
                     .set(SpawnState::Active)
-                    .expect(STATE_TRANSION_FAILED);
+                    .expect(STATE_TRANSITION_FAILED);
                 character_state
                     .set(CharacterState::Active)
-                    .expect(STATE_TRANSION_FAILED);
+                    .expect(STATE_TRANSITION_FAILED);
+                ability_state
+                    .set(AbilityState::Active)
+                    .expect(STATE_TRANSITION_FAILED);
                 camera_state
                     .set(CameraState::Active)
-                    .expect(STATE_TRANSION_FAILED);
+                    .expect(STATE_TRANSITION_FAILED);
                 mouse_state
                     .set(WorldMouseState::Active)
-                    .expect(STATE_TRANSION_FAILED);
+                    .expect(STATE_TRANSITION_FAILED);
                 hud_state
                     .set(HudState::Active)
-                    .expect(STATE_TRANSION_FAILED);
+                    .expect(STATE_TRANSITION_FAILED);
             }
             StateTransition::Connect { server } => {
                 game_state
